@@ -1,0 +1,76 @@
+body {
+	background-color: #232323;
+	margin-left: 8em;
+}
+
+$primary-color: #2D8CEB;
+
+@mixin border-radius($radius) {
+	-webkit-border-radius: $radius;
+	-moz-border-radius: $radius;
+	-ms-border-radius: $radius;
+	border-radius: $radius;
+}
+
+.number-input-container {
+	position: relative;
+	width: 3em;
+	height: 1em;
+	font-size: 0.7em;
+
+	.disabled {
+		display: none;
+	}
+
+	.inner-component {
+		width: 100%;
+		height: 100%;
+		background: none;
+		position: absolute;
+		padding: 0.2em;
+		padding-left: 0.4em;
+		padding-right: 0.4em;
+		@include border-radius(0.2em);
+	}
+
+	.number-input {
+		@extend .inner-component;
+		-moz-appearance: textfield;
+		border: none;
+		font-size: inherit;
+		color: $primary-color;
+		box-shadow: none;
+
+		&::-webkit-inner-spin-button,
+		&::-webkit-outer-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+
+		&:focus {
+			color: black;
+			background-color: white;
+			-moz-box-shadow: inset 0px 0px 2px 0px $primary-color;
+			-webkit-box-shadow: inset 0px 0px 2px 0px $primary-color;
+			-o-box-shadow: inset 0px 0px 2px 0px $primary-color;
+			box-shadow: inset 0px 0px 2px 0px $primary-color;
+			filter:progid:DXImageTransform.Microsoft.Shadow(color=$primary-color, Direction=NaN, Strength=2);
+		}
+
+		&.dragged {
+			cursor: ew-resize;
+		}
+	}
+
+	.drag-overlay {
+		@extend .inner-component;
+
+		&:hover {
+			cursor: pointer;
+		}
+
+		&.edit-dragged {
+			cursor: ew-resize;
+		}
+	}
+}
