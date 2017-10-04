@@ -1,25 +1,17 @@
-body {
-	background-color: #232323;
-	margin-left: 8em;
-}
-
-$primary-color: #2D8CEB;
-
-@mixin border-radius($radius) {
-	-webkit-border-radius: $radius;
-	-moz-border-radius: $radius;
-	-ms-border-radius: $radius;
-	border-radius: $radius;
-}
 
 .number-input-container {
 	position: relative;
 	width: 3em;
 	height: 1em;
 	font-size: 0.7em;
+	color: $accent-color;
 
 	.disabled {
 		display: none;
+	}
+
+	&:hover {
+		color: white;
 	}
 
 	.inner-component {
@@ -38,8 +30,8 @@ $primary-color: #2D8CEB;
 		-moz-appearance: textfield;
 		border: none;
 		font-size: inherit;
-		color: $primary-color;
 		box-shadow: none;
+		color: inherit;
 
 		&::-webkit-inner-spin-button,
 		&::-webkit-outer-spin-button {
@@ -50,11 +42,11 @@ $primary-color: #2D8CEB;
 		&:focus {
 			color: black;
 			background-color: white;
-			-moz-box-shadow: inset 0px 0px 2px 0px $primary-color;
-			-webkit-box-shadow: inset 0px 0px 2px 0px $primary-color;
-			-o-box-shadow: inset 0px 0px 2px 0px $primary-color;
-			box-shadow: inset 0px 0px 2px 0px $primary-color;
-			filter:progid:DXImageTransform.Microsoft.Shadow(color=$primary-color, Direction=NaN, Strength=2);
+			-moz-box-shadow: inset 0px 0px 2px 0px $accent-color;
+			-webkit-box-shadow: inset 0px 0px 2px 0px $accent-color;
+			-o-box-shadow: inset 0px 0px 2px 0px $accent-color;
+			box-shadow: inset 0px 0px 2px 0px $accent-color;
+			filter:progid:DXImageTransform.Microsoft.Shadow(color=$accent-color, Direction=NaN, Strength=2);
 		}
 
 		&.dragged {

@@ -1,0 +1,12 @@
+@import 'const';
+@import 'NumberInput';
+@import 'PuppetsEditor';
+@import 'PuppetCreator';
+@import 'List';
+
+body {
+	font-family: Arial;
+	color: $primary-color;
+	background-color: $background-color;
+	margin-left: 8em;
+}

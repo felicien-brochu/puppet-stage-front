@@ -1,0 +1,10 @@
+$primary-color: #A6A6A6;
+$accent-color: #2D8CEB;
+$background-color: #232323;
+
+@mixin border-radius($radius) {
+	-webkit-border-radius: $radius;
+	-moz-border-radius: $radius;
+	-ms-border-radius: $radius;
+	border-radius: $radius;
+}
