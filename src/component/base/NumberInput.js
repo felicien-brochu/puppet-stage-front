@@ -116,13 +116,13 @@ class NumberInput extends React.Component {
 			value: value
 		});
 
-		if (typeof this.props.onChange !== 'undefined') {
+		if (typeof this.props.onChange === 'function') {
 			this.props.onChange(value);
 		}
 	}
 
 	confirmValue() {
-		if (typeof this.props.onValueConfirmed !== 'undefined') {
+		if (typeof this.props.onValueConfirmed === 'function') {
 			this.props.onValueConfirmed(this.state.value);
 		}
 	}
@@ -148,8 +148,3 @@ class NumberInput extends React.Component {
 		}
 	}
 }
-
-// ========================================
-
-ReactDOM.render(
-	<NumberInput defaultValue={210} min={-12} max={560} scale={100} step={20} onChange={(v) => console.log("New value: " + v)} onValueConfirmed={(v) => console.log("Confirmed value: " + v)}/>, document.getElementById('root'));

@@ -1,6 +1,11 @@
 $primary-color: #A6A6A6;
 $accent-color: #2D8CEB;
+$highlight-color: white;
+$inactive-color: #474747;
+$deep-background-color: #161616;
 $background-color: #232323;
+$active-background-color: #303030;
+$selected-background-color: #474747;
 
 @mixin border-radius($radius) {
 	-webkit-border-radius: $radius;

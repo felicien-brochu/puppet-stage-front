@@ -10,14 +10,26 @@ export default class PuppetCreator extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {}
+		this.state = {
+			nameEmpty: true
+		}
 	}
 
 	render() {
 		return (
 			<form className="puppet-creator" onSubmit={(e) => this.handleSubmit(e)}>
-				<input type="text" ref={nameInput => this.nameInput = nameInput} name="name" required/>
-				<input type="submit" value="New"/>
+				<input
+					type="text"
+					ref={nameInput => this.nameInput = nameInput}
+					onChange={() => this.handleChange()}
+					placeholder="Name"
+					name="name"
+				/>
+				<input
+					type="submit"
+					value="New"
+					disabled={this.state.nameEmpty}
+				/>
 			</form>
 		);
 	}
@@ -27,6 +39,17 @@ export default class PuppetCreator extends React.Component {
 		let name = this.nameInput.value;
 		if (name.length > 0) {
 			this.props.onCreatePuppet(name);
+		}
+		this.nameInput.value = "";
+		this.handleChange();
+	}
+
+	handleChange() {
+		let nameEmpty = !this.nameInput.value.length > 0;
+		if (nameEmpty === !this.state.nameEmpty) {
+			this.setState({
+				nameEmpty: nameEmpty
+			})
 		}
 	}
 };

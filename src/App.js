@@ -1,17 +1,19 @@
 import React from 'react';
-import Home from './component/Home';
 import './style/index.min.css';
 import {
-	BrowserRouter,
-	Route
+	Route,
+	Switch
 } from 'react-router-dom'
+
+import Home from './component/Home';
 
 export default class App extends React.Component {
 	render() {
 		return (
-			<BrowserRouter>
-				<Route exact path='/' component={Home}/>
-			</BrowserRouter>
+			<Switch>
+				<Route exact path="/" component={Home}/>
+				{/* <Route path="/puppet/:name" component={Home}/> */}
+			</Switch>
 		);
 	}
 }

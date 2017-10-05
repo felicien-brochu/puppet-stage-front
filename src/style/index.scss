@@ -6,7 +6,45 @@
 
 body {
 	font-family: Arial;
+	font-weight: lighter;
 	color: $primary-color;
+	background-color: $deep-background-color;
+	margin: 0;
+}
+
+button, input[type=submit] {
+	margin: 0 0.4em;
+	padding: 0.2em 0.8em 0.3em 0.8em;
 	background-color: $background-color;
-	margin-left: 8em;
+	color: $primary-color;
+	border-style: solid;
+	border-color: $primary-color;
+	border-width: 0.12em;
+	@include border-radius(1em);
+
+	&:active:not(:disabled) {
+		background-color: $active-background-color;
+	}
+
+	&:disabled {
+		color: $inactive-color;
+		border-color: $inactive-color;
+	}
+}
+
+input[type=text], input[type=number] {
+	color: black;
+	background-color: white;
+	padding: 0.2em 0.8em 0.3em 0.8em;
+	border: none;
+	box-shadow: none;
+	@include border-radius(0.2em);
+
+	&:focus {
+		-moz-box-shadow: inset 0px 0px 4px 0px $accent-color;
+		-webkit-box-shadow: inset 0px 0px 4px 0px $accent-color;
+		-o-box-shadow: inset 0px 0px 4px 0px $accent-color;
+		box-shadow: inset 0px 0px 4px 0px $accent-color;
+		filter:progid:DXImageTransform.Microsoft.Shadow(color=$accent-color, Direction=NaN, Strength=4);
+	}
 }
