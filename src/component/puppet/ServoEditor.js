@@ -26,55 +26,58 @@ export default class ServoEditor extends React.Component {
 	render() {
 		return (
 			<div className="servo-editor">
-				<div className="row">
-					addr:
-					<NumberInput
-						defaultValue={this.props.servo.addr}
-						min={0}
-						max={4096}
-						step={1}
-						scale={10}
-						onValueConfirmed={this.handleAddrConfirmed}
-					/>
-				</div>
+				<h4>{this.props.servo.name}</h4>
+				<div className="value-panel">
+					<div className="row">
+						addr
+						<NumberInput
+							defaultValue={this.props.servo.addr}
+							min={0}
+							max={4096}
+							step={1}
+							scale={10}
+							onValueConfirmed={this.handleAddrConfirmed}
+						/>
+					</div>
 
-				<div className="row">
-					defaultPosition:
-					<NumberInput
-						defaultValue={this.props.servo.defaultPosition}
-						min={this.props.servo.min}
-						max={this.props.servo.max}
-						step={1}
-						scale={50}
-						onChange={this.handleDefaultPositionChange}
-						onValueConfirmed={this.handleDefaultPositionConfirmed}
-					/>
-				</div>
+					<div className="row">
+						default position
+						<NumberInput
+							defaultValue={this.props.servo.defaultPosition}
+							min={this.props.servo.min}
+							max={this.props.servo.max}
+							step={1}
+							scale={50}
+							onChange={this.handleDefaultPositionChange}
+							onValueConfirmed={this.handleDefaultPositionConfirmed}
+						/>
+					</div>
 
-				<div className="row">
-					min:
-					<NumberInput
-						defaultValue={this.props.servo.min}
-						min={this.props.servo.hardMin}
-						max={this.props.servo.defaultPosition}
-						step={1}
-						scale={50}
-						onChange={this.handleMinChange}
-						onValueConfirmed={this.handleMinConfirmed}
-					/>
-				</div>
+					<div className="row">
+						min
+						<NumberInput
+							defaultValue={this.props.servo.min}
+							min={this.props.servo.hardMin}
+							max={this.props.servo.defaultPosition}
+							step={1}
+							scale={50}
+							onChange={this.handleMinChange}
+							onValueConfirmed={this.handleMinConfirmed}
+						/>
+					</div>
 
-				<div className="row">
-					max:
-					<NumberInput
-						defaultValue={this.props.servo.max}
-						min={this.props.servo.defaultPosition}
-						max={this.props.servo.hardMax}
-						step={1}
-						scale={50}
-						onChange={this.handleMaxChange}
-						onValueConfirmed={this.handleMaxConfirmed}
-					/>
+					<div className="row">
+						max
+						<NumberInput
+							defaultValue={this.props.servo.max}
+							min={this.props.servo.defaultPosition}
+							max={this.props.servo.hardMax}
+							step={1}
+							scale={50}
+							onChange={this.handleMaxChange}
+							onValueConfirmed={this.handleMaxConfirmed}
+						/>
+					</div>
 				</div>
 			</div>
 		);
