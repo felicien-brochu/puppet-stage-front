@@ -13,3 +13,15 @@ $selected-background-color: #474747;
 	-ms-border-radius: $radius;
 	border-radius: $radius;
 }
+
+@mixin center-panel {
+		background-color: $background-color;
+		padding: 1.7em;
+		margin: 2em auto;
+		width: 900px;
+		@include border-radius(0.3em);
+
+		h3 {
+			margin-top: 0;
+		}
+}

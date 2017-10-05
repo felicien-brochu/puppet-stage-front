@@ -1,0 +1,9 @@
+@import 'const';
+
+.puppets-editor {
+	@include center-panel;
+
+	.list {
+		height: 14em;
+	}
+}

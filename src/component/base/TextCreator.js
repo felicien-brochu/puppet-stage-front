@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default class PuppetCreator extends React.Component {
+export default class TextCreator extends React.Component {
 
 	static propTypes = {
-		onCreatePuppet: PropTypes.func.isRequired,
+		onCreate: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -38,7 +38,7 @@ export default class PuppetCreator extends React.Component {
 		e.preventDefault();
 		let name = this.nameInput.value;
 		if (name.length > 0) {
-			this.props.onCreatePuppet(name);
+			this.props.onCreate(name);
 		}
 		this.nameInput.value = "";
 		this.handleChange();

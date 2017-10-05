@@ -1,8 +1,11 @@
 @import 'const';
 @import 'NumberInput';
-@import 'PuppetsEditor';
-@import 'PuppetCreator';
 @import 'List';
+
+@import 'PuppetBrowser';
+@import 'TextCreator';
+
+@import 'PuppetEditor';
 
 body {
 	font-family: Arial;

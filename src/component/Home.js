@@ -1,12 +1,12 @@
 import React from 'react';
-import PuppetsEditor from './puppet/PuppetsEditor'
+import PuppetBrowser from './puppet/PuppetBrowser'
 
-export default class PuppetCreator extends React.Component {
+export default class Home extends React.Component {
 
 	render() {
 		return (
 			<div className="home-container">
-				<PuppetsEditor/>
+				<PuppetBrowser/>
 			</div>
 		);
 	}

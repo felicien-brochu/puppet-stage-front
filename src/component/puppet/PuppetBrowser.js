@@ -4,13 +4,13 @@ import {
 	Redirect
 } from 'react-router-dom'
 
-import PuppetCreator from './PuppetCreator';
+import TextCreator from '../base/TextCreator';
 import List from '../base/List';
 
 import fetchAPI from '../util/api'
 import alert from '../util/alert'
 
-export default class PuppetsEditor extends React.Component {
+export default class PuppetBrowser extends React.Component {
 
 	constructor(props) {
 		super(props);
@@ -36,10 +36,10 @@ export default class PuppetsEditor extends React.Component {
 		return (
 			<div className="puppets-editor">
 				<h3>Puppets</h3>
-				<PuppetCreator onCreatePuppet={this.handleCreatePuppet}/>
+				<TextCreator onCreate={this.handleCreatePuppet}/>
 				<List
 					list={this.state.puppets}
-					itemKeyKey="name"
+					itemKeyKey="id"
 					itemValueKey="name"
 					selectedItem={this.state.selectedPuppet}
 					onSelect={(p) => this.handleSelect(p)}
@@ -71,7 +71,7 @@ export default class PuppetsEditor extends React.Component {
 
 	handleCreatePuppet(name) {
 		console.log("Create puppet: " + name);
-		fetchAPI("/puppet/" + name, {
+		fetchAPI("/puppet", {
 			method: 'PUT',
 			body: JSON.stringify({
 				name: name,
@@ -111,7 +111,7 @@ export default class PuppetsEditor extends React.Component {
 	handleEditClick() {
 		if (this.state.selectedPuppet) {
 			this.setState({
-				redirectTo: "/puppet/" + this.state.selectedPuppet.name
+				redirectTo: "/puppet/" + this.state.selectedPuppet.id
 			})
 		}
 	}
@@ -119,16 +119,16 @@ export default class PuppetsEditor extends React.Component {
 	handleRemoveClick() {
 		let puppet = this.state.selectedPuppet;
 		if (puppet) {
-			alert.warningAlert("Do you really want to delete \"" + puppet.name + "\" puppet ?<br /><button onClick=\"handleRemovePuppet('" + puppet.name + "')\">OK</button>", {
+			alert.warningAlert("Do you really want to delete \"" + puppet.name + "\" puppet ?<br /><button onClick=\"handleRemovePuppet('" + puppet + "')\">OK</button>", {
 				html: true,
 				timeout: 'none'
 			})
 		}
 	}
 
-	handleRemovePuppet(name) {
-		console.log("Remove puppet: " + name);
-		fetchAPI("/puppet/" + name, {
+	handleRemovePuppet(puppet) {
+		console.log("Remove puppet: " + puppet.name);
+		fetchAPI("/puppet/" + puppet.id, {
 			method: 'DELETE',
 		}, this.handleRemovePuppetSuccess.bind(this), null, "Error deleting puppet:")
 	}
@@ -139,7 +139,7 @@ export default class PuppetsEditor extends React.Component {
 		alert.successAlert("Puppet successfully deleted");
 
 		let puppets = this.state.puppets.filter((p) => {
-			return p.name !== puppet.name;
+			return p.id !== puppet.id;
 		});
 		this.setState({
 			puppets: puppets
