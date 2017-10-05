@@ -2,4 +2,26 @@
 
 .puppet-editor {
 	@include center-panel
+
+	.board-browser {
+		display: inline-block;
+		vertical-align: top;
+		width: 15em;
+		margin-right: 3em;
+
+		.list {
+			min-height: 10em;
+		}
+	}
+
+	.servo-browser {
+		display: inline-block;
+		vertical-align: top;
+		width: 15em;
+		margin-right: 3em;
+
+		.list {
+			min-height: 10em;
+		}
+	}
 }

@@ -1,10 +1,8 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import './index.min.css';
 
-class NumberInput extends React.Component {
+export default class NumberInput extends React.Component {
 
 	static propTypes = {
 		defaultValue: PropTypes.number.isRequired,
@@ -59,6 +57,12 @@ class NumberInput extends React.Component {
 				/>
 			</div>
 		);
+	}
+
+	componentWillReceiveProps(nextProps) {
+		this.setState({
+			value: nextProps.defaultValue
+		})
 	}
 
 	handleChange(e) {
@@ -122,6 +126,9 @@ class NumberInput extends React.Component {
 	}
 
 	confirmValue() {
+		if (typeof this.props.onChange === 'function') {
+			this.props.onChange(this.state.value);
+		}
 		if (typeof this.props.onValueConfirmed === 'function') {
 			this.props.onValueConfirmed(this.state.value);
 		}

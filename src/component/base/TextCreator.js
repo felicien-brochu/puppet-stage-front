@@ -5,6 +5,11 @@ export default class TextCreator extends React.Component {
 
 	static propTypes = {
 		onCreate: PropTypes.func.isRequired,
+		placeholder: PropTypes.string,
+	}
+
+	static defaultProps = {
+		placeholder: "Name",
 	}
 
 	constructor(props) {
@@ -20,10 +25,9 @@ export default class TextCreator extends React.Component {
 			<form className="puppet-creator" onSubmit={(e) => this.handleSubmit(e)}>
 				<input
 					type="text"
-					ref={nameInput => this.nameInput = nameInput}
+					ref={textInput => this.textInput = textInput}
 					onChange={() => this.handleChange()}
-					placeholder="Name"
-					name="name"
+					placeholder={this.props.placeholder}
 				/>
 				<input
 					type="submit"
@@ -36,16 +40,16 @@ export default class TextCreator extends React.Component {
 
 	handleSubmit(e) {
 		e.preventDefault();
-		let name = this.nameInput.value;
-		if (name.length > 0) {
-			this.props.onCreate(name);
+		let text = this.textInput.value;
+		if (text.length > 0) {
+			this.props.onCreate(text);
 		}
-		this.nameInput.value = "";
+		this.textInput.value = "";
 		this.handleChange();
 	}
 
 	handleChange() {
-		let nameEmpty = !this.nameInput.value.length > 0;
+		let nameEmpty = !this.textInput.value.length > 0;
 		if (nameEmpty === !this.state.nameEmpty) {
 			this.setState({
 				nameEmpty: nameEmpty

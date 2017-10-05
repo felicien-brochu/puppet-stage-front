@@ -3,7 +3,7 @@ import 'react-s-alert/dist/s-alert-default.css';
 import 'react-s-alert/dist/s-alert-css-effects/stackslide.css';
 
 var alert = {
-	infoAlert(message, conf) {
+	infoAlert(message, conf = {}) {
 		let configuration = Object.assign({
 			position: 'top-right',
 			effect: 'stackslide'
@@ -11,7 +11,7 @@ var alert = {
 		Alert.info(message, configuration);
 	},
 
-	successAlert(message, conf) {
+	successAlert(message, conf = {}) {
 		let configuration = Object.assign({
 			position: 'top-right',
 			effect: 'stackslide'
@@ -19,7 +19,7 @@ var alert = {
 		Alert.success(message, configuration);
 	},
 
-	warningAlert(message, conf) {
+	warningAlert(message, conf = {}) {
 		let configuration = Object.assign({
 			position: 'top-right',
 			effect: 'stackslide'
@@ -27,7 +27,7 @@ var alert = {
 		Alert.warning(message, configuration);
 	},
 
-	errorAlert(message, conf) {
+	errorAlert(message, conf = {}) {
 		let configuration = Object.assign({
 			position: 'top-right',
 			effect: 'stackslide',

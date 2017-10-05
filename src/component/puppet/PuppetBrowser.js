@@ -7,8 +7,8 @@ import {
 import TextCreator from '../base/TextCreator';
 import List from '../base/List';
 
-import fetchAPI from '../util/api'
-import alert from '../util/alert'
+import fetchAPI from '../../util/api'
+import alert from '../../util/alert'
 
 export default class PuppetBrowser extends React.Component {
 
