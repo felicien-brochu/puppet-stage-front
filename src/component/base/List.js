@@ -5,7 +5,7 @@ import classNames from 'classnames';
 export default class List extends React.Component {
 
 	static propTypes = {
-		list: PropTypes.array.isRequired,
+		list: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired,
 		itemValueKey: PropTypes.string.isRequired,
 		itemKeyKey: PropTypes.string.isRequired,
 		selectedItem: PropTypes.object,
@@ -52,8 +52,8 @@ export default class List extends React.Component {
 	}
 
 	renderItems() {
-		return this.props.list.map((item) => {
-			return this.renderItem(item);
+		return Object.entries(this.props.list).map((entry) => {
+			return this.renderItem(entry[1]);
 		});
 	}
 
@@ -62,10 +62,10 @@ export default class List extends React.Component {
 		if (typeof this.props.onSelect === 'function') {
 			let selectedItem;
 
-			this.props.list.forEach(
-				(item) => {
-					if (this.getKey(item) === key) {
-						selectedItem = item;
+			Object.entries(this.props.list).forEach(
+				(entry) => {
+					if (this.getKey(entry[1]) === key) {
+						selectedItem = entry[1];
 						return false;
 					}
 				});

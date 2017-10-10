@@ -75,7 +75,7 @@ export default class PuppetBrowser extends React.Component {
 			method: 'PUT',
 			body: JSON.stringify({
 				name: name,
-				boards: []
+				boards: {}
 			}),
 		}, this.handleCreatePuppetSuccess.bind(this), null, "Error creating puppet:")
 	}
