@@ -34,7 +34,7 @@ export default class PuppetBrowser extends React.Component {
 		}
 
 		return (
-			<div className="puppets-editor">
+			<div className="browser">
 				<h3>Puppets</h3>
 				<TextCreator onCreate={this.handleCreatePuppet}/>
 				<List
@@ -119,18 +119,20 @@ export default class PuppetBrowser extends React.Component {
 	handleRemoveClick() {
 		let puppet = this.state.selectedPuppet;
 		if (puppet) {
-			alert.warningAlert("Do you really want to delete \"" + puppet.name + "\" puppet ?<br /><button onClick=\"handleRemovePuppet('" + puppet + "')\">OK</button>", {
-				html: true,
-				timeout: 'none'
-			})
+			let confirmed = window.confirm("Do you really want to delete \"" + puppet.name + "\" puppet ?");
+			if (confirmed) {
+				this.handleRemovePuppet(puppet);
+			}
 		}
 	}
 
 	handleRemovePuppet(puppet) {
 		console.log("Remove puppet: " + puppet.name);
 		fetchAPI("/puppet/" + puppet.id, {
-			method: 'DELETE',
-		}, this.handleRemovePuppetSuccess.bind(this), null, "Error deleting puppet:")
+				method: 'DELETE',
+			}, this.handleRemovePuppetSuccess.bind(this),
+			null,
+			"Error deleting puppet:")
 	}
 
 	handleRemovePuppetSuccess(puppet) {
