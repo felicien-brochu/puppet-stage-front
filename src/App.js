@@ -7,6 +7,7 @@ import {
 
 import Home from './component/Home';
 import PuppetEditor from './component/PuppetEditor';
+import StageEditor from './component/StageEditor';
 
 export default class App extends React.Component {
 	render() {
@@ -14,6 +15,7 @@ export default class App extends React.Component {
 			<Switch>
 				<Route exact path="/" component={Home}/>
 				<Route path="/puppet/:id" component={PuppetEditor}/>
+				<Route path="/stage/:id" component={StageEditor}/>
 			</Switch>
 		);
 	}
