@@ -1,4 +1,3 @@
-
 .number-input-container {
 	display: inline-block;
 	position: relative;
@@ -20,9 +19,7 @@
 		height: 100%;
 		background: none;
 		position: absolute;
-		padding: 0.2em;
-		padding-left: 0.4em;
-		padding-right: 0.4em;
+		padding: 0.2em 0.4em;
 		@include border-radius(0.2em);
 	}
 
@@ -43,10 +40,10 @@
 		&:focus {
 			color: black;
 			background-color: white;
-			-moz-box-shadow: inset 0px 0px 2px 0px $accent-color;
-			-webkit-box-shadow: inset 0px 0px 2px 0px $accent-color;
-			-o-box-shadow: inset 0px 0px 2px 0px $accent-color;
-			box-shadow: inset 0px 0px 2px 0px $accent-color;
+			-moz-box-shadow: inset 0 0 2px 0 $accent-color;
+			-webkit-box-shadow: inset 0 0 2px 0 $accent-color;
+			-o-box-shadow: inset 0 0 2px 0 $accent-color;
+			box-shadow: inset 0 0 2px 0 $accent-color;
 			filter:progid:DXImageTransform.Microsoft.Shadow(color=$accent-color, Direction=NaN, Strength=2);
 		}
 

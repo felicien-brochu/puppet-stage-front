@@ -1,11 +1,11 @@
 @import 'const';
-@import 'NumberInput';
-@import 'List';
-@import 'Browser';
-@import 'TextCreator';
-
-@import 'PuppetEditor';
-@import 'StageEditor';
+@import 'base/NumberInput';
+@import 'base/List';
+@import 'base/TextCreator';
+@import 'base/SplitPane';
+@import 'home/Browser';
+@import 'puppet/PuppetEditor';
+@import 'stage/StageEditor';
 
 body {
 	font-family: Arial;
@@ -15,9 +15,10 @@ body {
 	margin: 0;
 }
 
-button, input[type=submit] {
+button,
+input[type=submit] {
 	margin: 0 0.4em;
-	padding: 0.2em 0.8em 0.3em 0.8em;
+	padding: 0.2em 0.8em 0.3em;
 	background-color: $background-color;
 	color: $primary-color;
 	border-style: solid;
@@ -35,19 +36,20 @@ button, input[type=submit] {
 	}
 }
 
-input[type=text], input[type=number] {
+input[type=number],
+input[type=text] {
 	color: black;
 	background-color: white;
-	padding: 0.2em 0.8em 0.3em 0.8em;
+	padding: 0.2em 0.8em 0.3em;
 	border: none;
 	box-shadow: none;
 	@include border-radius(0.2em);
 
 	&:focus {
-		-moz-box-shadow: inset 0px 0px 4px 0px $accent-color;
-		-webkit-box-shadow: inset 0px 0px 4px 0px $accent-color;
-		-o-box-shadow: inset 0px 0px 4px 0px $accent-color;
-		box-shadow: inset 0px 0px 4px 0px $accent-color;
+		-moz-box-shadow: inset 0 0 4px 0 $accent-color;
+		-webkit-box-shadow: inset 0 0 4px 0 $accent-color;
+		-o-box-shadow: inset 0 0 4px 0 $accent-color;
+		box-shadow: inset 0 0 4px 0 $accent-color;
 		filter:progid:DXImageTransform.Microsoft.Shadow(color=$accent-color, Direction=NaN, Strength=4);
 	}
 }

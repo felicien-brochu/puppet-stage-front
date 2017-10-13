@@ -1,6 +1,6 @@
 import React from 'react';
-import PuppetBrowser from './home/PuppetBrowser'
-import StageBrowser from './home/StageBrowser'
+import PuppetBrowser from './PuppetBrowser'
+import StageBrowser from './StageBrowser'
 
 export default class Home extends React.Component {
 

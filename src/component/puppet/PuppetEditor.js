@@ -1,12 +1,12 @@
 import React from 'react';
 import Alert from 'react-s-alert';
 
-import List from './base/List';
-import TextCreator from './base/TextCreator';
-import ServoEditor from './puppet/ServoEditor';
+import List from '../base/List';
+import TextCreator from '../base/TextCreator';
+import ServoEditor from './ServoEditor';
 
-import fetchAPI from '../util/api';
-import alert from '../util/alert';
+import fetchAPI from '../../util/api';
+import alert from '../../util/alert';
 
 export default class PuppetEditor extends React.Component {
 

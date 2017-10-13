@@ -1,0 +1,12 @@
+@import 'SequenceEditor';
+
+.stage-editor {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+
+	.top-panel {
+		height: 100%;
+		background-color: $background-color;
+	}
+}

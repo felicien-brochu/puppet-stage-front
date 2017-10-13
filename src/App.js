@@ -5,9 +5,9 @@ import {
 	Switch
 } from 'react-router-dom'
 
-import Home from './component/Home';
-import PuppetEditor from './component/PuppetEditor';
-import StageEditor from './component/StageEditor';
+import Home from './component/home/Home';
+import PuppetEditor from './component/puppet/PuppetEditor';
+import StageEditor from './component/stage/StageEditor';
 
 export default class App extends React.Component {
 	render() {

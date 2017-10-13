@@ -6,22 +6,20 @@ $deep-background-color: #161616;
 $background-color: #232323;
 $active-background-color: #303030;
 $selected-background-color: #474747;
-
 @mixin border-radius($radius) {
 	-webkit-border-radius: $radius;
 	-moz-border-radius: $radius;
 	-ms-border-radius: $radius;
 	border-radius: $radius;
 }
-
 @mixin center-panel {
-		background-color: $background-color;
-		padding: 1.7em;
-		margin: 2em auto;
-		max-width: 900px;
-		@include border-radius(0.3em);
+	background-color: $background-color;
+	padding: 1.7em;
+	margin: 2em auto;
+	max-width: 900px;
+	@include border-radius(0.3em);
 
-		h3 {
-			margin-top: 0;
-		}
+	h3 {
+		margin-top: 0;
+	}
 }
