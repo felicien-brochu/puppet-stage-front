@@ -1,5 +1,5 @@
 import React from 'react';
-import Alert from 'react-s-alert'
+import PropTypes from 'prop-types'
 import {
 	Redirect
 } from 'react-router-dom'
@@ -11,21 +11,19 @@ import fetchAPI from '../../util/api'
 import alert from '../../util/alert'
 
 export default class StageBrowser extends React.Component {
+	static propTypes = {
+		onCreate: PropTypes.func,
+	}
 
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			stages: [],
 			selectedStage: null,
 			redirectTo: null,
 		}
 
 		this.handleCreateStage = this.handleCreateStage.bind(this)
-	}
-
-	componentWillMount() {
-		this.fetchStages();
 	}
 
 	render() {
@@ -38,7 +36,7 @@ export default class StageBrowser extends React.Component {
 				<h3>Stages</h3>
 				<TextCreator onCreate={this.handleCreateStage}/>
 				<List
-					list={this.state.stages}
+					list={this.props.stages}
 					itemKeyKey="id"
 					itemValueKey="name"
 					selectedItem={this.state.selectedStage}
@@ -63,43 +61,14 @@ export default class StageBrowser extends React.Component {
 					disabled={this.state.selectedStage ? false : true}>
 					Duplicate
 				</button>
-
-				<Alert stack={true} timeout={3000} />
 			</div>
 		);
 	}
 
 	handleCreateStage(name) {
-		console.log("Create stage: " + name);
-		fetchAPI("/stage", {
-			method: 'PUT',
-			body: JSON.stringify({
-				name: name,
-				boards: {}
-			}),
-		}, this.handleCreateStageSuccess.bind(this), null, "Error creating stage:")
-	}
-
-	handleCreateStageSuccess(stage) {
-		console.log("Stage Created");
-		console.log(stage);
-		alert.successAlert("Stage successfully created: " + JSON.stringify(stage));
-
-		let stages = this.state.stages.slice(0);
-		stages.push(stage);
-		this.setState({
-			stages: stages
-		})
-	}
-
-	fetchStages() {
-		fetchAPI("/stages", {}, this.handleStagesRetrieved.bind(this), null, "Error retrieving stages:")
-	}
-
-	handleStagesRetrieved(stages) {
-		this.setState({
-			stages: stages
-		});
+		if (typeof this.props.onCreate === 'function') {
+			this.props.onCreate(name);
+		}
 	}
 
 	handleSelect(stage) {

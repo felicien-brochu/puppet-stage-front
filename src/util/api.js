@@ -5,13 +5,14 @@ let host = "http://localhost:8080"
 function fetchAPI(path, conf, onSuccess, onError, errorMessage = "Error: ") {
 	conf.mode = 'cors';
 	let completePath = host + path;
-	errorMessage += "(" + completePath + ") ";
+	let method = conf.method ? conf.method : "GET"
+	errorMessage += ` ${method}(${completePath})`;
 	fetch(completePath, conf)
 		.then((response) => {
 			if (response.ok) {
 				response.json()
 					.then((object) => {
-						if (onSuccess) {
+						if (typeof onSuccess === 'function') {
 							onSuccess(object);
 						}
 					});
@@ -20,7 +21,7 @@ function fetchAPI(path, conf, onSuccess, onError, errorMessage = "Error: ") {
 				console.log(response);
 
 				let preventDefault = false;
-				if (onError) {
+				if (typeof onError === 'function') {
 					preventDefault = onError(response) === false;
 				}
 
@@ -47,3 +48,7 @@ function fetchAPI(path, conf, onSuccess, onError, errorMessage = "Error: ") {
 };
 
 export default fetchAPI;
+export {
+	fetchAPI,
+	host
+}

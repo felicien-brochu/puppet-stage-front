@@ -1,5 +1,5 @@
 import React from 'react';
-import Alert from 'react-s-alert'
+import PropTypes from 'prop-types'
 import {
 	Redirect
 } from 'react-router-dom'
@@ -11,6 +11,10 @@ import fetchAPI from '../../util/api'
 import alert from '../../util/alert'
 
 export default class PuppetBrowser extends React.Component {
+
+	static propTypes = {
+		onSelect: PropTypes.func,
+	}
 
 	constructor(props) {
 		super(props);
@@ -63,8 +67,6 @@ export default class PuppetBrowser extends React.Component {
 					disabled={this.state.selectedPuppet ? false : true}>
 					Duplicate
 				</button>
-
-				<Alert stack={true} timeout={3000} />
 			</div>
 		);
 	}
@@ -103,6 +105,10 @@ export default class PuppetBrowser extends React.Component {
 	}
 
 	handleSelect(puppet) {
+		if (typeof this.props.onSelect === 'function') {
+			this.props.onSelect(puppet)
+		}
+
 		this.setState({
 			selectedPuppet: puppet
 		})

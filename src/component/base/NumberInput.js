@@ -28,6 +28,12 @@ export default class NumberInput extends React.Component {
 		}
 	}
 
+	componentWillReceiveProps(nextProps) {
+		this.setState({
+			value: nextProps.defaultValue
+		})
+	}
+
 	render() {
 		const inputClasses = classNames('number-input', {
 			'editing': this.state.editing === 'text',
@@ -57,12 +63,6 @@ export default class NumberInput extends React.Component {
 				/>
 			</div>
 		);
-	}
-
-	componentWillReceiveProps(nextProps) {
-		this.setState({
-			value: nextProps.defaultValue
-		})
 	}
 
 	handleChange(e) {

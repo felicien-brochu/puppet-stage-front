@@ -25,31 +25,5 @@
 		display: inline-block;
 		vertical-align: top;
 		width: 15em;
-
-		.value-panel {
-			background-color: $background-color;
-
-			.row {
-				background-color: $active-background-color;
-				font-size: 0.9em;
-				padding: 0.3em 1em;
-				margin-bottom: 1px;
-
-				&:last-child {
-					padding-bottom: 0.3em;
-					margin-bottom: 0;
-				}
-
-				.number-input-container {
-					margin-left: 0.7em;
-					font-size: 0.75em;
-					vertical-align: baseline;
-
-					.number-input {
-						vertical-align: top;
-					}
-				}
-			}
-		}
 	}
 }

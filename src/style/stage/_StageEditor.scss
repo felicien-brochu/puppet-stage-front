@@ -9,4 +9,9 @@
 		height: 100%;
 		background-color: $background-color;
 	}
+
+	& > .loader {
+		display: inline;
+		margin: auto;
+	}
 }
