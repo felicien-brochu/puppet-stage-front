@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types'
 import model from '../../util/model'
-import SplitPane from 'react-split-pane'
-import SequenceList from './SequenceList'
-import Timeline from './Timeline'
+import SequenceList from './sequence-list/SequenceList'
+import Timeline from './timeline/Timeline'
 
 export default class SequenceEditor extends React.Component {
 
@@ -16,15 +15,17 @@ export default class SequenceEditor extends React.Component {
 	render() {
 		return (
 			<div className="sequence-editor">
-				<SplitPane minSize={400}>
-					<SequenceList
-						sequences={this.props.stage.sequences}
-						puppet={this.props.puppet}
-						onNewDriverSequence={(sequence) => this.handleNewDriverSequence(sequence)}
-						onDriverSequenceChange={(sequence) => this.handleDriverSequenceChange(sequence)}
-					/>
-					<Timeline/>
-				</SplitPane>
+				<SequenceList
+					sequences={this.props.stage.sequences}
+					puppet={this.props.puppet}
+					onNewDriverSequence={(sequence) => this.handleNewDriverSequence(sequence)}
+					onDriverSequenceChange={(sequence) => this.handleDriverSequenceChange(sequence)}
+					onNewBasicSequence={(sequence, driverSequence) => this.handleNewBasicSequence(sequence, driverSequence)}
+					onBasicSequenceChange={(sequence, driverSequence) => this.handleBasicSequenceChange(sequence, driverSequence)}
+				/>
+				<Timeline
+					stage={this.props.stage}
+				/>
 			</div>
 		);
 	}
@@ -42,8 +43,29 @@ export default class SequenceEditor extends React.Component {
 		let stage = {
 			...this.props.stage
 		}
-		let index = model.indexOfDriverSequence(this.props.stage.sequences, sequence.id)
+		let index = model.indexOfID(this.props.stage.sequences, sequence.id)
 		stage.sequences[index] = sequence
+
+		this.fireStageChange(stage)
+	}
+
+	handleNewBasicSequence(sequence, selectedDriverSequence) {
+		let stage = {
+			...this.props.stage
+		}
+		let driverSequence = model.itemOfID(stage.sequences, selectedDriverSequence.id)
+		driverSequence.sequences.push(sequence)
+
+		this.fireStageChange(stage)
+	}
+
+	handleBasicSequenceChange(sequence, selectedDriverSequence) {
+		let stage = {
+			...this.props.stage
+		}
+		let driverSequence = model.itemOfID(stage.sequences, selectedDriverSequence.id)
+		let index = model.indexOfID(driverSequence.sequences, sequence.id)
+		driverSequence.sequences[index] = sequence
 
 		this.fireStageChange(stage)
 	}

@@ -9,13 +9,18 @@
 @import 'home/Browser';
 @import 'puppet/PuppetEditor';
 @import 'stage/StageEditor';
+@import url( 'https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Inconsolata');
 
 body {
-	font-family: Arial;
+	font-family: 'Droid Sans Mono', 'Inconsolata', 'Courier', monospace;
 	font-weight: lighter;
 	color: $primary-color;
 	background-color: $deep-background-color;
 	margin: 0;
+
+	:not(input)::selection {
+		background: none;
+	}
 }
 
 button,

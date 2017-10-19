@@ -1,3 +1,4 @@
+// Colors
 $primary-color: #A6A6A6;
 $accent-color: #2D8CEB;
 $highlight-color: white;
@@ -6,6 +7,26 @@ $deep-background-color: #161616;
 $background-color: #232323;
 $active-background-color: #303030;
 $selected-background-color: #474747;
+$label-red: #B53838;
+$label-yellow: #E4D84C;
+$label-aqua: #A9CBC7;
+$label-pink: #E5BCC9;
+$label-lavender: #A9A9CA;
+$label-peach: #E7C19E;
+$label-seafoam: #B3C7B3;
+$label-blue: #677DE0;
+$label-green: #4AA44C;
+$label-purple: #8E2C9A;
+$label-orange: #E8920D;
+$label-brown: #7F452A;
+$label-fuchsia: #F46DD6;
+$label-cyan: #3DA2A5;
+$label-sandstone: #A89677;
+$label-darkgreen: #1E401E;
+
+.color-red {
+	fill: $label-red;
+}
 @mixin border-radius($radius) {
 	-webkit-border-radius: $radius;
 	-moz-border-radius: $radius;

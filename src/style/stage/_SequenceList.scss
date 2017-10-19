@@ -1,6 +1,49 @@
 .sequence-list {
 	height: 100%;
+	width: 500px;
 	background-color: $background-color;
+	cursor: default;
+
+	.sequence-list-action-bar {
+		position: relative;
+		height: 30px;
+		background-color: $active-background-color;
+		box-shadow: 0 1px 3px $deep-background-color;
+	}
+
+	.sequence-main-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		.driver-sequence-list-item {
+			.driver-sequence-title {
+				background-color: $background-color;
+				font-weight: bold;
+				font-size: 12px;
+				line-height: 17px;
+				padding: 4px 5px;
+			}
+
+			.basic-sequence-list {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+
+				.basic-sequence-list-item {
+					font-size: 12px;
+					line-height: 17px;
+					background-color: $active-background-color;
+					padding: 4px 5px;
+					border-bottom: solid 1px $background-color;
+
+					&:last-child {
+						border-bottom: none;
+					}
+				}
+			}
+		}
+	}
 
 	.react-contextmenu-wrapper {
 		height: 100%;

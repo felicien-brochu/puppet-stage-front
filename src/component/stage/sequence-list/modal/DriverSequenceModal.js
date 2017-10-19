@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import * as util from '../../../util/utils'
-import model from '../../../util/model'
-import Modal from '../../base/Modal'
+import * as util from '../../../../util/utils'
+import model from '../../../../util/model'
+import Modal from '../../../base/Modal'
 
 export default class DriverSequenceModal extends React.Component {
 	static propTypes = {
@@ -41,7 +41,7 @@ export default class DriverSequenceModal extends React.Component {
 				isOpen={this.props.isOpen}
 				onRequestClose={() => this.handleRequestClose()}>
 				<div className="top-bar">
-					<h3> New Driver Sequence</h3>
+					<h3>{this.props.sequence ? "Edit": "New"} Driver Sequence</h3>
 					<button
 						className="close-button modal-close-button"
 						onClick={() => this.handleRequestClose()}
@@ -94,9 +94,21 @@ export default class DriverSequenceModal extends React.Component {
 		}
 
 		let sequence = {
+			sequences: [],
+			expanded: true,
+		}
+		if (this.props.sequence) {
+			sequence = {
+				...this.props.sequence
+			}
+		}
+		sequence = {
+			...sequence,
 			servoID: servoID,
 			name: name,
 		}
+
+
 		if (typeof this.props.onConfirm === 'function') {
 			this.props.onConfirm(sequence);
 		}

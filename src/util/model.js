@@ -12,14 +12,36 @@ export default class Model {
 		return servos
 	}
 
-	static indexOfDriverSequence(sequences, sequenceID) {
+	static indexOfID(list, id) {
 		let index = -1
-		sequences.forEach((sequence, i) => {
-			if (sequence.id === sequenceID) {
+		list.forEach((item, i) => {
+			if (item.id === id) {
 				index = i
 				return false
 			}
 		})
 		return index
+	}
+
+	static itemOfID(list, id) {
+		let item = null
+		list.forEach((element) => {
+			if (element.id === id) {
+				item = element
+				return false
+			}
+		})
+		return item
+	}
+
+	static getBasicSequenceParent(driverSequences, basicSequence) {
+		for (let driverSequence of driverSequences) {
+			for (let sequence of driverSequence.sequences) {
+				if (sequence.id === basicSequence.id) {
+					return driverSequence
+				}
+			}
+		}
+		return null
 	}
 }
