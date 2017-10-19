@@ -45,27 +45,31 @@ export default class TimeRuler extends React.Component {
 			// Out of stage time markers
 			let x = timeline.paddingLeft + (0 - timeline.start) * scale
 
-			elements.push(
-				<rect
+			if (x > 0) {
+				elements.push(
+					<rect
 					className="ruler-out-time"
 					key={'out-time-before'}
 					x={0}
-					y={0}
+					y={-1}
 					width={x}
-					height={RULER_HEIGHT}
+					height={RULER_HEIGHT + 1}
 				/>)
+			}
 
 			x = timeline.paddingLeft + (timeline.duration - timeline.start) * scale
 
-			elements.push(
-				<rect
-					className="ruler-out-time"
-					key={'out-time-before'}
-					x={x}
-					y={0}
-					width={timeline.width - x + 30}
-					height={RULER_HEIGHT}
+			if (x < timeline.width) {
+				elements.push(
+					<rect
+						className="ruler-out-time"
+						key={'out-time-after'}
+						x={x}
+						y={-1}
+						width={timeline.width - x + 32}
+						height={RULER_HEIGHT + 1}
 					/>)
+			}
 
 			for (let i = Math.floor(timeline.start / unit.interval); i <= Math.ceil(timeline.end / unit.interval); i++) {
 				let t = i * unit.interval

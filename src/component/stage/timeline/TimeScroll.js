@@ -14,6 +14,21 @@ export default class TimeScroll extends React.Component {
 		onScrollX: PropTypes.func.isRequired,
 		onScrollY: PropTypes.func.isRequired,
 		onScrollScale: PropTypes.func.isRequired,
+		onScrollToT: PropTypes.func.isRequired,
+		timeline: PropTypes.shape({
+			paddingLeft: PropTypes.number.isRequired,
+			paddingRight: PropTypes.number.isRequired,
+			start: PropTypes.number.isRequired,
+			end: PropTypes.number.isRequired,
+			width: PropTypes.number.isRequired,
+			duration: PropTypes.number.isRequired,
+		}).isRequired,
+	}
+
+	constructor(props) {
+		super(props)
+
+		this.handleScrollToT = this.handleScrollToT.bind(this)
 	}
 
 	render() {
@@ -23,17 +38,43 @@ export default class TimeScroll extends React.Component {
 				onWheel={(e) => this.handleWheel(e)}
 			>
 				<div className="horizontal-pane">
-					{this.props.children}
+					<div
+						className="children-container"
+						ref="childrenContainer"
+					>
+						{this.props.children}
+					</div>
 					<VerticalScrollBar/>
 				</div>
-				<HorizontalScrollBar/>
+				<HorizontalScrollBar
+					contentSize={this.props.timeline.duration}
+					viewStart={this.props.timeline.start}
+					viewEnd={this.props.timeline.end}
+					onScroll={this.handleScrollToT}
+				/>
 			</div>
 		);
+	}
+
+	getScale() {
+		let {
+			paddingLeft,
+			paddingRight,
+			start,
+			end,
+			width
+		} = this.props.timeline
+		return (width - paddingLeft - paddingRight) / (end - start)
+	}
+
+	handleScrollToT(scrollTime) {
+		this.fireScrollToT(scrollTime)
 	}
 
 	handleWheel(e) {
 		let deltaX = e.deltaX
 		let deltaY = e.deltaY
+
 		if (e.deltaMode === DOM_DELTA_LINE) {
 			deltaX *= DELTA_LINE_PX
 			deltaY *= DELTA_LINE_PX
@@ -41,12 +82,19 @@ export default class TimeScroll extends React.Component {
 			deltaX *= DELTA_PAGE_PX
 			deltaY *= DELTA_PAGE_PX
 		}
+
 		if (deltaX !== 0) {
 			this.fireScrollX(deltaX)
 		}
+
 		if (deltaY !== 0) {
 			if (e.altKey || e.ctrlKey) {
-				this.fireScrollScale(deltaY)
+				let scale = deltaY < 0 ? -1 : 1
+				let rect = this.refs.childrenContainer.getBoundingClientRect()
+				this.fireScrollScale(scale, {
+					x: e.clientX - rect.x,
+					y: e.clientY - rect.y,
+				})
 			} else if (e.shiftKey) {
 				this.fireScrollX(deltaY)
 			} else {
@@ -54,6 +102,12 @@ export default class TimeScroll extends React.Component {
 			}
 		}
 		e.preventDefault()
+	}
+
+	fireScrollToT(x) {
+		if (typeof this.props.onScrollToT === 'function') {
+			this.props.onScrollToT(x)
+		}
 	}
 
 	fireScrollX(delta) {
@@ -68,9 +122,9 @@ export default class TimeScroll extends React.Component {
 		}
 	}
 
-	fireScrollScale(delta) {
+	fireScrollScale(delta, from) {
 		if (typeof this.props.onScrollScale === 'function') {
-			this.props.onScrollScale(delta)
+			this.props.onScrollScale(delta, from)
 		}
 	}
 };

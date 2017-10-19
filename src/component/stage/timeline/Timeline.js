@@ -10,6 +10,9 @@ import TimeScroll from './TimeScroll'
 const PADDING_LEFT = 16
 const PADDING_RIGHT = 16
 const SCROLL_BAR_WIDTH = 16
+const FRAME_TIME = 1e9 / 60
+const SCALE_MAX = 50 / FRAME_TIME // 50px by frame
+const SCALE_STEP = 70;
 
 export default class Timeline extends React.Component {
 
@@ -37,6 +40,7 @@ export default class Timeline extends React.Component {
 		this.handleScrollX = this.handleScrollX.bind(this)
 		this.handleScrollY = this.handleScrollY.bind(this)
 		this.handleScrollScale = this.handleScrollScale.bind(this)
+		this.handleScrollToT = this.handleScrollToT.bind(this)
 	}
 
 	render() {
@@ -46,20 +50,14 @@ export default class Timeline extends React.Component {
 				className="timeline"
 			ref="container">
 				<TimeRuler
-					timeline={{
-						paddingLeft: PADDING_LEFT,
-						paddingRight: PADDING_RIGHT,
-						start: this.state.startTime,
-						end: this.state.endTime,
-						width: this.state.viewWidth,
-						height: this.state.viewHeight,
-						duration: this.props.stage.duration,
-					}}
+					timeline={this.getViewState()}
 				/>
 				<TimeScroll
 					onScrollX={this.handleScrollX}
 					onScrollY={this.handleScrollY}
-					onScrollScale={this.handleScrollScale}>
+					onScrollScale={this.handleScrollScale}
+					onScrollToT={this.handleScrollToT}
+					timeline={this.getViewState()}>
 					{this.renderTimelineBody()}
 					<ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.handleResize(width, height)}/>
 				</TimeScroll>
@@ -67,32 +65,30 @@ export default class Timeline extends React.Component {
 		);
 	}
 
+	getViewState() {
+		return {
+			paddingLeft: PADDING_LEFT,
+			paddingRight: PADDING_RIGHT,
+			start: this.state.startTime,
+			end: this.state.endTime,
+			width: this.state.viewWidth,
+			height: this.state.viewHeight,
+			duration: this.props.stage.duration,
+		}
+	}
+
 	renderTimelineBody() {
 		if (this.props.graphMode) {
 			return (
 				<GraphTimeline
-					timeline={{
-						paddingLeft: PADDING_LEFT,
-						paddingRight: PADDING_RIGHT,
-						start: this.state.startTime,
-						end: this.state.endTime,
-						width: this.state.viewWidth,
-						height: this.state.viewHeight,
-					}}
+					timeline={this.getViewState()}
 					sequences={this.props.stage.sequences}
 				/>
 			)
 		} else {
 			return (
 				<SequenceTimeline
-					timeline={{
-						paddingLeft: PADDING_LEFT,
-						paddingRight: PADDING_RIGHT,
-						start: this.state.startTime,
-						end: this.state.endTime,
-						width: this.state.viewWidth,
-						height: this.state.viewHeight,
-					}}
+					timeline={this.getViewState()}
 					sequences={this.props.stage.sequences}
 				/>
 			)
@@ -107,7 +103,6 @@ export default class Timeline extends React.Component {
 	}
 
 	handleScrollX(delta) {
-		console.log("x:", delta)
 		let scale = this.getScale()
 		let deltaT = 1 / scale * delta
 		let startTime = this.state.startTime + deltaT;
@@ -126,17 +121,75 @@ export default class Timeline extends React.Component {
 		})
 	}
 
-	handleScrollY(delta) {
-		console.log("y:", delta)
+	handleScrollY(delta) {}
+
+	handleScrollScale(delta, from) {
+		let min = this.getMinScale()
+		let max = SCALE_MAX
+		let scale = this.getScale()
+
+		let rate = (scale - min) / (max - min)
+
+		let x = Math.sqrt(1 - Math.pow(rate - 1, 2))
+		x += -delta / SCALE_STEP
+		x = bound(x, 0, 1)
+
+		let newRate = -Math.sqrt(1 - Math.pow(x, 2)) + 1
+		let newScale = newRate * (max - min) + min
+		newScale = bound(newScale, min, max)
+
+		if (newScale !== scale) {
+			this.setScale(newScale, from.x)
+		}
 	}
 
-	handleScrollScale(delta) {
-		console.log("sc:", delta)
-
-
+	getMinScale() {
+		return (this.state.viewWidth - PADDING_LEFT - PADDING_RIGHT) / this.props.stage.duration
 	}
 
 	getScale() {
 		return (this.state.viewWidth - PADDING_LEFT - PADDING_RIGHT) / (this.state.endTime - this.state.startTime)
 	}
+
+	setScale(scale, from) {
+		let oldScale = this.getScale()
+		let fromT = this.state.startTime + 1 / oldScale * (from - PADDING_LEFT)
+
+		let start = oldScale * (this.state.startTime - fromT) / scale + fromT
+
+		this.moveTo(start, scale)
+	}
+
+	moveTo(start, scale) {
+		if (start < 0) {
+			start = 0
+		}
+
+		let end = start + 1 / scale * (this.state.viewWidth - PADDING_LEFT - PADDING_RIGHT)
+		if (end > this.props.stage.duration) {
+			start -= end - this.props.stage.duration
+			if (start < 0) {
+				start = 0
+			}
+			end = start + 1 / scale * (this.state.viewWidth - PADDING_LEFT - PADDING_RIGHT)
+		}
+
+		this.setState({
+			startTime: start,
+			endTime: end,
+		})
+	}
+
+	handleScrollToT(t) {
+		this.moveTo(t, this.getScale())
+	}
 };
+
+function bound(x, min, max) {
+	if (x < min) {
+		x = min
+	} else if (x > max) {
+		x = max
+	}
+	return x
+}

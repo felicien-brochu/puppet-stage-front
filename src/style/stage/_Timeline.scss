@@ -29,7 +29,7 @@
 			}
 
 			.ruler-out-time {
-				fill: $deep-background-color;
+				fill: $background-color;
 			}
 		}
 	}
@@ -49,6 +49,10 @@
 			flex-grow: 1;
 			display: flex;
 			flex-flow: row;
+
+			.children-container {
+				flex-grow: 1;
+			}
 
 			.vertical-scroll-bar {
 				height: 100%;
@@ -76,6 +80,10 @@
 				height: 14px;
 				margin: 1px;
 				@include border-radius(7px);
+			}
+
+			&[disabled] .horizontal-nub {
+				background-color: $background-color;
 			}
 		}
 
