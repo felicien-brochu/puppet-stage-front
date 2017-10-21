@@ -30,7 +30,7 @@
 					background-color: $background-color;
 					font-weight: bold;
 					font-size: 12px;
-					line-height: 17px;
+					line-height: 15px;
 					padding: 4px 5px;
 				}
 
@@ -45,10 +45,6 @@
 						background-color: $active-background-color;
 						padding: 4px 5px;
 						border-bottom: solid 1px $background-color;
-
-						&:last-child {
-							border-bottom: none;
-						}
 					}
 				}
 			}
@@ -57,5 +53,37 @@
 
 	.react-contextmenu-wrapper {
 		height: 100%;
+	}
+}
+
+.expand-button {
+	position: relative;
+	display: inline-block;
+	vertical-align: middle;
+	width: 14px;
+	height: 14px;
+	transform: rotate(-90deg);
+
+	input {
+		display: none;
+
+		&:checked + .arrow {
+			transform: rotate(90deg);
+		}
+	}
+
+	.arrow {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		transition: 0.4s;
+		transition-property: transform;
+		fill: $primary-color;
+
+		&:active {
+			fill: $accent-color;
+		}
 	}
 }

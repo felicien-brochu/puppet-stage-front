@@ -41,6 +41,7 @@ export default class Timeline extends React.Component {
 		this.handleScrollY = this.handleScrollY.bind(this)
 		this.handleScrollScale = this.handleScrollScale.bind(this)
 		this.handleScrollToT = this.handleScrollToT.bind(this)
+		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
 	}
 
 	render() {
@@ -48,21 +49,16 @@ export default class Timeline extends React.Component {
 		return (
 			<div
 				className="timeline"
-				ref="container"
-			>
-				<svg className="svg-defs">
-					<defs>
-						<filter id="noise" filterUnits="objectBoundingBox" x="0%" y="0%" width="100%" height="100%">
-							<feTurbulence type="fractalNoise" result="noisy" baseFrequency="0.9"/>
-							<feColorMatrix type="saturate" values="0"/>
-							<feBlend in="SourceGraphic" in2="noisy" mode="multiply"/>
-						</filter>
-					</defs>
-				</svg>
+			ref="container">
 
 				<TimeRuler
 					timeline={this.getViewState()}
-				/>
+					onCurrentTimeChange={this.handleCurrentTimeChange}/>
+
+				<TimeCursor
+					currentTime={this.state.currentTime}
+					timeline={this.getViewState()}/>
+
 				<TimeScroll
 					scrollY={this.props.scrollY}
 					onScrollX={this.handleScrollX}
@@ -71,14 +67,16 @@ export default class Timeline extends React.Component {
 					onScrollToT={this.handleScrollToT}
 					timeline={this.getViewState()}
 					onResize={(width, height) => this.handleResize(width, height)}>
+
 					{this.renderTimelineBody()}
+
 				</TimeScroll>
 			</div>
 		);
 	}
 
 	getViewState() {
-		return {
+		let viewState = {
 			paddingLeft: PADDING_LEFT,
 			paddingRight: PADDING_RIGHT,
 			start: this.state.startTime,
@@ -87,6 +85,9 @@ export default class Timeline extends React.Component {
 			height: this.state.viewHeight,
 			duration: this.props.stage.duration,
 		}
+
+		viewState.getScale = () => (viewState.width - viewState.paddingLeft - viewState.paddingRight) / (viewState.end - viewState.start)
+		return viewState
 	}
 
 	renderTimelineBody() {
@@ -198,6 +199,12 @@ export default class Timeline extends React.Component {
 
 	handleScrollToT(t) {
 		this.moveTo(t, this.getScale())
+	}
+
+	handleCurrentTimeChange(time) {
+		this.setState({
+			currentTime: time,
+		})
 	}
 };
 

@@ -2,6 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import SequenceBox from './SequenceBox'
 
+const DRIVER_SEQUENCE_BOX_HEIGHT = 23
+const BASIC_SEQUENCE_BOX_HEIGHT = 26
+
 export default class TimelineDriverSequence extends React.Component {
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
@@ -27,6 +30,7 @@ export default class TimelineDriverSequence extends React.Component {
 					timeline={this.props.timeline}
 					start={this.computeStart()}
 					end={this.computeEnd()}
+					height={DRIVER_SEQUENCE_BOX_HEIGHT}
 					renderTag="div"
 					disabled
 				/>
@@ -80,6 +84,7 @@ export default class TimelineDriverSequence extends React.Component {
 				timeline={this.props.timeline}
 				start={basicSequence.start}
 				end={basicSequence.start + basicSequence.duration}
+				height={BASIC_SEQUENCE_BOX_HEIGHT}
 				renderTag="li"
 			/>
 		)

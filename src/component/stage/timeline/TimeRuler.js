@@ -8,6 +8,7 @@ const RULER_HEIGHT = 30
 
 export default class TimeRuler extends React.Component {
 	static propTypes = {
+		onCurrentTimeChange: PropTypes.func.isRequired,
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
 			paddingRight: PropTypes.number.isRequired,
@@ -18,10 +19,20 @@ export default class TimeRuler extends React.Component {
 		}).isRequired,
 	}
 
+	constructor(props) {
+		super(props)
+
+		this.handleMouseDown = this.handleMouseDown.bind(this)
+		this.handleMouseMove = this.handleMouseMove.bind(this)
+		this.handleMouseUpWindow = this.handleMouseUpWindow.bind(this)
+	}
+
 	render() {
 		return (
 			<div
-			className="time-ruler">
+				className="time-ruler"
+				ref="container"
+				onMouseDown={this.handleMouseDown}>
 				<svg>
 					{this.renderElements()}
 				</svg>
@@ -48,13 +59,13 @@ export default class TimeRuler extends React.Component {
 			if (x > 0) {
 				elements.push(
 					<rect
-					className="ruler-out-time"
-					key={'out-time-before'}
-					x={0}
-					y={-1}
-					width={x}
-					height={RULER_HEIGHT + 1}
-				/>)
+						className="ruler-out-time"
+						key={'out-time-before'}
+						x={0}
+						y={-1}
+						width={x}
+						height={RULER_HEIGHT + 1}
+					/>)
 			}
 
 			x = timeline.paddingLeft + (timeline.duration - timeline.start) * scale
@@ -210,5 +221,39 @@ export default class TimeRuler extends React.Component {
 			}
 		}
 		return unit;
+	}
+
+	handleMouseDown(e) {
+		let timeline = this.props.timeline
+		let x = e.clientX - this.refs.container.getBoundingClientRect().x
+		let t = (x - timeline.paddingLeft) / timeline.getScale() + timeline.start
+
+		window.addEventListener('mouseup', this.handleMouseUpWindow)
+		window.addEventListener('mousemove', this.handleMouseMove)
+		this.dragging = true
+
+		this.fireCurrentTimeChange(t)
+	}
+
+	handleMouseUpWindow() {
+		this.dragging = false
+		window.removeEventListener('mouseup', this.handleMouseUpWindow)
+		window.removeEventListener('mousemove', this.handleMouseMove)
+	}
+
+	handleMouseMove(e) {
+		if (this.dragging) {
+			let timeline = this.props.timeline
+			let x = e.clientX - this.refs.container.getBoundingClientRect().x
+			let t = (x - timeline.paddingLeft) / timeline.getScale() + timeline.start
+
+			this.fireCurrentTimeChange(t)
+		}
+	}
+
+	fireCurrentTimeChange(time) {
+		if (typeof this.props.onCurrentTimeChange === 'function') {
+			this.props.onCurrentTimeChange(time)
+		}
 	}
 };

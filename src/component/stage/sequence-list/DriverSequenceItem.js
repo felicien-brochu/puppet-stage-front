@@ -4,12 +4,14 @@ import {
 	ContextMenuTrigger
 } from 'react-contextmenu'
 import BasicSequenceItem from './BasicSequenceItem'
+import ExpandButton from './ExpandButton'
 
 
 export default class DriverSequenceItem extends React.Component {
 
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
+		onExpand: PropTypes.func,
 	}
 
 	render() {
@@ -27,6 +29,9 @@ export default class DriverSequenceItem extends React.Component {
 				renderTag="li"
 			>
 				<div className="driver-sequence-title">
+					<ExpandButton
+						expanded={this.props.sequence.expanded}
+						onExpand={(expanded) => this.handleExpand(expanded)}/>
 					{this.props.sequence.name}
 				</div>
 				{this.renderBasicSequenceList()}
@@ -52,5 +57,11 @@ export default class DriverSequenceItem extends React.Component {
 				key={basicSequence.id}
 				sequence={basicSequence}/>
 		)
+	}
+
+	handleExpand(expanded) {
+		if (typeof this.props.onExpand === 'function') {
+			this.props.onExpand(this.props.sequence, expanded)
+		}
 	}
 }

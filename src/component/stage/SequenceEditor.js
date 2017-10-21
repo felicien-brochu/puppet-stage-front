@@ -23,6 +23,17 @@ export default class SequenceEditor extends React.Component {
 	render() {
 		return (
 			<div className="sequence-editor">
+				<svg className="svg-defs">
+					<defs>
+						<filter id="noise-effect" filterUnits="objectBoundingBox" x="0%" y="0%" width="100%" height="100%">
+							<feTurbulence type="fractalNoise" result="noisy" baseFrequency="0.9"/>
+							<feColorMatrix type="saturate" values="0"/>
+							<feBlend in="SourceGraphic" in2="noisy" mode="multiply"/>
+						</filter>
+						<polygon id="expand-button-shape" points="28,26 50,78 72,26"/>
+						<polygon id="time-cursor-shape" points="-7,12 8,12 8,21 2,30 1,30 1,21 4,21 4,20 -3,20 -3,21 0,21 0,30 -1,30 -7,21"/>
+					</defs>
+				</svg>
 				<SequenceList
 					sequences={this.props.stage.sequences}
 					puppet={this.props.puppet}

@@ -49,8 +49,9 @@ export default class SequenceList extends React.Component {
 			},
 		}
 
-		this.handleContextMenuClick = this.handleContextMenuClick.bind(this);
-		this.createDriverSequence = this.createDriverSequence.bind(this);
+		this.handleContextMenuClick = this.handleContextMenuClick.bind(this)
+		this.handleDriverSequenceExpand = this.handleDriverSequenceExpand.bind(this)
+		this.createDriverSequence = this.createDriverSequence.bind(this)
 	}
 
 	render() {
@@ -119,7 +120,7 @@ export default class SequenceList extends React.Component {
 					top: -this.props.scrollY,
 				}}
 			>
-				{this.props.sequences.map(this.renderItem)}
+				{this.props.sequences.map(this.renderItem.bind(this))}
 			</ul>
 		)
 	}
@@ -128,7 +129,8 @@ export default class SequenceList extends React.Component {
 		return (
 			<DriverSequenceItem
 				key={sequence.id}
-				sequence={sequence}/>
+				sequence={sequence}
+				onExpand={this.handleDriverSequenceExpand}/>
 		)
 	}
 
@@ -279,5 +281,12 @@ export default class SequenceList extends React.Component {
 				driverSequence: null,
 			}
 		})
+	}
+
+	handleDriverSequenceExpand(sequence, expanded) {
+		sequence.expanded = expanded
+		if (typeof this.props.onDriverSequenceChange === 'function') {
+			this.props.onDriverSequenceChange(sequence)
+		}
 	}
 };

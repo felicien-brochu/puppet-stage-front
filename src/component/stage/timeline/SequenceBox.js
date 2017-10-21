@@ -2,8 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 
-const BOX_HEIGHT = 24
-
 export default class SequenceBox extends React.Component {
 	static propTypes = {
 		timeline: PropTypes.shape({
@@ -19,6 +17,7 @@ export default class SequenceBox extends React.Component {
 			PropTypes.node,
 			PropTypes.func
 		]),
+		height: PropTypes.number.isRequired,
 		disabled: PropTypes.bool,
 		attributes: PropTypes.object,
 	}
@@ -38,14 +37,13 @@ export default class SequenceBox extends React.Component {
 			attributes,
 		} = this.props
 
-		let refWidth = timeline.width - timeline.paddingLeft - timeline.paddingRight
-		let scale = refWidth / (timeline.end - timeline.start)
+		let scale = timeline.getScale()
 		let marginLeft = timeline.paddingLeft + ((start - timeline.start) * scale)
 		let width = (end - start) * scale
 
 		let box = (
 			<svg className="sequence-box-box">
-				<rect filter="url(#noise)" x={marginLeft} y={0} width={width} height={BOX_HEIGHT}/>
+				<rect filter="url(#noise-effect)" x={marginLeft} y={0} width={width} height={this.props.height-1}/>
 			</svg>
 		)
 

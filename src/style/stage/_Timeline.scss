@@ -1,5 +1,6 @@
 .timeline {
 	height: 100%;
+	position: relative;
 	background-color: $background-color;
 	display: flex;
 	flex-flow: column;
@@ -11,6 +12,7 @@
 		z-index: 50;
 		background-color: $active-background-color;
 		box-shadow: 0 1px 3px #161616;
+		cursor: default;
 
 		svg {
 			width: 100%;
@@ -35,9 +37,12 @@
 	}
 
 	.time-cursor {
+		position: absolute;
+		z-index: 150;
 		width: 100%;
 		height: 100%;
-		position: absolute;
+		fill: $accent-color;
+		pointer-events: none;
 	}
 
 	.time-scroll {
@@ -108,18 +113,28 @@
 			background-color: $background-color;
 
 			.timeline-driver-sequence {
-				.sequence-box {
-					height: 24px;
-					margin-bottom: 1px;
+				.timeline-driver-sequence-box {
+					height: 23px;
+					// margin-bottom: 1px;
+					svg.sequence-box-box {
+						width: 100%;
+						height: 23px;
+
+						rect {
+							fill: $label-lavender;
+						}
+					}
+				}
+
+				.timeline-basic-sequence {
+					height: 26px;
 
 					svg.sequence-box-box {
 						width: 100%;
-						height: 24px;
+						height: 26px;
 
 						rect {
 							fill: $label-aqua;
-							stroke-width: 0.5px;
-							stroke: $primary-color;
 						}
 					}
 				}
