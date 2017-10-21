@@ -41,48 +41,60 @@
 	}
 
 	.time-scroll {
+		position: relative;
 		flex-grow: 1;
 		display: flex;
 		flex-flow: column;
+
+		.children-container {
+			flex-grow: 1;
+			position: absolute;
+		}
 
 		.horizontal-pane {
 			flex-grow: 1;
 			display: flex;
 			flex-flow: row;
-
-			.children-container {
-				flex-grow: 1;
-			}
-
-			.vertical-scroll-bar {
-				height: 100%;
-				width: 16px;
-				background-color: $deep-background-color;
-
-				.vertical-nub {
-					background-color: $active-background-color;
-					width: 14px;
-					height: 80px;
-					margin: 1px;
-					@include border-radius(7px);
-				}
-			}
+			position: relative;
 		}
 
-		.horizontal-scroll-bar {
-			height: 16px;
-			margin-right: 16px;
+		.scroll-bar {
 			background-color: $deep-background-color;
 
-			.horizontal-nub {
+			.scroll-bar-nub {
+				position: relative;
 				background-color: $active-background-color;
-				width: 80px;
-				height: 14px;
-				margin: 1px;
 				@include border-radius(7px);
 			}
 
-			&[disabled] .horizontal-nub {
+			&.vertical {
+				position: absolute;
+				right: 0;
+				height: 100%;
+				width: 16px;
+
+				.scroll-bar-nub {
+					width: 14px;
+					height: 100%;
+					min-height: 20px;
+					margin: 0 1px;
+				}
+			}
+
+			&.horizontal {
+				position: relative;
+				height: 16px;
+				margin-right: 16px;
+
+				.scroll-bar-nub {
+					width: 100%;
+					height: 14px;
+					min-width: 20px;
+					margin: 1px 0;
+				}
+			}
+
+			&[disabled] .scroll-bar-nub {
 				background-color: $background-color;
 			}
 		}

@@ -25,14 +25,14 @@ export default class StageEditor extends React.Component {
 		if (this.state.puppet && this.state.stage) {
 			return (
 				<div className="stage-editor">
-					<SplitPane split="horizontal" primary="second" defaultSize="80vh" minSize={100}>
-						<div className="top-panel"/>
-						<SequenceEditor
-							stage={this.state.stage}
-							puppet={this.state.puppet}
-							onStageChange={(stage) => this.handleStageChange(stage)}
-						/>
-					</SplitPane>
+					{/* <SplitPane split="horizontal" primary="second" defaultSize="80vh" minSize={100}>
+					<div className="top-panel"/> */}
+					<SequenceEditor
+						stage={this.state.stage}
+						puppet={this.state.puppet}
+						onStageChange={(stage) => this.handleStageChange(stage)}
+					/>
+					{/* </SplitPane> */}
 
 					<Alert stack={true} timeout={3000} />
 				</div>

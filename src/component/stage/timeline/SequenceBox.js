@@ -45,7 +45,7 @@ export default class SequenceBox extends React.Component {
 
 		let box = (
 			<svg className="sequence-box-box">
-				<rect x={marginLeft} y={0} width={width} height={BOX_HEIGHT}/>
+				<rect filter="url(#noise)" x={marginLeft} y={0} width={width} height={BOX_HEIGHT}/>
 			</svg>
 		)
 

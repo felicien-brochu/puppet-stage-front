@@ -17,6 +17,7 @@ body {
 	color: $primary-color;
 	background-color: $deep-background-color;
 	margin: 0;
+	overflow: hidden;
 
 	:not(input)::selection {
 		background: none;
@@ -107,4 +108,10 @@ button.close-button {
 			}
 		}
 	}
+}
+
+svg.svg-defs {
+	width: 0;
+	height: 0;
+	position: absolute;
 }

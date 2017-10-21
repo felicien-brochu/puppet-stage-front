@@ -28,6 +28,7 @@ export default class SequenceList extends React.Component {
 		onDriverSequenceChange: PropTypes.func,
 		onNewBasicSequence: PropTypes.func,
 		onBasicSequenceChange: PropTypes.func,
+		scrollY: PropTypes.number.isRequired,
 	}
 
 	constructor(props) {
@@ -62,7 +63,9 @@ export default class SequenceList extends React.Component {
 				renderTag="div"
 			>
 				<SequenceListActionBar/>
-				{this.renderList()}
+				<div className="main-list-container">
+					{this.renderList()}
+				</div>
 
 				<ContextMenu id="sequence-list-context-menu">
 					<MenuItem
@@ -110,7 +113,12 @@ export default class SequenceList extends React.Component {
 			return null
 		}
 		return (
-			<ul className="sequence-main-list">
+			<ul
+				className="sequence-main-list"
+				style={{
+					top: -this.props.scrollY,
+				}}
+			>
 				{this.props.sequences.map(this.renderItem)}
 			</ul>
 		)
@@ -126,24 +134,28 @@ export default class SequenceList extends React.Component {
 
 	renderModals() {
 		let modals = []
-		modals.push(<DriverSequenceModal
-			key="DriverSequenceModal"
-			isOpen={this.state.driverSequenceModal.show}
-			boards={this.props.puppet.boards}
-			sequence={this.state.driverSequenceModal.sequence}
-			onConfirm={(sequence) => this.handleCreateUpdateDriverSequence(sequence)}
-			onCancel={() => this.handleCancelDriverSequenceModal()}
-								/>)
+		modals.push(
+			<DriverSequenceModal
+				key="DriverSequenceModal"
+				isOpen={this.state.driverSequenceModal.show}
+				boards={this.props.puppet.boards}
+				sequence={this.state.driverSequenceModal.sequence}
+				onConfirm={(sequence) => this.handleCreateUpdateDriverSequence(sequence)}
+				onCancel={() => this.handleCancelDriverSequenceModal()}
+			/>
+		)
 
 		if (this.state.basicSequenceModal.driverSequence) {
-			modals.push(<BasicSequenceModal
-				key="BasicSequenceModal"
-				isOpen={this.state.basicSequenceModal.show}
-				sequence={this.state.basicSequenceModal.sequence}
-				driverSequence={this.state.basicSequenceModal.driverSequence}
-				onConfirm={(sequence, driverSequence) => this.handleCreateUpdateBasicSequence(sequence, driverSequence)}
-				onCancel={() => this.handleCancelBasicSequenceModal()}
-									/>)
+			modals.push(
+				<BasicSequenceModal
+					key="BasicSequenceModal"
+					isOpen={this.state.basicSequenceModal.show}
+					sequence={this.state.basicSequenceModal.sequence}
+					driverSequence={this.state.basicSequenceModal.driverSequence}
+					onConfirm={(sequence, driverSequence) => this.handleCreateUpdateBasicSequence(sequence, driverSequence)}
+					onCancel={() => this.handleCancelBasicSequenceModal()}
+				/>
+			)
 		}
 		return (
 			<div>

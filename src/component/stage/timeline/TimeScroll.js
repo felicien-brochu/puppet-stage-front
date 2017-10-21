@@ -1,13 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import HorizontalScrollBar from './HorizontalScrollBar'
-import VerticalScrollBar from './VerticalScrollBar'
+import ReactResizeDetector from 'react-resize-detector'
+import ScrollBar from './ScrollBar'
 
 const DELTA_LINE_PX = 26
 const DELTA_PAGE_PX = DELTA_LINE_PX * 10
 const DOM_DELTA_PIXEL = 0
 const DOM_DELTA_LINE = 1
 const DOM_DELTA_PAGE = 2
+const SCROLL_BAR_WIDTH = 16
 
 export default class TimeScroll extends React.Component {
 	static propTypes = {
@@ -15,6 +16,9 @@ export default class TimeScroll extends React.Component {
 		onScrollY: PropTypes.func.isRequired,
 		onScrollScale: PropTypes.func.isRequired,
 		onScrollToT: PropTypes.func.isRequired,
+		onResize: PropTypes.func.isRequired,
+
+		scrollY: PropTypes.number.isRequired,
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
 			paddingRight: PropTypes.number.isRequired,
@@ -29,6 +33,7 @@ export default class TimeScroll extends React.Component {
 		super(props)
 
 		this.handleScrollToT = this.handleScrollToT.bind(this)
+		this.handleScrollToY = this.handleScrollToY.bind(this)
 	}
 
 	render() {
@@ -37,16 +42,27 @@ export default class TimeScroll extends React.Component {
 				className="time-scroll"
 				onWheel={(e) => this.handleWheel(e)}
 			>
-				<div className="horizontal-pane">
-					<div
-						className="children-container"
-						ref="childrenContainer"
-					>
-						{this.props.children}
-					</div>
-					<VerticalScrollBar/>
+				<div
+					className="children-container"
+					ref="childrenContainer"
+					style={{
+						top: -this.props.scrollY,
+					}}
+				>
+					{this.props.children}
 				</div>
-				<HorizontalScrollBar
+				<div className="horizontal-pane">
+					<ScrollBar
+						orientation="vertical"
+						contentSize={this.refs.childrenContainer ? this.refs.childrenContainer.getBoundingClientRect().height : 0}
+						viewStart={this.props.scrollY}
+						viewEnd={this.props.timeline.height + this.props.scrollY}
+						onScroll={this.handleScrollToY}
+					/>
+					<ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.handleResize(width, height)}/>
+				</div>
+				<ScrollBar
+					orientation="horizontal"
 					contentSize={this.props.timeline.duration}
 					viewStart={this.props.timeline.start}
 					viewEnd={this.props.timeline.end}
@@ -69,6 +85,10 @@ export default class TimeScroll extends React.Component {
 
 	handleScrollToT(scrollTime) {
 		this.fireScrollToT(scrollTime)
+	}
+
+	handleScrollToY(scrollY) {
+		this.fireScrollY(scrollY - this.props.scrollY)
 	}
 
 	handleWheel(e) {
@@ -98,9 +118,21 @@ export default class TimeScroll extends React.Component {
 			} else if (e.shiftKey) {
 				this.fireScrollX(deltaY)
 			} else {
-				this.fireScrollY(deltaY)
+				let viewHeight = this.props.timeline.height;
+				let contentHeight = this.refs.childrenContainer.getBoundingClientRect().height
+
+				if (contentHeight > viewHeight) {
+					let scrollY = Math.min(this.props.scrollY + deltaY, contentHeight - viewHeight)
+					scrollY = Math.max(scrollY, 0)
+					deltaY = scrollY - this.props.scrollY
+					this.fireScrollY(deltaY)
+				} else {
+					deltaY = -this.props.scrollY
+					this.fireScrollY(deltaY)
+				}
 			}
 		}
+
 		e.preventDefault()
 	}
 
@@ -125,6 +157,21 @@ export default class TimeScroll extends React.Component {
 	fireScrollScale(delta, from) {
 		if (typeof this.props.onScrollScale === 'function') {
 			this.props.onScrollScale(delta, from)
+		}
+	}
+
+
+	handleResize(width, height) {
+		let contentHeight = this.refs.childrenContainer.getBoundingClientRect().height
+
+		if (contentHeight - this.props.scrollY < height && this.props.scrollY > 0) {
+			let scrollY = Math.max(contentHeight - height, 0)
+			let deltaY = scrollY - this.props.scrollY
+			this.fireScrollY(deltaY)
+		}
+
+		if (typeof this.props.onResize === 'function') {
+			this.props.onResize(width - SCROLL_BAR_WIDTH, height)
 		}
 	}
 };

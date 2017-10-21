@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types'
-import ReactResizeDetector from 'react-resize-detector'
 import SequenceTimeline from './SequenceTimeline'
 import GraphTimeline from './GraphTimeline'
 import TimeRuler from './TimeRuler'
@@ -9,7 +8,6 @@ import TimeScroll from './TimeScroll'
 
 const PADDING_LEFT = 16
 const PADDING_RIGHT = 16
-const SCROLL_BAR_WIDTH = 16
 const FRAME_TIME = 1e9 / 60
 const SCALE_MAX = 50 / FRAME_TIME // 50px by frame
 const SCALE_STEP = 70;
@@ -19,6 +17,8 @@ export default class Timeline extends React.Component {
 	static propTypes = {
 		stage: PropTypes.object.isRequired,
 		graphMode: PropTypes.bool,
+		scrollY: PropTypes.number.isRequired,
+		onScrollY: PropTypes.func.isRequired,
 	}
 
 	static defaultProps = {
@@ -48,18 +48,30 @@ export default class Timeline extends React.Component {
 		return (
 			<div
 				className="timeline"
-			ref="container">
+				ref="container"
+			>
+				<svg className="svg-defs">
+					<defs>
+						<filter id="noise" filterUnits="objectBoundingBox" x="0%" y="0%" width="100%" height="100%">
+							<feTurbulence type="fractalNoise" result="noisy" baseFrequency="0.9"/>
+							<feColorMatrix type="saturate" values="0"/>
+							<feBlend in="SourceGraphic" in2="noisy" mode="multiply"/>
+						</filter>
+					</defs>
+				</svg>
+
 				<TimeRuler
 					timeline={this.getViewState()}
 				/>
 				<TimeScroll
+					scrollY={this.props.scrollY}
 					onScrollX={this.handleScrollX}
 					onScrollY={this.handleScrollY}
 					onScrollScale={this.handleScrollScale}
 					onScrollToT={this.handleScrollToT}
-					timeline={this.getViewState()}>
+					timeline={this.getViewState()}
+					onResize={(width, height) => this.handleResize(width, height)}>
 					{this.renderTimelineBody()}
-					<ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.handleResize(width, height)}/>
 				</TimeScroll>
 			</div>
 		);
@@ -97,8 +109,8 @@ export default class Timeline extends React.Component {
 
 	handleResize(width, height) {
 		this.setState({
-			viewWidth: width - SCROLL_BAR_WIDTH,
-			viewHeight: height - SCROLL_BAR_WIDTH,
+			viewWidth: width,
+			viewHeight: height,
 		})
 	}
 
@@ -121,7 +133,11 @@ export default class Timeline extends React.Component {
 		})
 	}
 
-	handleScrollY(delta) {}
+	handleScrollY(deltaY) {
+		if (typeof this.props.onScrollY === 'function') {
+			this.props.onScrollY(deltaY)
+		}
+	}
 
 	handleScrollScale(delta, from) {
 		let min = this.getMinScale()

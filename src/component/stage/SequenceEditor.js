@@ -12,12 +12,24 @@ export default class SequenceEditor extends React.Component {
 		onStageChange: PropTypes.func.isRequired,
 	}
 
+	constructor(props) {
+		super(props)
+
+		this.state = {
+			scrollY: 0,
+		}
+	}
+
 	render() {
 		return (
 			<div className="sequence-editor">
 				<SequenceList
 					sequences={this.props.stage.sequences}
 					puppet={this.props.puppet}
+
+					onScrollY={(deltaY) => this.handleScrollY(deltaY)}
+					scrollY={this.state.scrollY}
+
 					onNewDriverSequence={(sequence) => this.handleNewDriverSequence(sequence)}
 					onDriverSequenceChange={(sequence) => this.handleDriverSequenceChange(sequence)}
 					onNewBasicSequence={(sequence, driverSequence) => this.handleNewBasicSequence(sequence, driverSequence)}
@@ -25,6 +37,9 @@ export default class SequenceEditor extends React.Component {
 				/>
 				<Timeline
 					stage={this.props.stage}
+
+					onScrollY={(deltaY) => this.handleScrollY(deltaY)}
+					scrollY={this.state.scrollY}
 				/>
 			</div>
 		);
@@ -74,5 +89,12 @@ export default class SequenceEditor extends React.Component {
 		if (typeof this.props.onStageChange === 'function') {
 			this.props.onStageChange(stage)
 		}
+	}
+
+	handleScrollY(deltaY) {
+		let scrollY = this.state.scrollY + deltaY
+		this.setState({
+			scrollY: scrollY,
+		})
 	}
 };
