@@ -113,6 +113,18 @@ export default class SequenceList extends React.Component {
 		if (this.props.sequences.length === 0) {
 			return null
 		}
+
+		let sequenceItems = []
+		for (let i = 0; i < this.props.sequences.length; i++) {
+			let sequence = this.props.sequences[i]
+			sequenceItems.push(
+				<DriverSequenceItem
+					key={sequence.id}
+					sequence={sequence}
+					color={i}
+					onExpand={this.handleDriverSequenceExpand}/>
+			)
+		}
 		return (
 			<ul
 				className="sequence-main-list"
@@ -120,17 +132,8 @@ export default class SequenceList extends React.Component {
 					top: -this.props.scrollY,
 				}}
 			>
-				{this.props.sequences.map(this.renderItem.bind(this))}
+				{sequenceItems}
 			</ul>
-		)
-	}
-
-	renderItem(sequence) {
-		return (
-			<DriverSequenceItem
-				key={sequence.id}
-				sequence={sequence}
-				onExpand={this.handleDriverSequenceExpand}/>
 		)
 	}
 

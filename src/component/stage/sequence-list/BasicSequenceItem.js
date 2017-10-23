@@ -26,7 +26,9 @@ export default class BasicSequenceItem extends React.Component {
 				}}
 				renderTag="li"
 			>
-				{this.props.sequence.name}
+				<span className="sequence-label">
+					{this.props.sequence.name}
+				</span>
 			</ContextMenuTrigger>
 		);
 	}

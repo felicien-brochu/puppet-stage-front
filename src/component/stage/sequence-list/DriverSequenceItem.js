@@ -1,5 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import classNames from 'classnames'
+import colorClasses from '../colorclasses'
 import {
 	ContextMenuTrigger
 } from 'react-contextmenu'
@@ -11,6 +13,7 @@ export default class DriverSequenceItem extends React.Component {
 
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
+		color: PropTypes.number.isRequired,
 		onExpand: PropTypes.func,
 	}
 
@@ -32,7 +35,11 @@ export default class DriverSequenceItem extends React.Component {
 					<ExpandButton
 						expanded={this.props.sequence.expanded}
 						onExpand={(expanded) => this.handleExpand(expanded)}/>
-					{this.props.sequence.name}
+
+					<span className={classNames("color-tile", colorClasses[this.props.color])}/>
+					<span className="sequence-label">
+						{this.props.sequence.name}
+					</span>
 				</div>
 				{this.renderBasicSequenceList()}
 			</ContextMenuTrigger>

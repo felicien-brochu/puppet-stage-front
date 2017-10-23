@@ -23,7 +23,7 @@ export default class TimeRuler extends React.Component {
 		super(props)
 
 		this.handleMouseDown = this.handleMouseDown.bind(this)
-		this.handleMouseMove = this.handleMouseMove.bind(this)
+		this.handleMouseMoveWindow = this.handleMouseMoveWindow.bind(this)
 		this.handleMouseUpWindow = this.handleMouseUpWindow.bind(this)
 	}
 
@@ -224,31 +224,38 @@ export default class TimeRuler extends React.Component {
 	}
 
 	handleMouseDown(e) {
-		let timeline = this.props.timeline
-		let x = e.clientX - this.refs.container.getBoundingClientRect().x
-		let t = (x - timeline.paddingLeft) / timeline.getScale() + timeline.start
-
 		window.addEventListener('mouseup', this.handleMouseUpWindow)
-		window.addEventListener('mousemove', this.handleMouseMove)
+		window.addEventListener('mousemove', this.handleMouseMoveWindow)
 		this.dragging = true
 
-		this.fireCurrentTimeChange(t)
+		e.preventDefault()
+		this.handleTimeMove(e)
 	}
 
 	handleMouseUpWindow() {
 		this.dragging = false
 		window.removeEventListener('mouseup', this.handleMouseUpWindow)
-		window.removeEventListener('mousemove', this.handleMouseMove)
+		window.removeEventListener('mousemove', this.handleMouseMoveWindow)
 	}
 
-	handleMouseMove(e) {
+	handleMouseMoveWindow(e) {
 		if (this.dragging) {
-			let timeline = this.props.timeline
-			let x = e.clientX - this.refs.container.getBoundingClientRect().x
-			let t = (x - timeline.paddingLeft) / timeline.getScale() + timeline.start
-
-			this.fireCurrentTimeChange(t)
+			this.handleTimeMove(e)
 		}
+	}
+
+	handleTimeMove(e) {
+		let timeline = this.props.timeline
+		let x = e.clientX - this.refs.container.getBoundingClientRect().x
+		let t = (x - timeline.paddingLeft) / timeline.getScale() + timeline.start
+		t = Math.max(t, 0)
+		t = Math.min(t, timeline.duration)
+
+		// Magnet on frame
+		if (t % FRAME_TIME !== 0) {
+			t = Math.round(t / FRAME_TIME) * FRAME_TIME
+		}
+		this.fireCurrentTimeChange(t)
 	}
 
 	fireCurrentTimeChange(time) {

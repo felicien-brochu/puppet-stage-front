@@ -1,13 +1,16 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import classNames from 'classnames'
 import SequenceBox from './SequenceBox'
+import colorClasses from '../colorclasses'
 
-const DRIVER_SEQUENCE_BOX_HEIGHT = 23
-const BASIC_SEQUENCE_BOX_HEIGHT = 26
+const DRIVER_SEQUENCE_BOX_HEIGHT = 20
+const BASIC_SEQUENCE_BOX_HEIGHT = 21
 
 export default class TimelineDriverSequence extends React.Component {
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
+		color: PropTypes.number.isRequired,
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
 			paddingRight: PropTypes.number.isRequired,
@@ -15,12 +18,24 @@ export default class TimelineDriverSequence extends React.Component {
 			end: PropTypes.number.isRequired,
 			width: PropTypes.number.isRequired,
 		}).isRequired,
+		selectedKeyframes: PropTypes.array.isRequired,
+		selectingKeyframes: PropTypes.array.isRequired,
+
+		onSelectKeyframe: PropTypes.func.isRequired,
+	}
+
+	constructor(props) {
+		super(props)
+
+		this.basicSequenceViews = []
+
+		this.getSelectingKeyframes = this.getSelectingKeyframes.bind(this)
 	}
 
 	render() {
 		return (
 			<li
-				className="timeline-driver-sequence"
+				className={classNames("timeline-driver-sequence", colorClasses[this.props.color])}
 				key={this.props.sequence.id}
 			>
 				<SequenceBox
@@ -29,7 +44,7 @@ export default class TimelineDriverSequence extends React.Component {
 					}}
 					timeline={this.props.timeline}
 					start={this.computeStart()}
-					end={this.computeEnd()}
+					duration={this.computeEnd() - this.computeStart()}
 					height={DRIVER_SEQUENCE_BOX_HEIGHT}
 					renderTag="div"
 					disabled
@@ -41,9 +56,29 @@ export default class TimelineDriverSequence extends React.Component {
 
 	renderBasicSequences() {
 		if (this.props.sequence.expanded && this.props.sequence.sequences && this.props.sequence.sequences.length > 0) {
+			let basicSequences = []
+			for (let i = 0; i < this.props.sequence.sequences.length; i++) {
+				let basicSequence = this.props.sequence.sequences[i]
+				basicSequences.push(
+					<SequenceBox
+						key={basicSequence.id}
+						ref={sequence => this.basicSequenceViews[i] = sequence}
+						attributes={{
+							className: 'timeline-basic-sequence'
+						}}
+						timeline={this.props.timeline}
+						sequence={basicSequence}
+						height={BASIC_SEQUENCE_BOX_HEIGHT}
+						renderTag="li"
+						selectedKeyframes={this.props.selectedKeyframes}
+						selectingKeyframes={this.props.selectingKeyframes}
+						onSelectKeyframe={this.props.onSelectKeyframe}
+				/>
+				)
+			}
 			return (
 				<ul className="timeline-basic-sequence-list">
-					{this.props.sequence.sequences.map(this.renderBasicSequence.bind(this))}
+					{basicSequences}
 				</ul>
 			)
 		} else {
@@ -74,19 +109,13 @@ export default class TimelineDriverSequence extends React.Component {
 		return max
 	}
 
-	renderBasicSequence(basicSequence) {
-		return (
-			<SequenceBox
-				key={basicSequence.id}
-				attributes={{
-					className: 'timeline-basic-sequence'
-				}}
-				timeline={this.props.timeline}
-				start={basicSequence.start}
-				end={basicSequence.start + basicSequence.duration}
-				height={BASIC_SEQUENCE_BOX_HEIGHT}
-				renderTag="li"
-			/>
-		)
+	getSelectingKeyframes(selectionRect) {
+		let keyframes = []
+		for (let i = 0; i < this.props.sequence.sequences.length; i++) {
+			let basicSequence = this.basicSequenceViews[i]
+			keyframes = keyframes.concat(basicSequence.getSelectingKeyframes(selectionRect))
+		}
+
+		return keyframes
 	}
-};
+}

@@ -18,7 +18,12 @@ export default class Timeline extends React.Component {
 		stage: PropTypes.object.isRequired,
 		graphMode: PropTypes.bool,
 		scrollY: PropTypes.number.isRequired,
+		selectedKeyframes: PropTypes.array.isRequired,
+
 		onScrollY: PropTypes.func.isRequired,
+		onSelectKeyframes: PropTypes.func.isRequired,
+		onUnselectKeyframes: PropTypes.func.isRequired,
+		onSelectSingleKeyframe: PropTypes.func.isRequired,
 	}
 
 	static defaultProps = {
@@ -59,6 +64,7 @@ export default class Timeline extends React.Component {
 					currentTime={this.state.currentTime}
 					timeline={this.getViewState()}/>
 
+
 				<TimeScroll
 					scrollY={this.props.scrollY}
 					onScrollX={this.handleScrollX}
@@ -75,6 +81,30 @@ export default class Timeline extends React.Component {
 		);
 	}
 
+	renderTimelineBody() {
+		if (this.props.graphMode) {
+			return (
+				<GraphTimeline
+					timeline={this.getViewState()}
+					sequences={this.props.stage.sequences}
+					selectedKeyframes={this.props.selectedKeyframes}
+				/>
+			)
+		} else {
+			return (
+				<SequenceTimeline
+					timeline={this.getViewState()}
+					sequences={this.props.stage.sequences}
+					selectedKeyframes={this.props.selectedKeyframes}
+
+					onSelectKeyframes={this.props.onSelectKeyframes}
+					onUnselectKeyframes={this.props.onUnselectKeyframes}
+					onSelectSingleKeyframe={this.props.onSelectSingleKeyframe}
+				/>
+			)
+		}
+	}
+
 	getViewState() {
 		let viewState = {
 			paddingLeft: PADDING_LEFT,
@@ -88,24 +118,6 @@ export default class Timeline extends React.Component {
 
 		viewState.getScale = () => (viewState.width - viewState.paddingLeft - viewState.paddingRight) / (viewState.end - viewState.start)
 		return viewState
-	}
-
-	renderTimelineBody() {
-		if (this.props.graphMode) {
-			return (
-				<GraphTimeline
-					timeline={this.getViewState()}
-					sequences={this.props.stage.sequences}
-				/>
-			)
-		} else {
-			return (
-				<SequenceTimeline
-					timeline={this.getViewState()}
-					sequences={this.props.stage.sequences}
-				/>
-			)
-		}
 	}
 
 	handleResize(width, height) {
