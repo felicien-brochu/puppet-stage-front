@@ -25,7 +25,7 @@ export default class DriverSequenceModal extends React.Component {
 			defaultServoID = this.props.sequence.servoID
 		}
 		let options = []
-		for (let [servoID, servo] of util.entries(servos)) {
+		for (let [servoID, servo] of util.entries()(servos)) {
 			options.push(
 				<option
 					key={servoID}

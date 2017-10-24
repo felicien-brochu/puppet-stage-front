@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types'
+import units from '../../../util/units'
 import SequenceTimeline from './SequenceTimeline'
 import GraphTimeline from './GraphTimeline'
 import TimeRuler from './TimeRuler'
@@ -8,8 +9,7 @@ import TimeScroll from './TimeScroll'
 
 const PADDING_LEFT = 16
 const PADDING_RIGHT = 16
-const FRAME_TIME = 1e9 / 60
-const SCALE_MAX = 50 / FRAME_TIME // 50px by frame
+const SCALE_MAX = 50 / units.FRAME_TIME // 50px by frame
 const SCALE_STEP = 70;
 
 export default class Timeline extends React.Component {
@@ -21,9 +21,10 @@ export default class Timeline extends React.Component {
 		selectedKeyframes: PropTypes.array.isRequired,
 
 		onScrollY: PropTypes.func.isRequired,
+		onScaleChange: PropTypes.func.isRequired,
 		onSelectKeyframes: PropTypes.func.isRequired,
 		onUnselectKeyframes: PropTypes.func.isRequired,
-		onSelectSingleKeyframe: PropTypes.func.isRequired,
+		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
 	}
 
 	static defaultProps = {
@@ -99,7 +100,7 @@ export default class Timeline extends React.Component {
 
 					onSelectKeyframes={this.props.onSelectKeyframes}
 					onUnselectKeyframes={this.props.onUnselectKeyframes}
-					onSelectSingleKeyframe={this.props.onSelectSingleKeyframe}
+					onSingleKeyframeMouseDown={this.props.onSingleKeyframeMouseDown}
 				/>
 			)
 		}
@@ -121,6 +122,10 @@ export default class Timeline extends React.Component {
 	}
 
 	handleResize(width, height) {
+		if (width !== this.state.viewWidth && typeof this.props.onScaleChange === 'function') {
+			let scale = (width - PADDING_LEFT - PADDING_RIGHT) / (this.state.endTime - this.state.startTime)
+			this.props.onScaleChange(scale)
+		}
 		this.setState({
 			viewWidth: width,
 			viewHeight: height,
@@ -187,6 +192,10 @@ export default class Timeline extends React.Component {
 		let start = oldScale * (this.state.startTime - fromT) / scale + fromT
 
 		this.moveTo(start, scale)
+
+		if (typeof this.props.onScaleChange === 'function') {
+			this.props.onScaleChange(scale)
+		}
 	}
 
 	moveTo(start, scale) {

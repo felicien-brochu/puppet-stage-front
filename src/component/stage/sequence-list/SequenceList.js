@@ -247,7 +247,7 @@ export default class SequenceList extends React.Component {
 	}
 
 	editBasicSequence(sequence) {
-		let driverSequence = model.getBasicSequenceParent(this.props.sequences, sequence)
+		let driverSequence = model.getBasicSequenceParent(this.props.sequences, sequence.id)
 		this.setState({
 			basicSequenceModal: {
 				show: true,

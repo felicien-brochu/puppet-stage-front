@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 
-const KEYFRAME_WIDTH = 8
+const KEYFRAME_WIDTH = 11.3
 
 export default class SequenceBox extends React.Component {
 	static propTypes = {
@@ -26,7 +26,7 @@ export default class SequenceBox extends React.Component {
 		selectedKeyframes: PropTypes.array,
 		selectingKeyframes: PropTypes.array,
 
-		onSelectKeyframe: PropTypes.func,
+		onKeyframeMouseDown: PropTypes.func,
 	}
 
 	static defaultProps = {
@@ -110,35 +110,55 @@ export default class SequenceBox extends React.Component {
 			sequence,
 		} = this.props
 
-		let keyframes = []
-		if (sequence && sequence.curves) {
-			for (let i = 0; i < sequence.curves.length; i++) {
-				let curve = sequence.curves[i]
-				let href = i === 0 ? '#keyframe-start-shape' : '#keyframe-shape'
-				keyframes.push(this.renderKeyframe(curve.p1.t, i, href))
+		if (sequence && sequence.keyframes) {
+			let keyframes = new Array(sequence.keyframes.length)
+			let insertI = 0,
+				insertSelectedI = sequence.keyframes.length
+			for (let i = 0; i < sequence.keyframes.length; i++) {
+				let keyframe = sequence.keyframes[i]
+				let selected = this.isKeyframeSelected(i)
+				let href
+				if (i === 0) {
+					if (i === sequence.keyframes.length - 1) {
+						href = '#keyframe-shape'
+					} else {
+						href = '#keyframe-start-shape'
+					}
+				} else if (i === sequence.keyframes.length - 1) {
+					href = '#keyframe-end-shape'
+				} else {
+					href = '#keyframe-shape'
+				}
 
-				// The last keyframe is also in the last curve
-				if (i === sequence.curves.length - 1) {
-					keyframes.push(this.renderKeyframe(curve.p2.t, i + 1, '#keyframe-end-shape'))
+				let keyframeView = this.renderKeyframe(keyframe.p.t, i, selected, href)
+
+				if (selected) {
+					keyframes[insertSelectedI] = keyframeView
+					insertSelectedI--
+				} else {
+					keyframes[insertI] = keyframeView
+					insertI++
 				}
 			}
+			return keyframes
 		}
 
-		return keyframes
+		return []
 	}
 
-	renderKeyframe(t, i, href) {
+	renderKeyframe(t, i, selected, href) {
 		let timeline = this.props.timeline
 		let x = timeline.paddingLeft + ((t - timeline.start) * timeline.getScale())
+		let className = classNames("keyframe-diamond", {
+			selected: selected,
+		})
 		return (
 			<use
 				href={href}
-				className={classNames("keyframe-diamond", {
-					selected: this.isKeyframeSelected(i)
-				})}
+				className={className}
 				key={i}
 				ref={keyframe => this.keyframes[i] = keyframe}
-				onMouseDown={(e) => this.handleSelectKeyframe(i, e)}
+				onMouseDown={(e) => this.handleKeyframeMouseDown(i, e)}
 				x={x}
 				y={this.props.height / 2}
 		/>
@@ -148,7 +168,7 @@ export default class SequenceBox extends React.Component {
 	isKeyframeSelected(i) {
 		let selected = false
 		for (let selectedKeyframe of this.selectedKeyframes) {
-			if (selectedKeyframe.keyframe === i) {
+			if (selectedKeyframe.index === i) {
 				selected = true
 				break
 			}
@@ -156,7 +176,7 @@ export default class SequenceBox extends React.Component {
 
 		let selecting = false
 		for (let selectingKeyframe of this.selectingKeyframes) {
-			if (selectingKeyframe.keyframe === i) {
+			if (selectingKeyframe.index === i) {
 				selecting = true
 				break
 			}
@@ -164,33 +184,27 @@ export default class SequenceBox extends React.Component {
 		return (!selected && selecting) || (selected && !selecting)
 	}
 
-	handleSelectKeyframe(i, e) {
-		if (typeof this.props.onSelectKeyframe === 'function') {
-			this.props.onSelectKeyframe({
+	handleKeyframeMouseDown(i, e) {
+		if (typeof this.props.onKeyframeMouseDown === 'function') {
+			this.props.onKeyframeMouseDown(e, {
 				sequenceID: this.props.sequence.id,
-				keyframe: i,
-			}, e.shiftKey || e.ctrlKey)
-
-			e.stopPropagation()
+				index: i,
+			})
 		}
+		e.stopPropagation()
+		e.preventDefault()
 	}
 
 	getSelectingKeyframes(selectionRect) {
-		if (!this.props.sequence || !this.props.sequence.curves || this.props.sequence.curves.length === 0) {
-			return []
-		}
-
+		let keyframes = []
 		let container = this.container.getBoundingClientRect()
 
-		if (container.y > selectionRect.y + selectionRect.height ||
-			container.y + container.height < selectionRect.y ||
-			container.x > selectionRect.x + selectionRect.width ||
-			container.x + container.width < selectionRect.x) {
-			return []
-		} else {
-			let keyframes = []
+		if (this.props.sequence && this.props.sequence.keyframes && this.props.sequence.keyframes.length > 0 && container.y <= selectionRect.y + selectionRect.height &&
+			container.y + container.height >= selectionRect.y &&
+			container.x <= selectionRect.x + selectionRect.width &&
+			container.x + container.width >= selectionRect.x) {
 
-			for (let i = 0; i < this.props.sequence.curves.length + 1; i++) {
+			for (let i = 0; i < this.props.sequence.keyframes.length; i++) {
 				let keyframe = this.keyframes[i]
 
 				let keyframeRect = {
@@ -208,11 +222,10 @@ export default class SequenceBox extends React.Component {
 				}
 				keyframes.push({
 					sequenceID: this.props.sequence.id,
-					keyframe: i,
+					index: i,
 				})
 			}
-
-			return keyframes
 		}
+		return keyframes
 	}
 };

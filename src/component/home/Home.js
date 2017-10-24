@@ -66,7 +66,7 @@ export default class Home extends React.Component {
 		console.log(stage);
 		alert.successAlert("Stage successfully created: " + JSON.stringify(stage));
 
-		let stages = this.state.stages.slice(0);
+		let stages = Array.from(this.state.stages);
 		stages.push(stage);
 		this.setState({
 			stages: stages

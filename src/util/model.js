@@ -3,7 +3,7 @@ import * as util from './utils'
 export default class Model {
 	static getServos(boards) {
 		let servos = {}
-		for (let [, board] of util.entries(boards)) {
+		for (let [, board] of util.entries()(boards)) {
 			servos = {
 				...servos,
 				...board.servos
@@ -34,12 +34,22 @@ export default class Model {
 		return item
 	}
 
-	static getBasicSequenceParent(driverSequences, basicSequence) {
+	static getBasicSequenceParent(driverSequences, basicSequenceID) {
 		for (let driverSequence of driverSequences) {
 			for (let sequence of driverSequence.sequences) {
-				if (sequence.id === basicSequence.id) {
+				if (sequence.id === basicSequenceID) {
 					return driverSequence
 				}
+			}
+		}
+		return null
+	}
+
+	static getBasicSequence(stage, basicSequenceID) {
+		for (let driverSequence of stage.sequences) {
+			let sequence = Model.itemOfID(driverSequence.sequences, basicSequenceID)
+			if (sequence) {
+				return sequence
 			}
 		}
 		return null

@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import units from '../../../util/units'
 
 const MIN_PX_BY_INTERVAL = 60
 const MIN_PX_BY_INTER_INTERVAL = 40
-const FRAME_TIME = 1e9 / 60
 const RULER_HEIGHT = 30
 
 export default class TimeRuler extends React.Component {
@@ -133,7 +133,7 @@ export default class TimeRuler extends React.Component {
 
 		function frameFormat(t) {
 			let s = Math.floor(t / 1e9)
-			let f = (t - s * 1e9) / FRAME_TIME
+			let f = (t - s * 1e9) / units.FRAME_TIME
 			return `${intFormatter.format(s)}:${intFormatter.format(f)}f`
 		}
 
@@ -142,26 +142,26 @@ export default class TimeRuler extends React.Component {
 			let s = Math.floor((t - m * 60e9) / 1e9)
 			return `${intFormatter.format(m)}:${intFormatter.format(s)}s`
 		}
-		let units = [{
-			interval: FRAME_TIME, // 1 frame at 60 fps
+		let intervals = [{
+			interval: units.FRAME_TIME, // 1 frame at 60 fps
 			format: frameFormat,
 		}, {
-			interval: 2 * FRAME_TIME,
+			interval: 2 * units.FRAME_TIME,
 			format: frameFormat,
 		}, {
-			interval: 5 * FRAME_TIME,
+			interval: 5 * units.FRAME_TIME,
 			format: frameFormat,
 		}, {
-			interval: 10 * FRAME_TIME,
+			interval: 10 * units.FRAME_TIME,
 			format: frameFormat,
 		}, {
-			interval: 15 * FRAME_TIME,
+			interval: 15 * units.FRAME_TIME,
 			format: frameFormat,
 		}, {
-			interval: 20 * FRAME_TIME,
+			interval: 20 * units.FRAME_TIME,
 			format: frameFormat,
 		}, {
-			interval: 30 * FRAME_TIME,
+			interval: 30 * units.FRAME_TIME,
 			format: frameFormat,
 		}, {
 			interval: 1e9,
@@ -204,7 +204,7 @@ export default class TimeRuler extends React.Component {
 			format: secondFormat,
 		}, ]
 
-		let unit = units[units.length - 1]
+		let unit = intervals[intervals.length - 1]
 		let {
 			width,
 			start,
@@ -213,7 +213,7 @@ export default class TimeRuler extends React.Component {
 			paddingRight
 		} = this.props.timeline
 		let innerWidth = width - paddingLeft - paddingRight
-		for (let u of units) {
+		for (let u of intervals) {
 			let unitWidth = innerWidth / ((end - start) / u.interval)
 			if (unitWidth >= MIN_PX_BY_INTERVAL) {
 				unit = u
@@ -252,8 +252,8 @@ export default class TimeRuler extends React.Component {
 		t = Math.min(t, timeline.duration)
 
 		// Magnet on frame
-		if (t % FRAME_TIME !== 0) {
-			t = Math.round(t / FRAME_TIME) * FRAME_TIME
+		if (t % units.FRAME_TIME !== 0) {
+			t = Math.round(t / units.FRAME_TIME) * units.FRAME_TIME
 		}
 		this.fireCurrentTimeChange(t)
 	}

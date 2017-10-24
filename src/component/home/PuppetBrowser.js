@@ -1,11 +1,11 @@
-import React from 'react';
+import React from 'react'
 import PropTypes from 'prop-types'
 import {
 	Redirect
 } from 'react-router-dom'
 
-import TextCreator from '../base/TextCreator';
-import List from '../base/List';
+import TextCreator from '../base/TextCreator'
+import List from '../base/List'
 
 import fetchAPI from '../../util/api'
 import alert from '../../util/alert'
@@ -17,7 +17,7 @@ export default class PuppetBrowser extends React.Component {
 	}
 
 	constructor(props) {
-		super(props);
+		super(props)
 
 		this.state = {
 			puppets: [],
@@ -29,12 +29,12 @@ export default class PuppetBrowser extends React.Component {
 	}
 
 	componentWillMount() {
-		this.fetchPuppets();
+		this.fetchPuppets()
 	}
 
 	render() {
 		if (this.state.redirectTo) {
-			return <Redirect push to={this.state.redirectTo}/>;
+			return <Redirect push to={this.state.redirectTo}/>
 		}
 
 		return (
@@ -68,11 +68,11 @@ export default class PuppetBrowser extends React.Component {
 					Duplicate
 				</button>
 			</div>
-		);
+		)
 	}
 
 	handleCreatePuppet(name) {
-		console.log("Create puppet: " + name);
+		console.log("Create puppet: " + name)
 		fetchAPI("/puppet", {
 			method: 'PUT',
 			body: JSON.stringify({
@@ -83,12 +83,12 @@ export default class PuppetBrowser extends React.Component {
 	}
 
 	handleCreatePuppetSuccess(puppet) {
-		console.log("Puppet Created");
-		console.log(puppet);
-		alert.successAlert("Puppet successfully created: " + JSON.stringify(puppet));
+		console.log("Puppet Created")
+		console.log(puppet)
+		alert.successAlert("Puppet successfully created: " + JSON.stringify(puppet))
 
-		let puppets = this.state.puppets.slice(0);
-		puppets.push(puppet);
+		let puppets = Array.from(this.state.puppets)
+		puppets.push(puppet)
 		this.setState({
 			puppets: puppets
 		})
@@ -101,7 +101,7 @@ export default class PuppetBrowser extends React.Component {
 	handlePuppetsRetrieved(puppets) {
 		this.setState({
 			puppets: puppets
-		});
+		})
 	}
 
 	handleSelect(puppet) {
@@ -123,17 +123,17 @@ export default class PuppetBrowser extends React.Component {
 	}
 
 	handleRemoveClick() {
-		let puppet = this.state.selectedPuppet;
+		let puppet = this.state.selectedPuppet
 		if (puppet) {
-			let confirmed = window.confirm("Do you really want to delete \"" + puppet.name + "\" puppet ?");
+			let confirmed = window.confirm("Do you really want to delete \"" + puppet.name + "\" puppet ?")
 			if (confirmed) {
-				this.handleRemovePuppet(puppet);
+				this.handleRemovePuppet(puppet)
 			}
 		}
 	}
 
 	handleRemovePuppet(puppet) {
-		console.log("Remove puppet: " + puppet.name);
+		console.log("Remove puppet: " + puppet.name)
 		fetchAPI("/puppet/" + puppet.id, {
 				method: 'DELETE',
 			}, this.handleRemovePuppetSuccess.bind(this),
@@ -142,24 +142,24 @@ export default class PuppetBrowser extends React.Component {
 	}
 
 	handleRemovePuppetSuccess(puppet) {
-		console.log("Puppet Deleted");
-		console.log(puppet);
-		alert.successAlert("Puppet successfully deleted");
+		console.log("Puppet Deleted")
+		console.log(puppet)
+		alert.successAlert("Puppet successfully deleted")
 
 		let puppets = this.state.puppets.filter((p) => {
-			return p.id !== puppet.id;
-		});
+			return p.id !== puppet.id
+		})
 		this.setState({
 			puppets: puppets
 		})
 	}
 
 	handleDuplicateClick() {
-		let puppet = this.state.selectedPuppet;
+		let puppet = this.state.selectedPuppet
 		if (puppet) {
-			console.log("Duplicate puppet: " + puppet.name);
-			let name = puppet.name + "1";
-			this.handleCreatePuppet(name);
+			console.log("Duplicate puppet: " + puppet.name)
+			let name = puppet.name + "1"
+			this.handleCreatePuppet(name)
 		}
 	}
 }

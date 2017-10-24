@@ -49,7 +49,7 @@ export default class StageEditor extends React.Component {
 
 	handleStageChange(stage) {
 		console.log("StageEditor handleStageChange")
-		console.log(JSON.stringify(stage));
+		// console.log(JSON.stringify(stage));
 		this.setState({
 			stage: stage,
 		})
@@ -75,58 +75,72 @@ export default class StageEditor extends React.Component {
 				"sequences": [{
 					"start": 0,
 					"duration": 10000000000,
-					"curves": [{
-						p1: {
+					"keyframes": [{
+						p: {
 							t: 1e9,
 							v: 256.00
 						},
 						c1: {
 							t: 1e9,
-							v: 256.00
-						},
-						p2: {
-							t: 2e9,
-							v: 350.00
+							v: 256.00,
 						},
 						c2: {
 							t: 1e9,
-							v: 350.00
+							v: 256.00,
 						},
 					}, {
-						p1: {
+						p: {
 							t: 2e9,
-							v: 350.00
+							v: 350.00,
 						},
 						c1: {
-							t: 1e9,
-							v: 350.00
-						},
-						p2: {
-							t: 2.6e9,
-							v: 212.00
+							t: 2e9,
+							v: 350.00,
 						},
 						c2: {
-							t: 2.6e9,
-							v: 212.00
+							t: 2e9,
+							v: 350.00,
 						},
 					}, {
-						p1: {
+						p: {
 							t: 2.6e9,
-							v: 212.00
+							v: 127.50,
 						},
 						c1: {
 							t: 2.6e9,
-							v: 212.00
-						},
-						p2: {
-							t: 3.5e9,
-							v: 312.00
+							v: 127.50,
 						},
 						c2: {
-							t: 3.5e9,
-							v: 312.00
+							t: 2.6e9,
+							v: 127.50,
 						},
-					}],
+					}, {
+						p: {
+							t: 3e9,
+							v: 200.00,
+						},
+						c1: {
+							t: 3e9,
+							v: 200.00,
+						},
+						c2: {
+							t: 3e9,
+							v: 200.00,
+						},
+					}, {
+						p: {
+							t: 5e9,
+							v: 312.20,
+						},
+						c1: {
+							t: 5e9,
+							v: 312.20,
+						},
+						c2: {
+							t: 5e9,
+							v: 312.20,
+						},
+					}, ],
 					"slave": false,
 					"name": "Main",
 					"id": "c92548d6-a21f-4d96-a45e-d6490fefd440"
@@ -139,31 +153,27 @@ export default class StageEditor extends React.Component {
 				"sequences": [{
 					"start": 0,
 					"duration": 10000000000,
-					"curves": [],
+					"keyframes": [],
 					"slave": false,
 					"name": "Main",
 					"id": "68c1b469-d92a-4a50-9427-eccb3dd67edb"
 				}, {
 					"start": 0,
 					"duration": 10000000000,
-					"curves": [{
-						p1: {
-							t: 1e9,
-							v: 256.00
+					"keyframes": [{
+						p: {
+							t: 3e9,
+							v: 200.00,
 						},
 						c1: {
-							t: 1e9,
-							v: 256.00
-						},
-						p2: {
-							t: 2e9,
-							v: 350.00
+							t: 3e9,
+							v: 200.00,
 						},
 						c2: {
-							t: 1e9,
-							v: 350.00
+							t: 3e9,
+							v: 200.00,
 						},
-					}],
+					}, ],
 					"slave": false,
 					"name": "Accent",
 					"id": "fc402112-cb69-46c6-9823-a9fbf17f6ff2"

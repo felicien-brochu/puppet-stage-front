@@ -70,7 +70,7 @@ export default class BasicSequenceModal extends React.Component {
 		let sequence = {
 			start: 0,
 			duration: 1e10, // 10 s = 1e10 ns
-			curves: [],
+			keyframes: [],
 			slave: false,
 		}
 		if (this.props.sequence) {

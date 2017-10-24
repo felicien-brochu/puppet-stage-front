@@ -21,7 +21,7 @@ export default class TimelineDriverSequence extends React.Component {
 		selectedKeyframes: PropTypes.array.isRequired,
 		selectingKeyframes: PropTypes.array.isRequired,
 
-		onSelectKeyframe: PropTypes.func.isRequired,
+		onKeyframeMouseDown: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -72,7 +72,8 @@ export default class TimelineDriverSequence extends React.Component {
 						renderTag="li"
 						selectedKeyframes={this.props.selectedKeyframes}
 						selectingKeyframes={this.props.selectingKeyframes}
-						onSelectKeyframe={this.props.onSelectKeyframe}
+
+						onKeyframeMouseDown={this.props.onKeyframeMouseDown}
 				/>
 				)
 			}
@@ -111,9 +112,11 @@ export default class TimelineDriverSequence extends React.Component {
 
 	getSelectingKeyframes(selectionRect) {
 		let keyframes = []
-		for (let i = 0; i < this.props.sequence.sequences.length; i++) {
-			let basicSequence = this.basicSequenceViews[i]
-			keyframes = keyframes.concat(basicSequence.getSelectingKeyframes(selectionRect))
+		if (this.props.sequence.expanded) {
+			for (let i = 0; i < this.props.sequence.sequences.length; i++) {
+				let basicSequence = this.basicSequenceViews[i]
+				keyframes = keyframes.concat(basicSequence.getSelectingKeyframes(selectionRect))
+			}
 		}
 
 		return keyframes

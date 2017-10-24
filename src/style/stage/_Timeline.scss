@@ -119,76 +119,77 @@
 
 				.sequence-box {}
 
-				&.red .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.red svg.sequence-box-box rect {
 					fill: $red;
 				}
 
-				&.yellow .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.yellow svg.sequence-box-box rect {
 					fill: $yellow;
 				}
 
-				&.aqua .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.aqua svg.sequence-box-box rect {
 					fill: $aqua;
 				}
 
-				&.pink .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.pink svg.sequence-box-box rect {
 					fill: $pink;
 				}
 
-				&.lavender .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.lavender svg.sequence-box-box rect {
 					fill: $lavender;
 				}
 
-				&.peach .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.peach svg.sequence-box-box rect {
 					fill: $peach;
 				}
 
-				&.seafoam .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.seafoam svg.sequence-box-box rect {
 					fill: $seafoam;
 				}
 
-				&.blue .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.blue svg.sequence-box-box rect {
 					fill: $blue;
 				}
 
-				&.green .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.green svg.sequence-box-box rect {
 					fill: $green;
 				}
 
-				&.purple .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.purple svg.sequence-box-box rect {
 					fill: $purple;
 				}
 
-				&.orange .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.orange svg.sequence-box-box rect {
 					fill: $orange;
 				}
 
-				&.brown .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.brown svg.sequence-box-box rect {
 					fill: $brown;
 				}
 
-				&.fuchsia .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.fuchsia svg.sequence-box-box rect {
 					fill: $fuchsia;
 				}
 
-				&.cyan .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.cyan svg.sequence-box-box rect {
 					fill: $cyan;
 				}
 
-				&.sandstone .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.sandstone svg.sequence-box-box rect {
 					fill: $sandstone;
 				}
 
-				&.darkgreen .timeline-driver-sequence-box svg.sequence-box-box rect {
+				&.darkgreen svg.sequence-box-box rect {
 					fill: $darkgreen;
 				}
 
 				.timeline-driver-sequence-box {
-					height: 20px;
+					height: 19px;
+					margin-bottom: 1px;
 
 					svg.sequence-box-box {
 						width: 100%;
-						height: 20px;
+						height: 19px;
 
 						rect {
 							filter: url(  '#noise-effect');
@@ -197,14 +198,16 @@
 				}
 
 				.timeline-basic-sequence {
-					height: 21px;
+					height: 20px;
+					background-color: $active-background-color;
+					margin-bottom: 1px;
 
 					svg.sequence-box-box {
 						width: 100%;
-						height: 21px;
+						height: 20px;
 
 						rect {
-							fill: $active-background-color;
+							filter: url(  '#desaturate-effect');
 						}
 					}
 				}
@@ -228,7 +231,6 @@
 
 .keyframe-diamond {
 	fill: $primary-color;
-	pointer-events:;
 
 	&.selected {
 		filter: url(#highlight-effect);
