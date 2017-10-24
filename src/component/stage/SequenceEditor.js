@@ -4,6 +4,7 @@ import model from '../../util/model'
 import units from '../../util/units'
 import SequenceList from './sequence-list/SequenceList'
 import Timeline from './timeline/Timeline'
+import KeyframeHelper from './KeyframeHelper'
 
 export default class SequenceEditor extends React.Component {
 
@@ -190,23 +191,7 @@ export default class SequenceEditor extends React.Component {
 	}
 
 	handleSelectKeyframes(keyframes) {
-		let selectedKeyframes = Array.from(this.state.selectedKeyframes)
-
-		// Remove intersection
-		for (let i = 0; i < selectedKeyframes.length; i++) {
-			let keyframe = selectedKeyframes[i]
-			for (let j = 0; j < keyframes.length; j++) {
-				let newKeyframe = keyframes[j]
-				if (keyframe.sequenceID === newKeyframe.sequenceID && keyframe.keyframe === newKeyframe.keyframe) {
-					keyframes.splice(j, 1)
-					selectedKeyframes.splice(i, 1)
-					i--
-					break
-				}
-			}
-		}
-
-		selectedKeyframes = selectedKeyframes.concat(keyframes)
+		let selectedKeyframes = KeyframeHelper.mergeSelectedKeyframes(this.state.selectedKeyframes, keyframes)
 
 		this.setState({
 			selectedKeyframes: selectedKeyframes,
@@ -218,30 +203,9 @@ export default class SequenceEditor extends React.Component {
 		let translateCallback
 
 		if (e.shiftKey || e.ctrlKey) {
-			let copyIndex = -1
-
-			for (let i = 0; i < selectedKeyframes.length; i++) {
-				let keyframe = selectedKeyframes[i]
-				if (keyframe.sequenceID === newKeyframe.sequenceID && keyframe.index === newKeyframe.index) {
-					copyIndex = i
-					break
-				}
-			}
-			if (copyIndex >= 0) {
-				selectedKeyframes.splice(copyIndex, 1)
-			} else {
-				selectedKeyframes.push(newKeyframe)
-			}
+			selectedKeyframes = KeyframeHelper.mergeSelectedKeyframes(this.state.selectedKeyframes, [newKeyframe])
 		} else {
-			let found = false
-			for (let i = 0; i < selectedKeyframes.length; i++) {
-				let keyframe = selectedKeyframes[i]
-				if (keyframe.sequenceID === newKeyframe.sequenceID && keyframe.index === newKeyframe.index) {
-					found = true
-					break
-				}
-			}
-			if (!found) {
+			if (!KeyframeHelper.containsKeyframe(this.state.selectedKeyframes, newKeyframe)) {
 				selectedKeyframes = [newKeyframe]
 			}
 
@@ -259,7 +223,7 @@ export default class SequenceEditor extends React.Component {
 	handleTranslateKeyframesStart(targetKeyframe, e) {
 		if (this.state.selectedKeyframes.length > 0) {
 			let
-				initialKeyframes = this.collectSelectedKeyframes(),
+				initialKeyframes = KeyframeHelper.collectSelectedKeyframes(this.props.stage, this.state.selectedKeyframes),
 				handler = this.handleTranslateKeyframes,
 				refTime = 0,
 				refDuration = 0
@@ -271,47 +235,19 @@ export default class SequenceEditor extends React.Component {
 			// the first or the last of selection. Store the fix point of
 			// time for the scale in var refTime.
 			if (e.altKey) {
-				let
-					stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes]))),
-					minT = Number.MAX_VALUE,
-					maxT = 0,
-					minKeyframe,
-					maxKeyframe
-
-				for (let keyframe of this.state.selectedKeyframes) {
-					for (let [sequenceID, keyframes] of stageKeyframes) {
-						for (let i = 0; i < keyframes.keyframes.length; i++) {
-							if (keyframe.sequenceID === sequenceID && keyframe.index === i) {
-								if (minT > keyframes.keyframes[i].p.t) {
-									minT = keyframes.keyframes[i].p.t
-									minKeyframe = {
-										sequenceID: sequenceID,
-										index: i,
-									}
-								}
-								if (maxT < keyframes.keyframes[i].p.t) {
-									maxT = keyframes.keyframes[i].p.t
-									maxKeyframe = {
-										sequenceID: sequenceID,
-										index: i,
-									}
-								}
-							}
-						}
-					}
-				}
-				if (minT !== maxT) {
-					let isMin = targetKeyframe.sequenceID === minKeyframe.sequenceID && targetKeyframe.index === minKeyframe.index
-					let isMax = targetKeyframe.sequenceID === maxKeyframe.sequenceID && targetKeyframe.index === maxKeyframe.index
+				let boundaries = KeyframeHelper.getSelectionBoundaries(initialKeyframes, this.state.selectedKeyframes)
+				if (boundaries.minT !== boundaries.maxT) {
+					let isMin = KeyframeHelper.equals(targetKeyframe, boundaries.minKeyframe)
+					let isMax = KeyframeHelper.equals(targetKeyframe, boundaries.maxKeyframe)
 					if (isMin || isMax) {
 						handler = this.handleTranslateScaleKeyframes
 					}
 					if (isMin) {
-						refTime = maxT
-						refDuration = minT - maxT
+						refTime = boundaries.maxT
+						refDuration = boundaries.minT - boundaries.maxT
 					} else if (isMax) {
-						refTime = minT
-						refDuration = maxT - minT
+						refTime = boundaries.minT
+						refDuration = boundaries.maxT - boundaries.minT
 					}
 				}
 			}
@@ -350,9 +286,9 @@ export default class SequenceEditor extends React.Component {
 			let selectedKeyframes = []
 
 			for (let [sequenceID, keyframes] of stageKeyframes) {
-				SequenceEditor.translateKeyframes(keyframes, deltaT)
-				SequenceEditor.sortKeyframes(keyframes)
-				SequenceEditor.removeDoubleKeyframes(keyframes)
+				KeyframeHelper.translateKeyframes(keyframes, deltaT)
+				KeyframeHelper.sortKeyframes(keyframes)
+				KeyframeHelper.removeDoubleKeyframes(keyframes)
 
 				let sequence = model.getBasicSequence(stage, sequenceID)
 				sequence.keyframes = keyframes.keyframes
@@ -393,9 +329,9 @@ export default class SequenceEditor extends React.Component {
 			let selectedKeyframes = []
 			for (let [sequenceID, keyframes] of stageKeyframes) {
 				let scaleFactor = (refDuration + deltaT) / refDuration
-				SequenceEditor.scaleKeyframes(keyframes, scaleFactor, refTime)
-				SequenceEditor.sortKeyframes(keyframes)
-				SequenceEditor.removeDoubleKeyframes(keyframes)
+				KeyframeHelper.scaleKeyframes(keyframes, scaleFactor, refTime)
+				KeyframeHelper.sortKeyframes(keyframes)
+				KeyframeHelper.removeDoubleKeyframes(keyframes)
 
 				let sequence = model.getBasicSequence(stage, sequenceID)
 				sequence.keyframes = keyframes.keyframes
@@ -417,77 +353,5 @@ export default class SequenceEditor extends React.Component {
 
 			this.fireStageChange(stage, true)
 		}
-	}
-	static translateKeyframes(keyframes, deltaT) {
-		for (let i = 0; i < keyframes.selected.length; i++) {
-			if (keyframes.selected[i]) {
-				keyframes.keyframes[i].p.t += deltaT
-				keyframes.keyframes[i].p.t = Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME
-				keyframes.keyframes[i].c1.t += deltaT
-				keyframes.keyframes[i].c1.t = Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME
-				keyframes.keyframes[i].c2.t += deltaT
-				keyframes.keyframes[i].c2.t = Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME
-			}
-		}
-	}
-
-	static scaleKeyframes(keyframes, scaleFactor, refTime) {
-		for (let i = 0; i < keyframes.selected.length; i++) {
-			if (keyframes.selected[i]) {
-				keyframes.keyframes[i].p.t = refTime + scaleFactor * (keyframes.keyframes[i].p.t - refTime)
-				keyframes.keyframes[i].p.t = Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME
-				keyframes.keyframes[i].c1.t = refTime + scaleFactor * (keyframes.keyframes[i].c1.t - refTime)
-				keyframes.keyframes[i].c1.t = Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME
-				keyframes.keyframes[i].c2.t = refTime + scaleFactor * (keyframes.keyframes[i].c2.t - refTime)
-				keyframes.keyframes[i].c2.t = Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME
-			}
-		}
-	}
-
-	static sortKeyframes(keyframes) {
-		let changed
-		do {
-			changed = false
-			for (let i = 0; i < keyframes.keyframes.length - 1; i++) {
-				let keyframe1 = keyframes.keyframes[i]
-				let keyframe2 = keyframes.keyframes[i + 1]
-				if (keyframe1.p.t > keyframe2.p.t) {
-					keyframes.keyframes.splice(i, 2, keyframe2, keyframe1)
-					keyframes.selected.splice(i, 2, keyframes.selected[i + 1], keyframes.selected[i])
-					changed = true
-				}
-			}
-		} while (changed)
-	}
-
-	static removeDoubleKeyframes(keyframes) {
-		for (let i = 0; i < keyframes.keyframes.length - 1; i++) {
-			if (keyframes.keyframes[i].p.t === keyframes.keyframes[i + 1].p.t) {
-				if (keyframes.selected[i]) {
-					keyframes.keyframes.splice(i + 1, 1)
-					keyframes.selected.splice(i + 1, 1)
-					i--
-				} else {
-					keyframes.keyframes.splice(i, 1)
-					keyframes.selected.splice(i, 1)
-				}
-			}
-		}
-	}
-
-	collectSelectedKeyframes() {
-		let keyframes = new Map()
-		for (let keyframe of this.state.selectedKeyframes) {
-			let sequence = model.getBasicSequence(this.props.stage, keyframe.sequenceID)
-			if (!keyframes.has(keyframe.sequenceID)) {
-				keyframes.set(keyframe.sequenceID, {
-					keyframes: JSON.parse(JSON.stringify(sequence.keyframes)),
-					selected: new Array(sequence.keyframes.length).fill(false),
-				})
-			}
-
-			keyframes.get(keyframe.sequenceID).selected[keyframe.index] = true
-		}
-		return keyframes
 	}
 }
