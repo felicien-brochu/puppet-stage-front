@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from 'react'
+import PropTypes from 'prop-types'
 
 import NumberInput from '../base/NumberInput'
 
@@ -12,15 +12,15 @@ export default class ServoEditor extends React.Component {
 	}
 
 	constructor(props) {
-		super(props);
+		super(props)
 
-		this.handleAddrConfirmed = this.handleAddrConfirmed.bind(this);
-		this.handleDefaultPositionChange = this.handleDefaultPositionChange.bind(this);
-		this.handleDefaultPositionConfirmed = this.handleDefaultPositionConfirmed.bind(this);
-		this.handleMinChange = this.handleMinChange.bind(this);
-		this.handleMinConfirmed = this.handleMinConfirmed.bind(this);
-		this.handleMaxChange = this.handleMaxChange.bind(this);
-		this.handleMaxConfirmed = this.handleMaxConfirmed.bind(this);
+		this.handleAddrConfirmed = this.handleAddrConfirmed.bind(this)
+		this.handleDefaultPositionChange = this.handleDefaultPositionChange.bind(this)
+		this.handleDefaultPositionConfirmed = this.handleDefaultPositionConfirmed.bind(this)
+		this.handleMinChange = this.handleMinChange.bind(this)
+		this.handleMinConfirmed = this.handleMinConfirmed.bind(this)
+		this.handleMaxChange = this.handleMaxChange.bind(this)
+		this.handleMaxConfirmed = this.handleMaxConfirmed.bind(this)
 	}
 
 	render() {
@@ -80,51 +80,51 @@ export default class ServoEditor extends React.Component {
 					</div>
 				</div>
 			</div>
-		);
+		)
 	}
 
 	handleDefaultPositionChange(defaultPosition) {
-		this.props.onPositionChange(defaultPosition);
+		this.props.onPositionChange(defaultPosition)
 	}
 
 	handleMinChange(min) {
-		this.props.onPositionChange(min);
+		this.props.onPositionChange(min)
 	}
 
 	handleMaxChange(max) {
-		this.props.onPositionChange(max);
+		this.props.onPositionChange(max)
 	}
 
 	handleAddrConfirmed(addr) {
 		let servo = {
 			...this.props.servo
-		};
-		servo.addr = addr;
-		this.props.onChange(servo);
+		}
+		servo.addr = addr
+		this.props.onChange(servo)
 	}
 
 	handleDefaultPositionConfirmed(defaultPosition) {
 		let servo = {
 			...this.props.servo
-		};
-		servo.defaultPosition = defaultPosition;
-		this.props.onChange(servo);
+		}
+		servo.defaultPosition = defaultPosition
+		this.props.onChange(servo)
 	}
 
 	handleMinConfirmed(min) {
 		let servo = {
 			...this.props.servo
-		};
-		servo.min = min;
-		this.props.onChange(servo);
+		}
+		servo.min = min
+		this.props.onChange(servo)
 	}
 
 	handleMaxConfirmed(max) {
 		let servo = {
 			...this.props.servo
-		};
-		servo.max = max;
-		this.props.onChange(servo);
+		}
+		servo.max = max
+		this.props.onChange(servo)
 	}
 
 }

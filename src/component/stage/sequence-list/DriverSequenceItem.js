@@ -43,7 +43,7 @@ export default class DriverSequenceItem extends React.Component {
 				</div>
 				{this.renderBasicSequenceList()}
 			</ContextMenuTrigger>
-		);
+		)
 	}
 
 	renderBasicSequenceList() {

@@ -30,6 +30,6 @@ export default class BasicSequenceItem extends React.Component {
 					{this.props.sequence.name}
 				</span>
 			</ContextMenuTrigger>
-		);
+		)
 	}
 }

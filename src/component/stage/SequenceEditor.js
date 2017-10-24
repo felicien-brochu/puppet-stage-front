@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import PropTypes from 'prop-types'
 import model from '../../util/model'
 import units from '../../util/units'
@@ -33,7 +33,7 @@ export default class SequenceEditor extends React.Component {
 		this.handleUnselectKeyframes = this.handleUnselectKeyframes.bind(this)
 		this.handleSelectKeyframes = this.handleSelectKeyframes.bind(this)
 		this.handleSingleKeyframeMouseDown = this.handleSingleKeyframeMouseDown.bind(this)
-		this.handleMouseUpWindow = this.handleMouseUpWindow.bind(this)
+		this.handleTranslateKeyframesStop = this.handleTranslateKeyframesStop.bind(this)
 		this.handleTranslateKeyframes = this.handleTranslateKeyframes.bind(this)
 		this.handleTranslateScaleKeyframes = this.handleTranslateScaleKeyframes.bind(this)
 	}
@@ -67,7 +67,7 @@ export default class SequenceEditor extends React.Component {
 					onSingleKeyframeMouseDown={this.handleSingleKeyframeMouseDown}
 				/>
 			</div>
-		);
+		)
 	}
 
 	renderSVGDefs() {
@@ -135,18 +135,14 @@ export default class SequenceEditor extends React.Component {
 	}
 
 	handleNewDriverSequence(sequence) {
-		let stage = {
-			...this.props.stage
-		}
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		stage.sequences.push(sequence)
 
 		this.fireStageChange(stage)
 	}
 
 	handleDriverSequenceChange(sequence) {
-		let stage = {
-			...this.props.stage
-		}
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let index = model.indexOfID(this.props.stage.sequences, sequence.id)
 		stage.sequences[index] = sequence
 
@@ -154,9 +150,7 @@ export default class SequenceEditor extends React.Component {
 	}
 
 	handleNewBasicSequence(sequence, selectedDriverSequence) {
-		let stage = {
-			...this.props.stage
-		}
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let driverSequence = model.itemOfID(stage.sequences, selectedDriverSequence.id)
 		driverSequence.sequences.push(sequence)
 
@@ -164,9 +158,7 @@ export default class SequenceEditor extends React.Component {
 	}
 
 	handleBasicSequenceChange(sequence, selectedDriverSequence) {
-		let stage = {
-			...this.props.stage
-		}
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let driverSequence = model.itemOfID(stage.sequences, selectedDriverSequence.id)
 		let index = model.indexOfID(driverSequence.sequences, sequence.id)
 		driverSequence.sequences[index] = sequence
@@ -174,9 +166,9 @@ export default class SequenceEditor extends React.Component {
 		this.fireStageChange(stage)
 	}
 
-	fireStageChange(stage) {
+	fireStageChange(stage, minor = false) {
 		if (typeof this.props.onStageChange === 'function') {
-			this.props.onStageChange(stage)
+			this.props.onStageChange(stage, minor)
 		}
 	}
 
@@ -255,7 +247,7 @@ export default class SequenceEditor extends React.Component {
 
 			e.persist()
 			translateCallback = () => {
-				this.handleTranslateKeyframeStart(newKeyframe, e)
+				this.handleTranslateKeyframesStart(newKeyframe, e)
 			}
 		}
 
@@ -264,7 +256,7 @@ export default class SequenceEditor extends React.Component {
 		}, translateCallback)
 	}
 
-	handleTranslateKeyframeStart(targetKeyframe, e) {
+	handleTranslateKeyframesStart(targetKeyframe, e) {
 		if (this.state.selectedKeyframes.length > 0) {
 			let
 				initialKeyframes = this.collectSelectedKeyframes(),
@@ -272,7 +264,7 @@ export default class SequenceEditor extends React.Component {
 				refTime = 0,
 				refDuration = 0
 
-			window.addEventListener('mouseup', this.handleMouseUpWindow)
+			window.addEventListener('mouseup', this.handleTranslateKeyframesStop)
 
 
 			// Enable Translate Scale if Alt key is down and if the target keyframe is
@@ -336,10 +328,11 @@ export default class SequenceEditor extends React.Component {
 		}
 	}
 
-	handleMouseUpWindow() {
-		window.removeEventListener('mouseup', this.handleMouseUpWindow)
+	handleTranslateKeyframesStop() {
+		window.removeEventListener('mouseup', this.handleTranslateKeyframesStop)
 		window.removeEventListener('mousemove', this.handleTranslateKeyframes)
 		window.removeEventListener('mousemove', this.handleTranslateScaleKeyframes)
+		this.fireStageChange(this.props.stage, false)
 	}
 
 	handleTranslateKeyframes(e) {
@@ -379,7 +372,7 @@ export default class SequenceEditor extends React.Component {
 				selectedKeyframes: selectedKeyframes,
 			})
 
-			this.fireStageChange(stage)
+			this.fireStageChange(stage, true)
 		}
 	}
 
@@ -417,11 +410,12 @@ export default class SequenceEditor extends React.Component {
 					}
 				})
 			}
+
 			this.setState({
 				selectedKeyframes: selectedKeyframes,
 			})
 
-			this.fireStageChange(stage)
+			this.fireStageChange(stage, true)
 		}
 	}
 	static translateKeyframes(keyframes, deltaT) {

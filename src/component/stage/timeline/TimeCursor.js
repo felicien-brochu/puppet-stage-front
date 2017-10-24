@@ -20,6 +20,6 @@ export default class TimeCursor extends React.Component {
 				<use x={x - 0.5} className="time-cursor-slider" href="#time-cursor-shape"/>
 				<rect x={x - 0.5} y={30} width="1" height={height}/>
 			</svg>
-		);
+		)
 	}
-};
+}

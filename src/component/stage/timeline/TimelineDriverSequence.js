@@ -51,7 +51,7 @@ export default class TimelineDriverSequence extends React.Component {
 				/>
 				{this.renderBasicSequences()}
 			</li>
-		);
+		)
 	}
 
 	renderBasicSequences() {

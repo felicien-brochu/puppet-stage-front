@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from 'react'
+import PropTypes from 'prop-types'
 
 export default class TextCreator extends React.Component {
 
@@ -13,7 +13,7 @@ export default class TextCreator extends React.Component {
 	}
 
 	constructor(props) {
-		super(props);
+		super(props)
 
 		this.state = {
 			nameEmpty: true
@@ -35,25 +35,25 @@ export default class TextCreator extends React.Component {
 					disabled={this.state.nameEmpty}
 				/>
 			</form>
-		);
+		)
 	}
 
 	handleSubmit(e) {
-		e.preventDefault();
-		let text = this.textInput.value;
+		e.preventDefault()
+		let text = this.textInput.value
 		if (text.length > 0) {
-			this.props.onCreate(text);
+			this.props.onCreate(text)
 		}
-		this.textInput.value = "";
-		this.handleChange();
+		this.textInput.value = ""
+		this.handleChange()
 	}
 
 	handleChange() {
-		let nameEmpty = !this.textInput.value.length > 0;
+		let nameEmpty = !this.textInput.value.length > 0
 		if (nameEmpty === !this.state.nameEmpty) {
 			this.setState({
 				nameEmpty: nameEmpty
 			})
 		}
 	}
-};
+}

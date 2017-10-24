@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export default class SequenceListActionBar extends React.Component {
 
@@ -6,6 +6,6 @@ export default class SequenceListActionBar extends React.Component {
 		return (
 			<div className="sequence-list-action-bar">
 			</div>
-		);
+		)
 	}
-};
+}

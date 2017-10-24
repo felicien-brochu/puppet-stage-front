@@ -228,4 +228,4 @@ export default class SequenceBox extends React.Component {
 		}
 		return keyframes
 	}
-};
+}

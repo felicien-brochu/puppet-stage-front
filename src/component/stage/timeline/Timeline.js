@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import PropTypes from 'prop-types'
 import units from '../../../util/units'
 import SequenceTimeline from './SequenceTimeline'
@@ -10,7 +10,7 @@ import TimeScroll from './TimeScroll'
 const PADDING_LEFT = 16
 const PADDING_RIGHT = 16
 const SCALE_MAX = 50 / units.FRAME_TIME // 50px by frame
-const SCALE_STEP = 70;
+const SCALE_STEP = 70
 
 export default class Timeline extends React.Component {
 
@@ -79,7 +79,7 @@ export default class Timeline extends React.Component {
 
 				</TimeScroll>
 			</div>
-		);
+		)
 	}
 
 	renderTimelineBody() {
@@ -135,8 +135,8 @@ export default class Timeline extends React.Component {
 	handleScrollX(delta) {
 		let scale = this.getScale()
 		let deltaT = 1 / scale * delta
-		let startTime = this.state.startTime + deltaT;
-		let endTime = this.state.endTime + deltaT;
+		let startTime = this.state.startTime + deltaT
+		let endTime = this.state.endTime + deltaT
 		if (startTime < 0) {
 			startTime = 0
 			endTime = this.state.endTime - this.state.startTime
@@ -227,7 +227,7 @@ export default class Timeline extends React.Component {
 			currentTime: time,
 		})
 	}
-};
+}
 
 function bound(x, min, max) {
 	if (x < min) {

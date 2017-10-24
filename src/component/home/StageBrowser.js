@@ -1,11 +1,11 @@
-import React from 'react';
+import React from 'react'
 import PropTypes from 'prop-types'
 import {
 	Redirect
 } from 'react-router-dom'
 
-import TextCreator from '../base/TextCreator';
-import List from '../base/List';
+import TextCreator from '../base/TextCreator'
+import List from '../base/List'
 
 import fetchAPI from '../../util/api'
 import alert from '../../util/alert'
@@ -16,7 +16,7 @@ export default class StageBrowser extends React.Component {
 	}
 
 	constructor(props) {
-		super(props);
+		super(props)
 
 		this.state = {
 			selectedStage: null,
@@ -28,7 +28,7 @@ export default class StageBrowser extends React.Component {
 
 	render() {
 		if (this.state.redirectTo) {
-			return <Redirect push to={this.state.redirectTo}/>;
+			return <Redirect push to={this.state.redirectTo}/>
 		}
 
 		return (
@@ -62,12 +62,12 @@ export default class StageBrowser extends React.Component {
 					Duplicate
 				</button>
 			</div>
-		);
+		)
 	}
 
 	handleCreateStage(name) {
 		if (typeof this.props.onCreate === 'function') {
-			this.props.onCreate(name);
+			this.props.onCreate(name)
 		}
 	}
 
@@ -86,41 +86,41 @@ export default class StageBrowser extends React.Component {
 	}
 
 	handleRemoveClick() {
-		let stage = this.state.selectedStage;
+		let stage = this.state.selectedStage
 		if (stage) {
-			let confirmed = window.confirm("Do you really want to delete \"" + stage.name + "\" stage ?");
+			let confirmed = window.confirm("Do you really want to delete \"" + stage.name + "\" stage ?")
 			if (confirmed) {
-				this.handleRemoveStage(stage);
+				this.handleRemoveStage(stage)
 			}
 		}
 	}
 
 	handleRemoveStage(stage) {
-		console.log("Remove stage: " + stage.name);
+		console.log("Remove stage: " + stage.name)
 		fetchAPI("/stage/" + stage.id, {
 			method: 'DELETE',
 		}, this.handleRemoveStageSuccess.bind(this), null, "Error deleting stage:")
 	}
 
 	handleRemoveStageSuccess(stage) {
-		console.log("Stage Deleted");
-		console.log(stage);
-		alert.successAlert("Stage successfully deleted");
+		console.log("Stage Deleted")
+		console.log(stage)
+		alert.successAlert("Stage successfully deleted")
 
 		let stages = this.state.stages.filter((p) => {
-			return p.id !== stage.id;
-		});
+			return p.id !== stage.id
+		})
 		this.setState({
 			stages: stages
 		})
 	}
 
 	handleDuplicateClick() {
-		let stage = this.state.selectedStage;
+		let stage = this.state.selectedStage
 		if (stage) {
-			console.log("Duplicate stage: " + stage.name);
-			let name = stage.name + "1";
-			this.handleCreateStage(name);
+			console.log("Duplicate stage: " + stage.name)
+			let name = stage.name + "1"
+			this.handleCreateStage(name)
 		}
 	}
 }

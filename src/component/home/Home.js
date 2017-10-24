@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import Alert from 'react-s-alert'
 import alert from '../../util/alert'
 import PuppetBrowser from './PuppetBrowser'
@@ -17,7 +17,7 @@ export default class Home extends React.Component {
 	}
 
 	componentWillMount() {
-		this.fetchStages();
+		this.fetchStages()
 	}
 
 	render() {
@@ -33,7 +33,7 @@ export default class Home extends React.Component {
 
 				<Alert stack={true} timeout={3000} />
 			</div>
-		);
+		)
 	}
 
 	fetchStages() {
@@ -43,15 +43,15 @@ export default class Home extends React.Component {
 	handleStagesRetrieved(stages) {
 		this.setState({
 			stages: stages
-		});
+		})
 	}
 
 	handleCreateStage(name) {
 		if (!this.state.selectedPuppet) {
-			alert.warningAlert("Select a puppet before creating a stage");
-			return;
+			alert.warningAlert("Select a puppet before creating a stage")
+			return
 		}
-		console.log("Create stage: " + name);
+		console.log("Create stage: " + name)
 		fetchAPI("/stage", {
 			method: 'PUT',
 			body: JSON.stringify({
@@ -62,12 +62,12 @@ export default class Home extends React.Component {
 	}
 
 	handleCreateStageSuccess(stage) {
-		console.log("Stage Created");
-		console.log(stage);
-		alert.successAlert("Stage successfully created: " + JSON.stringify(stage));
+		console.log("Stage Created")
+		console.log(stage)
+		alert.successAlert("Stage successfully created: " + JSON.stringify(stage))
 
-		let stages = Array.from(this.state.stages);
-		stages.push(stage);
+		let stages = Array.from(this.state.stages)
+		stages.push(stage)
 		this.setState({
 			stages: stages
 		})
@@ -78,4 +78,4 @@ export default class Home extends React.Component {
 			selectedPuppet: puppet,
 		})
 	}
-};
+}

@@ -1,17 +1,17 @@
-import React from 'react';
-import Alert from 'react-s-alert';
+import React from 'react'
+import Alert from 'react-s-alert'
 
-import List from '../base/List';
-import TextCreator from '../base/TextCreator';
-import ServoEditor from './ServoEditor';
+import List from '../base/List'
+import TextCreator from '../base/TextCreator'
+import ServoEditor from './ServoEditor'
 
-import fetchAPI from '../../util/api';
-import alert from '../../util/alert';
+import fetchAPI from '../../util/api'
+import alert from '../../util/alert'
 
 export default class PuppetEditor extends React.Component {
 
 	constructor() {
-		super();
+		super()
 
 		this.state = {
 			puppet: {
@@ -25,16 +25,16 @@ export default class PuppetEditor extends React.Component {
 			saved: true,
 		}
 
-		this.handleCreateBoard = this.handleCreateBoard.bind(this);
-		this.handleCreateServo = this.handleCreateServo.bind(this);
-		this.handlePuppetRetrieved = this.handlePuppetRetrieved.bind(this);
-		this.handleCreateBoardSuccess = this.handleCreateBoardSuccess.bind(this);
-		this.handleConnectBoardClick = this.handleConnectBoardClick.bind(this);
-		this.handleConnectBoardSuccess = this.handleConnectBoardSuccess.bind(this);
+		this.handleCreateBoard = this.handleCreateBoard.bind(this)
+		this.handleCreateServo = this.handleCreateServo.bind(this)
+		this.handlePuppetRetrieved = this.handlePuppetRetrieved.bind(this)
+		this.handleCreateBoardSuccess = this.handleCreateBoardSuccess.bind(this)
+		this.handleConnectBoardClick = this.handleConnectBoardClick.bind(this)
+		this.handleConnectBoardSuccess = this.handleConnectBoardSuccess.bind(this)
 	}
 
 	componentWillMount() {
-		this.fetchPuppet();
+		this.fetchPuppet()
 	}
 
 	render() {
@@ -69,7 +69,7 @@ export default class PuppetEditor extends React.Component {
 
 				<Alert stack={true} timeout={3000} />
 			</div>
-		);
+		)
 	}
 
 	renderServoBrowser() {
@@ -97,9 +97,9 @@ export default class PuppetEditor extends React.Component {
 						onSelect={(servo) => this.handleServoSelect(servo)}
 					/>
 				</div>
-			);
+			)
 		}
-		return;
+		return
 	}
 
 	renderServoEditor() {
@@ -110,13 +110,13 @@ export default class PuppetEditor extends React.Component {
 					onChange={(servo) => this.handleServoChange(servo)}
 					onPositionChange={(position) => {this.handleServoPositionChange(position)}}
 				/>
-			);
+			)
 		}
-		return;
+		return
 	}
 
 	fetchPuppet() {
-		let id = this.props.match.params.id;
+		let id = this.props.match.params.id
 		fetchAPI(
 			"/puppet/" + id, {},
 			this.handlePuppetRetrieved,
@@ -126,9 +126,9 @@ export default class PuppetEditor extends React.Component {
 	}
 
 	handlePuppetRetrieved(puppet) {
-		let selectedBoard = null;
+		let selectedBoard = null
 		if (Object.keys(puppet.boards).length > 0) {
-			selectedBoard = Object.entries(puppet.boards)[0][1];
+			selectedBoard = Object.entries(puppet.boards)[0][1]
 		}
 		this.setState({
 			puppet: puppet,
@@ -142,18 +142,18 @@ export default class PuppetEditor extends React.Component {
 			(board) => this.handleCreateBoardSuccess(board, name),
 			null,
 			"Create board error: "
-		);
+		)
 	}
 
 	handleCreateBoardSuccess(board, name) {
-		board.name = name;
+		board.name = name
 		let puppet = {
 			...this.state.puppet
-		};
-		puppet.boards[board.id] = board;
+		}
+		puppet.boards[board.id] = board
 
 		if (this.state.boardWebsocket) {
-			this.state.boardWebsocket.close();
+			this.state.boardWebsocket.close()
 		}
 
 		this.setState({
@@ -166,20 +166,20 @@ export default class PuppetEditor extends React.Component {
 
 	handleBoardSelect(board) {
 		if (!this.state.selectedBoard || board.id !== this.state.selectedBoard.id) {
-			let selectedServo = this.state.selectedServo;
+			let selectedServo = this.state.selectedServo
 			if (board) {
 				if (!this.state.selectedBoard || board.id !== this.state.selectedBoard.id) {
 					if (Object.keys(board.servos).length > 0) {
-						selectedServo = Object.entries(board.servos)[0][1];
+						selectedServo = Object.entries(board.servos)[0][1]
 					} else {
-						selectedServo = null;
+						selectedServo = null
 					}
 				}
 			} else {
-				selectedServo = null;
+				selectedServo = null
 			}
 			if (this.state.boardWebsocket) {
-				this.state.boardWebsocket.close();
+				this.state.boardWebsocket.close()
 			}
 			this.setState({
 				selectedBoard: board,
@@ -197,11 +197,11 @@ export default class PuppetEditor extends React.Component {
 			this.handleConnectBoardSuccess,
 			null,
 			"Connect board error: "
-		);
+		)
 	}
 
 	handleConnectBoardSuccess() {
-		let boardWebsocket = new WebSocket("ws://localhost:8080/puppet/" + this.state.puppet.id + "/board/" + this.state.selectedBoard.id + "/websocket");
+		let boardWebsocket = new WebSocket("ws://localhost:8080/puppet/" + this.state.puppet.id + "/board/" + this.state.selectedBoard.id + "/websocket")
 		this.setState({
 			boardWebsocket: boardWebsocket
 		})
@@ -213,16 +213,16 @@ export default class PuppetEditor extends React.Component {
 			(servo) => this.handleCreateServoSuccess(servo, name),
 			null,
 			"Create servo error: "
-		);
+		)
 	}
 
 	handleCreateServoSuccess(servo, name) {
-		servo.name = name;
+		servo.name = name
 		let puppet = {
 			...this.state.puppet
-		};
+		}
 
-		puppet.boards[this.state.selectedBoard.id].servos[servo.id] = servo;
+		puppet.boards[this.state.selectedBoard.id].servos[servo.id] = servo
 
 		this.setState({
 			puppet: puppet,
@@ -240,10 +240,10 @@ export default class PuppetEditor extends React.Component {
 	handleServoChange(servo) {
 		let puppet = {
 			...this.state.puppet
-		};
+		}
 
-		let board = puppet.boards[this.state.selectedBoard.id];
-		board.servos[servo.id] = servo;
+		let board = puppet.boards[this.state.selectedBoard.id]
+		board.servos[servo.id] = servo
 
 		this.setState({
 			puppet: puppet,
@@ -257,8 +257,8 @@ export default class PuppetEditor extends React.Component {
 			let command = {
 				addr: this.state.selectedServo.addr,
 				position: position,
-			};
-			this.state.boardWebsocket.send(JSON.stringify(command));
+			}
+			this.state.boardWebsocket.send(JSON.stringify(command))
 		}
 	}
 
@@ -271,20 +271,20 @@ export default class PuppetEditor extends React.Component {
 			this.handleSaveSuccess,
 			this.handleSaveError,
 			"Save error: "
-		);
+		)
 
 		this.setState({
 			saved: true
-		});
+		})
 	}
 
 	handleSaveSuccess(puppet) {
-		alert.successAlert("Save complete");
+		alert.successAlert("Save complete")
 	}
 
 	handleSaveError() {
 		this.setState({
 			saved: false
-		});
+		})
 	}
-};
+}

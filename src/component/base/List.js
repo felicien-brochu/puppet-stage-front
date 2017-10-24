@@ -1,6 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import React from 'react'
+import PropTypes from 'prop-types'
+import classNames from 'classnames'
 
 export default class List extends React.Component {
 
@@ -19,26 +19,26 @@ export default class List extends React.Component {
 				onClick={() => this.handleClickOutside()}>
 				{this.renderItems()}
 			</ul>
-		);
+		)
 	}
 
 	getKey(item) {
-		return item[this.props.itemKeyKey];
+		return item[this.props.itemKeyKey]
 	}
 
 	getValue(item) {
-		return item[this.props.itemValueKey];
+		return item[this.props.itemValueKey]
 	}
 
 	renderItem(item) {
 		let key = this.getKey(item)
 		let selected =
 			this.props.selectedItem &&
-			key === this.getKey(this.props.selectedItem);
+			key === this.getKey(this.props.selectedItem)
 
 		let classes = classNames('list-item', {
 			'selected': selected,
-		});
+		})
 
 		return (
 			<li
@@ -48,34 +48,34 @@ export default class List extends React.Component {
 			>
 				{this.getValue(item)}
 			</li>
-		);
+		)
 	}
 
 	renderItems() {
 		return Object.entries(this.props.list).map((entry) => {
-			return this.renderItem(entry[1]);
-		});
+			return this.renderItem(entry[1])
+		})
 	}
 
 	handleClick(e, key) {
-		e.stopPropagation();
+		e.stopPropagation()
 		if (typeof this.props.onSelect === 'function') {
-			let selectedItem;
+			let selectedItem
 
 			Object.entries(this.props.list).forEach(
 				(entry) => {
 					if (this.getKey(entry[1]) === key) {
-						selectedItem = entry[1];
-						return false;
+						selectedItem = entry[1]
+						return false
 					}
-				});
-			this.props.onSelect(selectedItem);
+				})
+			this.props.onSelect(selectedItem)
 		}
 	}
 
 	handleClickOutside() {
 		if (typeof this.props.onSelect === 'function') {
-			this.props.onSelect(null);
+			this.props.onSelect(null)
 		}
 	}
-};
+}

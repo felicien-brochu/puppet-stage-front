@@ -37,7 +37,7 @@ export default class TimeRuler extends React.Component {
 					{this.renderElements()}
 				</svg>
 			</div>
-		);
+		)
 	}
 
 	renderElements() {
@@ -220,7 +220,7 @@ export default class TimeRuler extends React.Component {
 				break
 			}
 		}
-		return unit;
+		return unit
 	}
 
 	handleMouseDown(e) {
@@ -263,4 +263,4 @@ export default class TimeRuler extends React.Component {
 			this.props.onCurrentTimeChange(time)
 		}
 	}
-};
+}

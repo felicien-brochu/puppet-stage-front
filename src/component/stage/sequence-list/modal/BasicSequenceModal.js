@@ -46,25 +46,25 @@ export default class BasicSequenceModal extends React.Component {
 					<button onClick={() => this.handleOKClick()}>OK</button>
 				</div>
 			</Modal>
-		);
+		)
 	}
 
 	handleRequestClose() {
 		if (typeof this.props.onCancel === 'function') {
-			this.props.onCancel();
+			this.props.onCancel()
 		}
 	}
 
 	handleCancelClick() {
 		if (typeof this.props.onCancel === 'function') {
-			this.props.onCancel();
+			this.props.onCancel()
 		}
 	}
 
 	handleOKClick() {
-		let name = this.refs.nameInput.value;
+		let name = this.refs.nameInput.value
 		if (name === "") {
-			return;
+			return
 		}
 
 		let sequence = {
@@ -85,7 +85,7 @@ export default class BasicSequenceModal extends React.Component {
 
 
 		if (typeof this.props.onConfirm === 'function') {
-			this.props.onConfirm(sequence, this.props.driverSequence);
+			this.props.onConfirm(sequence, this.props.driverSequence)
 		}
 	}
 }

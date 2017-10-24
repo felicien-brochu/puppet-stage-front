@@ -1,12 +1,12 @@
 import {
 	host
-} from './api';
+} from './api'
 
-let uuids = [];
+let uuids = []
 
 function fetchUUIDs(number, onSuccess, errorMessage = "Error retrieving uuids: ") {
-	let path = host + `/uuids/?n=${number}`;
-	errorMessage += "(" + path + ") ";
+	let path = host + `/uuids/?n=${number}`
+	errorMessage += "(" + path + ") "
 	fetch(path, {
 			mode: 'cors'
 		})
@@ -15,32 +15,32 @@ function fetchUUIDs(number, onSuccess, errorMessage = "Error retrieving uuids: "
 				response.json()
 					.then((object) => {
 						if (onSuccess) {
-							onSuccess(object);
+							onSuccess(object)
 						}
-					});
+					})
 			} else {
-				console.log(errorMessage);
-				console.log(response);
+				console.log(errorMessage)
+				console.log(response)
 			}
 		})
 		.catch((error) => {
-			console.log(errorMessage);
-			console.log(error);
+			console.log(errorMessage)
+			console.log(error)
 		})
-};
+}
 
-fetchUUIDs(100, onFetchSuccess);
+fetchUUIDs(100, onFetchSuccess)
 
 function onFetchSuccess(newUUIDs) {
-	uuids = newUUIDs;
+	uuids = newUUIDs
 }
 
 export default class UUID {
 	static getUUID() {
-		let uuid = uuids.pop();
+		let uuid = uuids.pop()
 		if (uuids.length < 10) {
-			fetchUUIDs(100, onFetchSuccess);
+			fetchUUIDs(100, onFetchSuccess)
 		}
-		return uuid;
+		return uuid
 	}
 }

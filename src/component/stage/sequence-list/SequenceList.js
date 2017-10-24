@@ -32,7 +32,7 @@ export default class SequenceList extends React.Component {
 	}
 
 	constructor(props) {
-		super(props);
+		super(props)
 
 		this.state = {
 			sequences: props.sequences,
@@ -106,7 +106,7 @@ export default class SequenceList extends React.Component {
 				{this.renderModals()}
 
 				</ContextMenuTrigger>
-		);
+		)
 	}
 
 	renderList() {
@@ -172,7 +172,7 @@ export default class SequenceList extends React.Component {
 	}
 
 	handleContextMenuClick(e, data) {
-		console.log(data);
+		console.log(data)
 		switch (data.action) {
 			case NEW_DRIVER_SEQUENCE:
 				this.createDriverSequence()
@@ -292,4 +292,4 @@ export default class SequenceList extends React.Component {
 			this.props.onDriverSequenceChange(sequence)
 		}
 	}
-};
+}

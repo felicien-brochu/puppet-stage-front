@@ -69,7 +69,7 @@ export default class TimeScroll extends React.Component {
 					onScroll={this.handleScrollToT}
 				/>
 			</div>
-		);
+		)
 	}
 
 	getScale() {
@@ -118,7 +118,7 @@ export default class TimeScroll extends React.Component {
 			} else if (e.shiftKey) {
 				this.fireScrollX(deltaY)
 			} else {
-				let viewHeight = this.props.timeline.height;
+				let viewHeight = this.props.timeline.height
 				let contentHeight = this.refs.childrenContainer.getBoundingClientRect().height
 
 				if (contentHeight > viewHeight) {
@@ -174,4 +174,4 @@ export default class TimeScroll extends React.Component {
 			this.props.onResize(width - SCROLL_BAR_WIDTH, height)
 		}
 	}
-};
+}

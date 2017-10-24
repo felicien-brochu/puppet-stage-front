@@ -45,6 +45,6 @@ export default class SelectionOverlay extends React.Component {
 			<svg className="selection-overlay">
 				{selection}
 			</svg>
-		);
+		)
 	}
-};
+}

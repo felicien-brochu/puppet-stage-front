@@ -5,20 +5,41 @@ import {
 	Loader
 } from 'react-loaders'
 import SequenceEditor from './SequenceEditor'
+import StageHistory from './StageHistory'
 import fetchAPI from '../../util/api'
 
 export default class StageEditor extends React.Component {
 
-	constructor() {
-		super();
+	constructor(props) {
+		super(props)
 
 		this.state = {
 			puppet: null,
 			stage: null,
 		}
+
+		this.stageID = props.match.params.id
+		this.history = new StageHistory(this.stageID)
+
+		this.handleStageChange = this.handleStageChange.bind(this)
+		this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this)
 	}
+
 	componentWillMount() {
-		this.fetchStage();
+		this.fetchStage()
+		this.initGlobalEvents()
+	}
+
+	componentWillUnmount() {
+		this.removeGlobalEvents()
+	}
+
+	initGlobalEvents() {
+		window.addEventListener('keydown', this.handleGlobalKeyDown)
+	}
+
+	removeGlobalEvents() {
+		window.removeEventListener('keydown', this.handleGlobalKeyDown)
 	}
 
 	render() {
@@ -30,35 +51,35 @@ export default class StageEditor extends React.Component {
 					<SequenceEditor
 						stage={this.state.stage}
 						puppet={this.state.puppet}
-						onStageChange={(stage) => this.handleStageChange(stage)}
+						onStageChange={this.handleStageChange}
 					/>
 					{/* </SplitPane> */}
 
 					<Alert stack={true} timeout={3000} />
 				</div>
-			);
+			)
 		} else {
 			return (
 				<div className="stage-editor">
 					<Loader type="line-scale"/>
 					<Alert stack={true} timeout={3000} />
 				</div>
-			);
+			)
 		}
 	}
 
-	handleStageChange(stage) {
-		console.log("StageEditor handleStageChange")
-		// console.log(JSON.stringify(stage));
+	handleStageChange(stage, minor = false) {
+		if (!minor) {
+			this.history.push(stage)
+		}
 		this.setState({
 			stage: stage,
 		})
 	}
 
 	fetchStage() {
-		let id = this.props.match.params.id;
 		fetchAPI(
-			"/stage/" + id, {},
+			"/stage/" + this.stageID, {},
 			this.handleStageRetrieved.bind(this),
 			null,
 			"Error retrieving stage:"
@@ -186,9 +207,7 @@ export default class StageEditor extends React.Component {
 			"duration": 60000000000,
 			"history": []
 		}
-		this.setState({
-			stage: stage,
-		})
+		this.handleStageChange(stage)
 	}
 
 	fetchPuppet(id) {
@@ -198,6 +217,36 @@ export default class StageEditor extends React.Component {
 	handlePuppetRetrieved(puppet) {
 		this.setState({
 			puppet: puppet,
-		});
+		})
 	}
-};
+
+	handleGlobalKeyDown(e) {
+		if (e.ctrlKey) {
+			if (e.key === 'z') {
+				this.historyPrevious()
+				e.preventDefault()
+			} else if (e.key === 'y') {
+				this.historyNext()
+				e.preventDefault()
+			}
+		}
+	}
+
+	historyPrevious() {
+		let stage = this.history.previous()
+		if (stage) {
+			this.setState({
+				stage: stage,
+			})
+		}
+	}
+
+	historyNext() {
+		let stage = this.history.next()
+		if (stage) {
+			this.setState({
+				stage: stage,
+			})
+		}
+	}
+}

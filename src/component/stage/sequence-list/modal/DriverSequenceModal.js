@@ -71,26 +71,26 @@ export default class DriverSequenceModal extends React.Component {
 					<button onClick={() => this.handleOKClick()}>OK</button>
 				</div>
 			</Modal>
-		);
+		)
 	}
 
 	handleRequestClose() {
 		if (typeof this.props.onCancel === 'function') {
-			this.props.onCancel();
+			this.props.onCancel()
 		}
 	}
 
 	handleCancelClick() {
 		if (typeof this.props.onCancel === 'function') {
-			this.props.onCancel();
+			this.props.onCancel()
 		}
 	}
 
 	handleOKClick() {
-		let servoID = this.refs.servoSelect.value;
-		let name = this.refs.nameInput.value;
+		let servoID = this.refs.servoSelect.value
+		let name = this.refs.nameInput.value
 		if (servoID === "" || name === "") {
-			return;
+			return
 		}
 
 		let sequence = {
@@ -110,7 +110,7 @@ export default class DriverSequenceModal extends React.Component {
 
 
 		if (typeof this.props.onConfirm === 'function') {
-			this.props.onConfirm(sequence);
+			this.props.onConfirm(sequence)
 		}
 	}
 }

@@ -72,7 +72,7 @@ export default class ScrollBar extends React.Component {
 					draggable={false}
 				/>
 			</div>
-		);
+		)
 	}
 
 	handleBackgroundClick(e) {

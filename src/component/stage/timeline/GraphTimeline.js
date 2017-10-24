@@ -15,6 +15,6 @@ export default class GraphTimeline extends React.Component {
 		return (
 			<div className="graph-timeline">
 			</div>
-		);
+		)
 	}
-};
+}
