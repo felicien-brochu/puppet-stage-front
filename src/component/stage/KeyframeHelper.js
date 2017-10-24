@@ -10,10 +10,15 @@ export default class KeyframeHelper {
 			refTime,
 			refDuration,
 			mode,
+			deltaMin,
+			deltaMax,
 		} = translation
 
 		let deltaT = (newClientX - clientX) * (1 / timeScale)
 		deltaT = Math.round(deltaT / units.FRAME_TIME) * units.FRAME_TIME
+
+		deltaT = Math.max(deltaT, deltaMin)
+		deltaT = Math.min(deltaT, deltaMax)
 
 		if (deltaT !== 0) {
 			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
@@ -90,13 +95,15 @@ export default class KeyframeHelper {
 			mode = 'translate',
 			initialKeyframes = KeyframeHelper.collectSelectedKeyframes(stage, selectedKeyframes),
 			refTime = 0,
-			refDuration = 0
+			refDuration = 0,
+			boundaries = KeyframeHelper.getSelectionBoundaries(initialKeyframes, selectedKeyframes),
+			deltaMin = -boundaries.minT,
+			deltaMax = stage.duration - boundaries.maxT
 
 		// Enable Translate Scale if Alt key is down and if the target keyframe is
 		// the first or the last of selection. Store the fix point of
 		// time for the scale in var refTime.
 		if (scaleEnabled) {
-			let boundaries = KeyframeHelper.getSelectionBoundaries(initialKeyframes, selectedKeyframes)
 			if (boundaries.minT !== boundaries.maxT) {
 				let isMin = KeyframeHelper.equals(targetKeyframe, boundaries.minKeyframe)
 				let isMax = KeyframeHelper.equals(targetKeyframe, boundaries.maxKeyframe)
@@ -107,9 +114,13 @@ export default class KeyframeHelper {
 					if (isMin) {
 						refTime = boundaries.maxT
 						refDuration = boundaries.minT - boundaries.maxT
+						deltaMin = -boundaries.minT
+						deltaMax = stage.duration - boundaries.minT
 					} else if (isMax) {
 						refTime = boundaries.minT
 						refDuration = boundaries.maxT - boundaries.minT
+						deltaMin = -boundaries.maxT
+						deltaMax = stage.duration - boundaries.maxT
 					}
 				}
 			}
@@ -123,6 +134,8 @@ export default class KeyframeHelper {
 			refTime: refTime,
 			refDuration: refDuration,
 			mode: mode,
+			deltaMin: deltaMin,
+			deltaMax: deltaMax,
 		}
 	}
 
