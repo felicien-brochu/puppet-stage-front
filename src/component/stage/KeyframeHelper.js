@@ -1,7 +1,52 @@
 import units from '../../util/units'
 import model from '../../util/model'
 
-export default class KeyFrameHelper {
+export default class KeyframeHelper {
+
+	static applyTranslation(stage, selectedKeyframes, translation, newClientX, timeScale) {
+		let {
+			initialKeyframes,
+			clientX,
+			refTime,
+			refDuration,
+			mode,
+		} = translation
+
+		let deltaT = (newClientX - clientX) * (1 / timeScale)
+		deltaT = Math.round(deltaT / units.FRAME_TIME) * units.FRAME_TIME
+
+		if (deltaT !== 0) {
+			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
+
+			for (let [sequenceID, keyframes] of stageKeyframes) {
+				if (mode === 'translate') {
+					KeyframeHelper.translateKeyframes(keyframes, deltaT)
+				} else if (mode === 'scale') {
+					let scaleFactor = (refDuration + deltaT) / refDuration
+					KeyframeHelper.scaleKeyframes(keyframes, scaleFactor, refTime)
+				}
+				KeyframeHelper.sortKeyframes(keyframes)
+				KeyframeHelper.removeDoubleKeyframes(keyframes)
+
+				let sequence = model.getBasicSequence(stage, sequenceID)
+				sequence.keyframes = keyframes.keyframes
+
+				// Update selected keyframes
+				keyframes.selected.forEach((selected, index) => {
+					if (selected) {
+						selectedKeyframes.push({
+							sequenceID: sequenceID,
+							index: index,
+						})
+					}
+				})
+			}
+
+			return true
+		}
+
+		return false
+	}
 
 	static equals(keyframe1, keyframe2) {
 		return keyframe1.sequenceID === keyframe2.sequenceID && keyframe1.index === keyframe2.index
@@ -38,6 +83,47 @@ export default class KeyFrameHelper {
 			}
 		}
 		return found
+	}
+
+	static constructTranslationObject(stage, selectedKeyframes, targetKeyframe, scaleEnabled, clientX, clientY) {
+		let
+			mode = 'translate',
+			initialKeyframes = KeyframeHelper.collectSelectedKeyframes(stage, selectedKeyframes),
+			refTime = 0,
+			refDuration = 0
+
+		// Enable Translate Scale if Alt key is down and if the target keyframe is
+		// the first or the last of selection. Store the fix point of
+		// time for the scale in var refTime.
+		if (scaleEnabled) {
+			let boundaries = KeyframeHelper.getSelectionBoundaries(initialKeyframes, selectedKeyframes)
+			if (boundaries.minT !== boundaries.maxT) {
+				let isMin = KeyframeHelper.equals(targetKeyframe, boundaries.minKeyframe)
+				let isMax = KeyframeHelper.equals(targetKeyframe, boundaries.maxKeyframe)
+
+				if (isMin || isMax) {
+					mode = 'scale'
+
+					if (isMin) {
+						refTime = boundaries.maxT
+						refDuration = boundaries.minT - boundaries.maxT
+					} else if (isMax) {
+						refTime = boundaries.minT
+						refDuration = boundaries.maxT - boundaries.minT
+					}
+				}
+			}
+		}
+
+		return {
+			initialSelectedKeyframes: JSON.parse(JSON.stringify(selectedKeyframes)),
+			initialKeyframes: initialKeyframes,
+			clientX: clientX,
+			clientY: clientY,
+			refTime: refTime,
+			refDuration: refDuration,
+			mode: mode,
+		}
 	}
 
 	static getSelectionBoundaries(stageKeyframes, selectedKeyframes) {
@@ -148,6 +234,6 @@ export default class KeyFrameHelper {
 
 			keyframes.get(keyframe.sequenceID).selected[keyframe.index] = true
 		}
-		return JSON.parse(JSON.stringify([...keyframes]))
+		return keyframes
 	}
 }

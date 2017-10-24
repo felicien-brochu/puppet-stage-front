@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import model from '../../util/model'
-import units from '../../util/units'
 import SequenceList from './sequence-list/SequenceList'
 import Timeline from './timeline/Timeline'
 import KeyframeHelper from './KeyframeHelper'
@@ -36,7 +35,6 @@ export default class SequenceEditor extends React.Component {
 		this.handleSingleKeyframeMouseDown = this.handleSingleKeyframeMouseDown.bind(this)
 		this.handleTranslateKeyframesStop = this.handleTranslateKeyframesStop.bind(this)
 		this.handleTranslateKeyframes = this.handleTranslateKeyframes.bind(this)
-		this.handleTranslateScaleKeyframes = this.handleTranslateScaleKeyframes.bind(this)
 	}
 
 	render() {
@@ -222,45 +220,10 @@ export default class SequenceEditor extends React.Component {
 
 	handleTranslateKeyframesStart(targetKeyframe, e) {
 		if (this.state.selectedKeyframes.length > 0) {
-			let
-				initialKeyframes = KeyframeHelper.collectSelectedKeyframes(this.props.stage, this.state.selectedKeyframes),
-				handler = this.handleTranslateKeyframes,
-				refTime = 0,
-				refDuration = 0
+			this.translation = KeyframeHelper.constructTranslationObject(this.props.stage, this.state.selectedKeyframes, targetKeyframe, e.altKey, e.clientX, e.clientY)
 
 			window.addEventListener('mouseup', this.handleTranslateKeyframesStop)
-
-
-			// Enable Translate Scale if Alt key is down and if the target keyframe is
-			// the first or the last of selection. Store the fix point of
-			// time for the scale in var refTime.
-			if (e.altKey) {
-				let boundaries = KeyframeHelper.getSelectionBoundaries(initialKeyframes, this.state.selectedKeyframes)
-				if (boundaries.minT !== boundaries.maxT) {
-					let isMin = KeyframeHelper.equals(targetKeyframe, boundaries.minKeyframe)
-					let isMax = KeyframeHelper.equals(targetKeyframe, boundaries.maxKeyframe)
-					if (isMin || isMax) {
-						handler = this.handleTranslateScaleKeyframes
-					}
-					if (isMin) {
-						refTime = boundaries.maxT
-						refDuration = boundaries.minT - boundaries.maxT
-					} else if (isMax) {
-						refTime = boundaries.minT
-						refDuration = boundaries.maxT - boundaries.minT
-					}
-				}
-			}
-			this.translation = {
-				initialSelectedKeyframes: JSON.parse(JSON.stringify(this.state.selectedKeyframes)),
-				initialKeyframes: initialKeyframes,
-				clientX: e.clientX,
-				clientY: e.clientY,
-				refTime: refTime,
-				refDuration: refDuration,
-			}
-
-			window.addEventListener('mousemove', handler)
+			window.addEventListener('mousemove', this.handleTranslateKeyframes)
 		}
 	}
 
@@ -272,81 +235,11 @@ export default class SequenceEditor extends React.Component {
 	}
 
 	handleTranslateKeyframes(e) {
-		let {
-			initialKeyframes,
-			clientX,
-		} = this.translation
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let selectedKeyframes = []
+		let hasChanged = KeyframeHelper.applyTranslation(stage, selectedKeyframes, this.translation, e.clientX, this.timeScale)
 
-		let deltaT = (e.clientX - clientX) * (1 / this.timeScale)
-		deltaT = Math.round(deltaT / units.FRAME_TIME) * units.FRAME_TIME
-
-		if (deltaT !== 0) {
-			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
-			let stage = JSON.parse(JSON.stringify(this.props.stage))
-			let selectedKeyframes = []
-
-			for (let [sequenceID, keyframes] of stageKeyframes) {
-				KeyframeHelper.translateKeyframes(keyframes, deltaT)
-				KeyframeHelper.sortKeyframes(keyframes)
-				KeyframeHelper.removeDoubleKeyframes(keyframes)
-
-				let sequence = model.getBasicSequence(stage, sequenceID)
-				sequence.keyframes = keyframes.keyframes
-
-				// Update selected keyframes
-				keyframes.selected.forEach((selected, index) => {
-					if (selected) {
-						selectedKeyframes.push({
-							sequenceID: sequenceID,
-							index: index,
-						})
-					}
-				})
-			}
-
-			this.setState({
-				selectedKeyframes: selectedKeyframes,
-			})
-
-			this.fireStageChange(stage, true)
-		}
-	}
-
-	handleTranslateScaleKeyframes(e) {
-		let {
-			initialKeyframes,
-			clientX,
-			refTime,
-			refDuration,
-		} = this.translation
-
-		let deltaT = (e.clientX - clientX) * (1 / this.timeScale)
-		deltaT = Math.round(deltaT / units.FRAME_TIME) * units.FRAME_TIME
-
-		if (deltaT !== 0) {
-			let stage = JSON.parse(JSON.stringify(this.props.stage))
-			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
-			let selectedKeyframes = []
-			for (let [sequenceID, keyframes] of stageKeyframes) {
-				let scaleFactor = (refDuration + deltaT) / refDuration
-				KeyframeHelper.scaleKeyframes(keyframes, scaleFactor, refTime)
-				KeyframeHelper.sortKeyframes(keyframes)
-				KeyframeHelper.removeDoubleKeyframes(keyframes)
-
-				let sequence = model.getBasicSequence(stage, sequenceID)
-				sequence.keyframes = keyframes.keyframes
-
-				// Update selected keyframes
-				keyframes.selected.forEach((selected, index) => {
-					if (selected) {
-						selectedKeyframes.push({
-							sequenceID: sequenceID,
-							index: index,
-						})
-					}
-				})
-			}
-
+		if (hasChanged) {
 			this.setState({
 				selectedKeyframes: selectedKeyframes,
 			})
