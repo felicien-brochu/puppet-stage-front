@@ -35,6 +35,7 @@ export default class TimeScroll extends React.Component {
 		this.handleScrollToT = this.handleScrollToT.bind(this)
 		this.handleScrollToY = this.handleScrollToY.bind(this)
 		this.handleResize = this.handleResize.bind(this)
+		this.handleWheel = this.handleWheel.bind(this)
 	}
 
 	render() {

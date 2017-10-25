@@ -159,7 +159,7 @@ export default class SequenceBox extends React.Component {
 				className={className}
 				key={i}
 				ref={keyframe => this.keyframes[i] = keyframe}
-				onMouseDown={this.handleKeyframeMouseDown}
+				onMouseDown={(e) => this.handleKeyframeMouseDown(i, e)}
 				x={x}
 				y={this.props.height / 2}
 		/>

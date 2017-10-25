@@ -23,6 +23,7 @@ export default class StageEditor extends React.Component {
 
 		this.handleStageChange = this.handleStageChange.bind(this)
 		this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this)
+		this.handleGlobalWheel = this.handleGlobalWheel.bind(this)
 	}
 
 	componentWillMount() {
@@ -36,10 +37,12 @@ export default class StageEditor extends React.Component {
 
 	initGlobalEvents() {
 		window.addEventListener('keydown', this.handleGlobalKeyDown)
+		window.addEventListener('wheel', this.handleGlobalWheel)
 	}
 
 	removeGlobalEvents() {
 		window.removeEventListener('keydown', this.handleGlobalKeyDown)
+		window.removeEventListener('wheel', this.handleGlobalWheel)
 	}
 
 	render() {
@@ -220,6 +223,10 @@ export default class StageEditor extends React.Component {
 		})
 	}
 
+	handleGlobalWheel(e) {
+		e.preventDefault()
+	}
+
 	handleGlobalKeyDown(e) {
 		if (e.ctrlKey) {
 			if (e.key === 'z') {
@@ -232,6 +239,10 @@ export default class StageEditor extends React.Component {
 				this.handleSave()
 				e.preventDefault()
 			}
+		}
+
+		if (e.key === 'Alt' || e.key === 'Control') {
+			e.preventDefault()
 		}
 	}
 
