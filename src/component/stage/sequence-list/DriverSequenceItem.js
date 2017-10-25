@@ -17,6 +17,12 @@ export default class DriverSequenceItem extends React.Component {
 		onExpand: PropTypes.func,
 	}
 
+	constructor(props) {
+		super(props)
+
+		this.handleExpand = this.handleExpand.bind(this)
+	}
+
 	render() {
 		return (
 			<ContextMenuTrigger
@@ -34,7 +40,7 @@ export default class DriverSequenceItem extends React.Component {
 				<div className="driver-sequence-title">
 					<ExpandButton
 						expanded={this.props.sequence.expanded}
-						onExpand={(expanded) => this.handleExpand(expanded)}/>
+						onExpand={this.handleExpand}/>
 
 					<span className={classNames("color-tile", colorClasses[this.props.color])}/>
 					<span className="sequence-label">

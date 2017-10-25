@@ -34,13 +34,14 @@ export default class TimeScroll extends React.Component {
 
 		this.handleScrollToT = this.handleScrollToT.bind(this)
 		this.handleScrollToY = this.handleScrollToY.bind(this)
+		this.handleResize = this.handleResize.bind(this)
 	}
 
 	render() {
 		return (
 			<div
 				className="time-scroll"
-				onWheel={(e) => this.handleWheel(e)}
+				onWheel={this.handleWheel}
 			>
 				<div
 					className="children-container"
@@ -59,7 +60,7 @@ export default class TimeScroll extends React.Component {
 						viewEnd={this.props.timeline.height + this.props.scrollY}
 						onScroll={this.handleScrollToY}
 					/>
-					<ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.handleResize(width, height)}/>
+					<ReactResizeDetector handleWidth handleHeight onResize={this.handleResize}/>
 				</div>
 				<ScrollBar
 					orientation="horizontal"

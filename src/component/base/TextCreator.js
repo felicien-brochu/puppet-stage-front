@@ -18,15 +18,18 @@ export default class TextCreator extends React.Component {
 		this.state = {
 			nameEmpty: true
 		}
+
+		this.handleSubmit = this.handleSubmit.bind(this)
+		this.handleChange = this.handleChange.bind(this)
 	}
 
 	render() {
 		return (
-			<form className="puppet-creator" onSubmit={(e) => this.handleSubmit(e)}>
+			<form className="puppet-creator" onSubmit={this.handleSubmit}>
 				<input
 					type="text"
 					ref={textInput => this.textInput = textInput}
-					onChange={() => this.handleChange()}
+					onChange={this.handleChange}
 					placeholder={this.props.placeholder}
 				/>
 				<input

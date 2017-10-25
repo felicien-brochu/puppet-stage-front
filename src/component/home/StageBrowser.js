@@ -24,6 +24,10 @@ export default class StageBrowser extends React.Component {
 		}
 
 		this.handleCreateStage = this.handleCreateStage.bind(this)
+		this.handleSelect = this.handleSelect.bind(this)
+		this.handleEditClick = this.handleEditClick.bind(this)
+		this.handleRemoveClick = this.handleRemoveClick.bind(this)
+		this.handleDuplicateClick = this.handleDuplicateClick.bind(this)
 	}
 
 	render() {
@@ -40,24 +44,24 @@ export default class StageBrowser extends React.Component {
 					itemKeyKey="id"
 					itemValueKey="name"
 					selectedItem={this.state.selectedStage}
-					onSelect={(p) => this.handleSelect(p)}
+					onSelect={this.handleSelect}
 				/>
 
 				<button
 					type="button"
-					onClick={() => this.handleEditClick()}
+					onClick={this.handleEditClick}
 					disabled={this.state.selectedStage ? false : true}>
 					Edit
 				</button>
 				<button
 					type="button"
-					onClick={() => this.handleRemoveClick()}
+					onClick={this.handleRemoveClick}
 					disabled={this.state.selectedStage ? false : true}>
 					Remove
 				</button>
 				<button
 					type="button"
-					onClick={() => this.handleDuplicateClick()}
+					onClick={this.handleDuplicateClick}
 					disabled={this.state.selectedStage ? false : true}>
 					Duplicate
 				</button>

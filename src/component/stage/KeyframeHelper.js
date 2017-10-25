@@ -47,6 +47,7 @@ export default class KeyframeHelper {
 				})
 			}
 
+			translation.hasChanged = true
 			return true
 		}
 
@@ -136,6 +137,7 @@ export default class KeyframeHelper {
 			mode: mode,
 			deltaMin: deltaMin,
 			deltaMax: deltaMax,
+			hasChanged: false,
 		}
 	}
 

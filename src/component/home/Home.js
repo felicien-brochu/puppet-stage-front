@@ -14,6 +14,11 @@ export default class Home extends React.Component {
 			selectedPuppet: null,
 			stages: [],
 		}
+
+		this.handleCreateStage = this.handleCreateStage.bind(this)
+		this.handlePuppetSelect = this.handlePuppetSelect.bind(this)
+		this.handleStagesRetrieved = this.handleStagesRetrieved.bind(this)
+		this.handleCreateStageSuccess = this.handleCreateStageSuccess.bind(this)
 	}
 
 	componentWillMount() {
@@ -25,10 +30,10 @@ export default class Home extends React.Component {
 			<div className="home-container">
 				<StageBrowser
 					stages={this.state.stages}
-					onCreate={(name) => this.handleCreateStage(name)}
+					onCreate={this.handleCreateStage}
 				/>
 				<PuppetBrowser
-					onSelect={(puppet) => this.handlePuppetSelect(puppet)}
+					onSelect={this.handlePuppetSelect}
 				/>
 
 				<Alert stack={true} timeout={3000} />
@@ -37,7 +42,7 @@ export default class Home extends React.Component {
 	}
 
 	fetchStages() {
-		fetchAPI("/stages", {}, this.handleStagesRetrieved.bind(this), null, "Error retrieving stages:")
+		fetchAPI("/stages", {}, this.handleStagesRetrieved, null, "Error retrieving stages:")
 	}
 
 	handleStagesRetrieved(stages) {
@@ -58,7 +63,7 @@ export default class Home extends React.Component {
 				name: name,
 				puppetID: this.state.selectedPuppet.id,
 			}),
-		}, this.handleCreateStageSuccess.bind(this), null, "Error creating stage:")
+		}, this.handleCreateStageSuccess, null, "Error creating stage:")
 	}
 
 	handleCreateStageSuccess(stage) {

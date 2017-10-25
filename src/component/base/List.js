@@ -12,11 +12,18 @@ export default class List extends React.Component {
 		onSelect: PropTypes.func,
 	}
 
+	constructor(props) {
+		super(props)
+
+		this.handleClickOutside = this.handleClickOutside.bind(this)
+		this.handleClick = this.handleClick.bind(this)
+	}
+
 	render() {
 		return (
 			<ul
 				className="list"
-				onClick={() => this.handleClickOutside()}>
+				onClick={this.handleClickOutside}>
 				{this.renderItems()}
 			</ul>
 		)
@@ -44,7 +51,7 @@ export default class List extends React.Component {
 			<li
 				key={key}
 				className={classes}
-				onClick={(e) => this.handleClick(e, key)}
+				onClick={this.handleClick}
 			>
 				{this.getValue(item)}
 			</li>

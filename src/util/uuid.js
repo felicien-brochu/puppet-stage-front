@@ -3,44 +3,69 @@ import {
 } from './api'
 
 let uuids = []
+let fetchingPromise = null
 
-function fetchUUIDs(number, onSuccess, errorMessage = "Error retrieving uuids: ") {
-	let path = host + `/uuids/?n=${number}`
-	errorMessage += "(" + path + ") "
-	fetch(path, {
-			mode: 'cors'
-		})
-		.then((response) => {
-			if (response.ok) {
-				response.json()
-					.then((object) => {
-						if (onSuccess) {
-							onSuccess(object)
-						}
-					})
-			} else {
-				console.log(errorMessage)
-				console.log(response)
-			}
-		})
-		.catch((error) => {
-			console.log(errorMessage)
-			console.log(error)
-		})
-}
+fetchUUIDs(200)
 
-fetchUUIDs(100, onFetchSuccess)
+function fetchUUIDs(number, errorMessage = "Error retrieving uuids: ") {
+	if (!fetchingPromise) {
+		let path = host + `/uuids/?n=${number}`
+		errorMessage += "(" + path + ") "
+		fetchingPromise = new Promise((resolve, reject) => {
+			fetch(path, {
+					mode: 'cors'
+				})
+				.then((response) => {
+					if (response.ok) {
+						response.json()
+							.then((newUUIDs) => {
+								uuids = newUUIDs
+								resolve()
+								fetchingPromise = null
+							})
+							.catch(() => {
+								reject()
+							})
+					} else {
+						console.log(errorMessage)
+						console.log(response)
+						reject()
+						fetchingPromise = null
+					}
+				})
+				.catch((error) => {
+					console.log(errorMessage)
+					console.log(error)
+					reject()
+					fetchingPromise = null
+				})
+		})
+	}
 
-function onFetchSuccess(newUUIDs) {
-	uuids = newUUIDs
+	return fetchingPromise
 }
 
 export default class UUID {
 	static getUUID() {
 		let uuid = uuids.pop()
-		if (uuids.length < 10) {
-			fetchUUIDs(100, onFetchSuccess)
-		}
-		return uuid
+		let promise = new Promise((resolve, reject) => {
+			if (!uuid) {
+				fetchUUIDs(200)
+					.then(() => {
+						let uuid = uuids.pop()
+						if (!uuid) {
+							reject("No uuid available")
+						} else {
+							resolve(uuid)
+						}
+					})
+			} else {
+				resolve(uuid)
+				if (uuids.length < 100) {
+					fetchUUIDs(200)
+				}
+			}
+		})
+		return promise
 	}
 }

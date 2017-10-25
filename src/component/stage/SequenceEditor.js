@@ -29,6 +29,10 @@ export default class SequenceEditor extends React.Component {
 		this.timeScale = 1
 
 		this.handleScrollY = this.handleScrollY.bind(this)
+		this.handleNewDriverSequence = this.handleNewDriverSequence.bind(this)
+		this.handleDriverSequenceChange = this.handleDriverSequenceChange.bind(this)
+		this.handleNewBasicSequence = this.handleNewBasicSequence.bind(this)
+		this.handleBasicSequenceChange = this.handleBasicSequenceChange.bind(this)
 		this.handleTimeScaleChange = this.handleTimeScaleChange.bind(this)
 		this.handleUnselectKeyframes = this.handleUnselectKeyframes.bind(this)
 		this.handleSelectKeyframes = this.handleSelectKeyframes.bind(this)
@@ -46,13 +50,13 @@ export default class SequenceEditor extends React.Component {
 					sequences={this.props.stage.sequences}
 					puppet={this.props.puppet}
 
-					onScrollY={(deltaY) => this.handleScrollY(deltaY)}
+					onScrollY={this.handleScrollY}
 					scrollY={this.state.scrollY}
 
-					onNewDriverSequence={(sequence) => this.handleNewDriverSequence(sequence)}
-					onDriverSequenceChange={(sequence) => this.handleDriverSequenceChange(sequence)}
-					onNewBasicSequence={(sequence, driverSequence) => this.handleNewBasicSequence(sequence, driverSequence)}
-					onBasicSequenceChange={(sequence, driverSequence) => this.handleBasicSequenceChange(sequence, driverSequence)}
+					onNewDriverSequence={this.handleNewDriverSequence}
+					onDriverSequenceChange={this.handleDriverSequenceChange}
+					onNewBasicSequence={this.handleNewBasicSequence}
+					onBasicSequenceChange={this.handleBasicSequenceChange}
 				/>
 				<Timeline
 					stage={this.props.stage}
@@ -140,12 +144,12 @@ export default class SequenceEditor extends React.Component {
 		this.fireStageChange(stage)
 	}
 
-	handleDriverSequenceChange(sequence) {
+	handleDriverSequenceChange(sequence, save = true) {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let index = model.indexOfID(this.props.stage.sequences, sequence.id)
 		stage.sequences[index] = sequence
 
-		this.fireStageChange(stage)
+		this.fireStageChange(stage, save)
 	}
 
 	handleNewBasicSequence(sequence, selectedDriverSequence) {
@@ -156,18 +160,18 @@ export default class SequenceEditor extends React.Component {
 		this.fireStageChange(stage)
 	}
 
-	handleBasicSequenceChange(sequence, selectedDriverSequence) {
+	handleBasicSequenceChange(sequence, selectedDriverSequence, save = true) {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let driverSequence = model.itemOfID(stage.sequences, selectedDriverSequence.id)
 		let index = model.indexOfID(driverSequence.sequences, sequence.id)
 		driverSequence.sequences[index] = sequence
 
-		this.fireStageChange(stage)
+		this.fireStageChange(stage, save)
 	}
 
-	fireStageChange(stage, minor = false) {
+	fireStageChange(stage, save = true) {
 		if (typeof this.props.onStageChange === 'function') {
-			this.props.onStageChange(stage, minor)
+			this.props.onStageChange(stage, save)
 		}
 	}
 
@@ -231,7 +235,7 @@ export default class SequenceEditor extends React.Component {
 		window.removeEventListener('mouseup', this.handleTranslateKeyframesStop)
 		window.removeEventListener('mousemove', this.handleTranslateKeyframes)
 		window.removeEventListener('mousemove', this.handleTranslateScaleKeyframes)
-		this.fireStageChange(this.props.stage, false)
+		this.fireStageChange(this.props.stage, this.translation.hasChanged)
 	}
 
 	handleTranslateKeyframes(e) {
@@ -244,7 +248,7 @@ export default class SequenceEditor extends React.Component {
 				selectedKeyframes: selectedKeyframes,
 			})
 
-			this.fireStageChange(stage, true)
+			this.fireStageChange(stage, false)
 		}
 	}
 }

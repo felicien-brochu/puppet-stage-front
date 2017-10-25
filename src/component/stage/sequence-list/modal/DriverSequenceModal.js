@@ -17,6 +17,14 @@ export default class DriverSequenceModal extends React.Component {
 		isOpen: false,
 	}
 
+	constructor(props) {
+		super(props)
+
+		this.handleRequestClose = this.handleRequestClose.bind(this)
+		this.handleCancelClick = this.handleCancelClick.bind(this)
+		this.handleOKClick = this.handleOKClick.bind(this)
+	}
+
 	render() {
 		let servos = model.getServos(this.props.boards)
 		let defaultName, defaultServoID
@@ -39,12 +47,12 @@ export default class DriverSequenceModal extends React.Component {
 		return (
 			<Modal
 				isOpen={this.props.isOpen}
-				onRequestClose={() => this.handleRequestClose()}>
+				onRequestClose={this.handleRequestClose}>
 				<div className="top-bar">
 					<h3>{this.props.sequence ? "Edit": "New"} Driver Sequence</h3>
 					<button
 						className="close-button modal-close-button"
-						onClick={() => this.handleRequestClose()}
+						onClick={this.handleRequestClose}
 					>
 						🗙
 					</button>
@@ -67,8 +75,8 @@ export default class DriverSequenceModal extends React.Component {
 					</div>
 				</div>
 				<div className="bottom-bar">
-					<button onClick={() => this.handleCancelClick()}>Cancel</button>
-					<button onClick={() => this.handleOKClick()}>OK</button>
+					<button onClick={this.handleCancelClick}>Cancel</button>
+					<button onClick={this.handleOKClick}>OK</button>
 				</div>
 			</Modal>
 		)

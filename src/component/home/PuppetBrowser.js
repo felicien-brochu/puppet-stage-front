@@ -26,6 +26,10 @@ export default class PuppetBrowser extends React.Component {
 		}
 
 		this.handleCreatePuppet = this.handleCreatePuppet.bind(this)
+		this.handleSelect = this.handleSelect.bind(this)
+		this.handleEditClick = this.handleEditClick.bind(this)
+		this.handleRemoveClick = this.handleRemoveClick.bind(this)
+		this.handleDuplicateClick = this.handleDuplicateClick.bind(this)
 	}
 
 	componentWillMount() {
@@ -46,24 +50,24 @@ export default class PuppetBrowser extends React.Component {
 					itemKeyKey="id"
 					itemValueKey="name"
 					selectedItem={this.state.selectedPuppet}
-					onSelect={(p) => this.handleSelect(p)}
+					onSelect={this.handleSelect}
 				/>
 
 				<button
 					type="button"
-					onClick={() => this.handleEditClick()}
+					onClick={this.handleEditClick}
 					disabled={this.state.selectedPuppet ? false : true}>
 					Edit
 				</button>
 				<button
 					type="button"
-					onClick={() => this.handleRemoveClick()}
+					onClick={this.handleRemoveClick}
 					disabled={this.state.selectedPuppet ? false : true}>
 					Remove
 				</button>
 				<button
 					type="button"
-					onClick={() => this.handleDuplicateClick()}
+					onClick={this.handleDuplicateClick}
 					disabled={this.state.selectedPuppet ? false : true}>
 					Duplicate
 				</button>

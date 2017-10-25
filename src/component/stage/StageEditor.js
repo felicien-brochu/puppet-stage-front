@@ -68,8 +68,8 @@ export default class StageEditor extends React.Component {
 		}
 	}
 
-	handleStageChange(stage, minor = false) {
-		if (!minor) {
+	handleStageChange(stage, save = true) {
+		if (save) {
 			this.history.push(stage)
 		}
 		this.setState({
@@ -223,16 +223,19 @@ export default class StageEditor extends React.Component {
 	handleGlobalKeyDown(e) {
 		if (e.ctrlKey) {
 			if (e.key === 'z') {
-				this.historyPrevious()
+				this.handleHistoryPrevious()
 				e.preventDefault()
 			} else if (e.key === 'y') {
-				this.historyNext()
+				this.handleHistoryNext()
+				e.preventDefault()
+			} else if (e.key === 's') {
+				this.handleSave()
 				e.preventDefault()
 			}
 		}
 	}
 
-	historyPrevious() {
+	handleHistoryPrevious() {
 		let stage = this.history.previous()
 		if (stage) {
 			this.setState({
@@ -241,12 +244,16 @@ export default class StageEditor extends React.Component {
 		}
 	}
 
-	historyNext() {
+	handleHistoryNext() {
 		let stage = this.history.next()
 		if (stage) {
 			this.setState({
 				stage: stage,
 			})
 		}
+	}
+
+	handleSave() {
+		this.history.save()
 	}
 }

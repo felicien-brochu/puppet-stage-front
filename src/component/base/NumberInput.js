@@ -26,6 +26,12 @@ export default class NumberInput extends React.Component {
 			editing: 'none',
 			isEditing: false,
 		}
+
+		this.handleChange = this.handleChange.bind(this)
+		this.handleBlur = this.handleBlur.bind(this)
+		this.handleKeyDown = this.handleKeyDown.bind(this)
+		this.handleMouseDown = this.handleMouseDown.bind(this)
+		this.handleClick = this.handleClick.bind(this)
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -50,15 +56,15 @@ export default class NumberInput extends React.Component {
 					type="number"
 					className={inputClasses}
 					value={this.state.value}
-					onChange={(e) => this.handleChange(e)}
-					onBlur={(e) => this.handleBlur(e)}
-					onKeyDown={(e) => this.handleKeyDown(e)}
+					onChange={this.handleChange}
+					onBlur={this.handleBlur}
+					onKeyDown={this.handleKeyDown}
 					ref={input => this.input = input}
 				/>
 				<div
 					className={overlayClasses}
-					onMouseDown={(e) => this.handleMouseDown(e)}
-					onClick={(e) => this.handleClick(e)}
+					onMouseDown={this.handleMouseDown}
+					onClick={this.handleClick}
 					onDragStart={(e) => e.preventDefault()}
 				/>
 			</div>

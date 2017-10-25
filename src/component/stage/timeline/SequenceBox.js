@@ -43,6 +43,7 @@ export default class SequenceBox extends React.Component {
 		this.initAttributes(props)
 
 		this.getSelectingKeyframes = this.getSelectingKeyframes.bind(this)
+		this.handleKeyframeMouseDown = this.handleKeyframeMouseDown.bind(this)
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -158,7 +159,7 @@ export default class SequenceBox extends React.Component {
 				className={className}
 				key={i}
 				ref={keyframe => this.keyframes[i] = keyframe}
-				onMouseDown={(e) => this.handleKeyframeMouseDown(i, e)}
+				onMouseDown={this.handleKeyframeMouseDown}
 				x={x}
 				y={this.props.height / 2}
 		/>

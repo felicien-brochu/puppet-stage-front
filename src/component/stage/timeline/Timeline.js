@@ -73,7 +73,7 @@ export default class Timeline extends React.Component {
 					onScrollScale={this.handleScrollScale}
 					onScrollToT={this.handleScrollToT}
 					timeline={this.getViewState()}
-					onResize={(width, height) => this.handleResize(width, height)}>
+					onResize={this.handleResize}>
 
 					{this.renderTimelineBody()}
 

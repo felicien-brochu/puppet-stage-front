@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import uuid from '../../../util/uuid'
+import UUID from '../../../util/uuid'
 import model from '../../../util/model'
 import {
 	ContextMenuTrigger,
@@ -51,7 +51,11 @@ export default class SequenceList extends React.Component {
 
 		this.handleContextMenuClick = this.handleContextMenuClick.bind(this)
 		this.handleDriverSequenceExpand = this.handleDriverSequenceExpand.bind(this)
-		this.createDriverSequence = this.createDriverSequence.bind(this)
+		this.handleCreateDriverSequence = this.handleCreateDriverSequence.bind(this)
+		this.handleCreateUpdateDriverSequence = this.handleCreateUpdateDriverSequence.bind(this)
+		this.handleCancelDriverSequenceModal = this.handleCancelDriverSequenceModal.bind(this)
+		this.handleCreateUpdateBasicSequence = this.handleCreateUpdateBasicSequence.bind(this)
+		this.handleCancelBasicSequenceModal = this.handleCancelBasicSequenceModal.bind(this)
 	}
 
 	render() {
@@ -145,8 +149,8 @@ export default class SequenceList extends React.Component {
 				isOpen={this.state.driverSequenceModal.show}
 				boards={this.props.puppet.boards}
 				sequence={this.state.driverSequenceModal.sequence}
-				onConfirm={(sequence) => this.handleCreateUpdateDriverSequence(sequence)}
-				onCancel={() => this.handleCancelDriverSequenceModal()}
+				onConfirm={this.handleCreateUpdateDriverSequence}
+				onCancel={this.handleCancelDriverSequenceModal}
 			/>
 		)
 
@@ -157,8 +161,8 @@ export default class SequenceList extends React.Component {
 					isOpen={this.state.basicSequenceModal.show}
 					sequence={this.state.basicSequenceModal.sequence}
 					driverSequence={this.state.basicSequenceModal.driverSequence}
-					onConfirm={(sequence, driverSequence) => this.handleCreateUpdateBasicSequence(sequence, driverSequence)}
-					onCancel={() => this.handleCancelBasicSequenceModal()}
+					onConfirm={this.handleCreateUpdateBasicSequence}
+					onCancel={this.handleCancelBasicSequenceModal}
 				/>
 			)
 		}
@@ -175,23 +179,23 @@ export default class SequenceList extends React.Component {
 		console.log(data)
 		switch (data.action) {
 			case NEW_DRIVER_SEQUENCE:
-				this.createDriverSequence()
+				this.handleCreateDriverSequence()
 				break
 			case EDIT_DRIVER_SEQUENCE:
-				this.editDriverSequence(data.sequence)
+				this.handleEditDriverSequence(data.sequence)
 				break
 			case ADD_BASIC_SEQUENCE:
-				this.addBasicSequence(data.sequence)
+				this.handleAddBasicSequence(data.sequence)
 				break
 			case EDIT_BASIC_SEQUENCE:
-				this.editBasicSequence(data.sequence)
+				this.handleEditBasicSequence(data.sequence)
 				break
 			default:
 				console.warn(`ContextMenu: action ${data.action} not supported`)
 		}
 	}
 
-	createDriverSequence() {
+	handleCreateDriverSequence() {
 		this.setState({
 			driverSequenceModal: {
 				show: true,
@@ -200,7 +204,7 @@ export default class SequenceList extends React.Component {
 		})
 	}
 
-	editDriverSequence(sequence) {
+	handleEditDriverSequence(sequence) {
 		this.setState({
 			driverSequenceModal: {
 				show: true,
@@ -211,17 +215,48 @@ export default class SequenceList extends React.Component {
 
 	handleCreateUpdateDriverSequence(sequence) {
 		if (!sequence.id) {
-			sequence.id = uuid.getUUID()
+			this.createDriverSequence(sequence)
+		} else {
+			this.updateDriverSequence(sequence)
+		}
+	}
+
+	createDriverSequence(sequence) {
+		UUID.getUUID().then((uuid) => {
+			sequence.id = uuid
 			if (typeof this.props.onNewDriverSequence === 'function') {
 				this.props.onNewDriverSequence(sequence)
 			}
-		} else if (typeof this.props.onDriverSequenceChange === 'function') {
+
+			this.setState({
+				driverSequenceModal: {
+					show: false,
+					sequence: null,
+				}
+			})
+		}).catch((error) => {
+			console.log(error)
+		})
+	}
+
+	updateDriverSequence(sequence) {
+		if (typeof this.props.onDriverSequenceChange === 'function') {
 			this.props.onDriverSequenceChange(sequence)
 		}
 
 		this.setState({
 			driverSequenceModal: {
 				show: false,
+				sequence: null,
+			}
+		})
+	}
+
+	handleAddBasicSequence(driverSequence) {
+		this.setState({
+			basicSequenceModal: {
+				show: true,
+				driverSequence: driverSequence,
 				sequence: null,
 			}
 		})
@@ -236,17 +271,7 @@ export default class SequenceList extends React.Component {
 		})
 	}
 
-	addBasicSequence(driverSequence) {
-		this.setState({
-			basicSequenceModal: {
-				show: true,
-				driverSequence: driverSequence,
-				sequence: null,
-			}
-		})
-	}
-
-	editBasicSequence(sequence) {
+	handleEditBasicSequence(sequence) {
 		let driverSequence = model.getBasicSequenceParent(this.props.sequences, sequence.id)
 		this.setState({
 			basicSequenceModal: {
@@ -259,11 +284,33 @@ export default class SequenceList extends React.Component {
 
 	handleCreateUpdateBasicSequence(sequence, driverSequence) {
 		if (!sequence.id) {
-			sequence.id = uuid.getUUID()
+			this.createBasicSequence(sequence, driverSequence)
+		} else {
+			this.updateBasicSequence(sequence, driverSequence)
+		}
+	}
+
+	createBasicSequence(sequence, driverSequence) {
+		UUID.getUUID().then((uuid) => {
+			sequence.id = uuid
 			if (typeof this.props.onNewBasicSequence === 'function') {
 				this.props.onNewBasicSequence(sequence, driverSequence)
 			}
-		} else if (typeof this.props.onBasicSequenceChange === 'function') {
+
+			this.setState({
+				basicSequenceModal: {
+					show: false,
+					sequence: null,
+					driverSequence: null,
+				}
+			})
+		}).catch((error) => {
+			console.log(error)
+		})
+	}
+
+	updateBasicSequence(sequence, driverSequence) {
+		if (typeof this.props.onBasicSequenceChange === 'function') {
 			this.props.onBasicSequenceChange(sequence, driverSequence)
 		}
 
@@ -289,7 +336,7 @@ export default class SequenceList extends React.Component {
 	handleDriverSequenceExpand(sequence, expanded) {
 		sequence.expanded = expanded
 		if (typeof this.props.onDriverSequenceChange === 'function') {
-			this.props.onDriverSequenceChange(sequence)
+			this.props.onDriverSequenceChange(sequence, false)
 		}
 	}
 }

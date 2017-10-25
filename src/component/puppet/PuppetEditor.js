@@ -31,6 +31,11 @@ export default class PuppetEditor extends React.Component {
 		this.handleCreateBoardSuccess = this.handleCreateBoardSuccess.bind(this)
 		this.handleConnectBoardClick = this.handleConnectBoardClick.bind(this)
 		this.handleConnectBoardSuccess = this.handleConnectBoardSuccess.bind(this)
+		this.handleSaveClick = this.handleSaveClick.bind(this)
+		this.handleBoardSelect = this.handleBoardSelect.bind(this)
+		this.handleServoSelect = this.handleServoSelect.bind(this)
+		this.handleServoChange = this.handleServoChange.bind(this)
+		this.handleServoPositionChange = this.handleServoPositionChange.bind(this)
 	}
 
 	componentWillMount() {
@@ -44,7 +49,7 @@ export default class PuppetEditor extends React.Component {
 					{this.state.puppet.name} puppet
 					<button
 						type="button"
-						onClick={() => this.handleSaveClick()}
+						onClick={this.handleSaveClick}
 						disabled={this.state.saved}
 					>
 						Save
@@ -61,7 +66,7 @@ export default class PuppetEditor extends React.Component {
 						itemKeyKey="id"
 						itemValueKey="name"
 						selectedItem={this.state.selectedBoard}
-						onSelect={(p) => this.handleBoardSelect(p)}
+						onSelect={this.handleBoardSelect}
 					/>
 				</div>
 				{this.renderServoBrowser()}
@@ -94,7 +99,7 @@ export default class PuppetEditor extends React.Component {
 						itemKeyKey="id"
 						itemValueKey="name"
 						selectedItem={this.state.selectedServo}
-						onSelect={(servo) => this.handleServoSelect(servo)}
+						onSelect={this.handleServoSelect}
 					/>
 				</div>
 			)
@@ -107,8 +112,8 @@ export default class PuppetEditor extends React.Component {
 			return (
 				<ServoEditor
 					servo={this.state.selectedServo}
-					onChange={(servo) => this.handleServoChange(servo)}
-					onPositionChange={(position) => {this.handleServoPositionChange(position)}}
+					onChange={this.handleServoChange}
+					onPositionChange={this.handleServoPositionChange}
 				/>
 			)
 		}
