@@ -51,7 +51,7 @@ export default class List extends React.Component {
 			<li
 				key={key}
 				className={classes}
-				onClick={this.handleClick}
+				onClick={(e) => this.handleClick(e, key)}
 			>
 				{this.getValue(item)}
 			</li>

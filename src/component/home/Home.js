@@ -16,6 +16,7 @@ export default class Home extends React.Component {
 		}
 
 		this.handleCreateStage = this.handleCreateStage.bind(this)
+		this.handleDeleteStage = this.handleDeleteStage.bind(this)
 		this.handlePuppetSelect = this.handlePuppetSelect.bind(this)
 		this.handleStagesRetrieved = this.handleStagesRetrieved.bind(this)
 		this.handleCreateStageSuccess = this.handleCreateStageSuccess.bind(this)
@@ -31,6 +32,7 @@ export default class Home extends React.Component {
 				<StageBrowser
 					stages={this.state.stages}
 					onCreate={this.handleCreateStage}
+					onDelete={this.handleDeleteStage}
 				/>
 				<PuppetBrowser
 					onSelect={this.handlePuppetSelect}
@@ -81,6 +83,15 @@ export default class Home extends React.Component {
 	handlePuppetSelect(puppet) {
 		this.setState({
 			selectedPuppet: puppet,
+		})
+	}
+
+	handleDeleteStage(stage) {
+		let stages = this.state.stages.filter((p) => {
+			return p.id !== stage.id
+		})
+		this.setState({
+			stages: stages
 		})
 	}
 }

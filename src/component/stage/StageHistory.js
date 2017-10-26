@@ -1,12 +1,65 @@
 import UUID from '../../util/uuid'
 import fetchAPI from '../../util/api'
 
+const
+	MIN_PREV_HISTORY_LENGTH = 100,
+	MIN_NEXT_HISTORY_LENGTH = 100,
+	BATCH_HISTORY_LENGTH = 200
+
+
 export default class StageHistory {
-	constructor(stageID) {
+	constructor(stageID, onSaveSuccess, onSaveError) {
 		this.stageID = stageID
+		this.onSaveSuccess = onSaveSuccess
+		this.onSaveError = onSaveError
+
 		this.revisions = []
 		this.activeRevision = -1
 		this.historyLength = 0
+
+		this.unsavedStart = -1
+		this.savedActiveRevision = -1
+		this.savePromise = null
+
+		this.historyStart = NaN
+		this.historyEnd = NaN
+		this.lazyLoadingPromise = null
+	}
+
+	init() {
+		return new Promise((resolve, reject) => {
+			fetchAPI(`/stage/${this.stageID}/history?prev=${MIN_PREV_HISTORY_LENGTH}&next=${MIN_NEXT_HISTORY_LENGTH}`, {},
+				(history) => {
+					this.handleInitRequestSuccess(history)
+					resolve()
+				},
+				(error) => {
+					reject(error)
+				},
+				"Error fetching history"
+			)
+		})
+	}
+
+	handleInitRequestSuccess(history) {
+		this.revisions = []
+		for (let i = 0; i < history.revisions.length; i++) {
+			let revision = history.revisions[i]
+			this.revisions.push(JSON.stringify(revision))
+
+			if (revision.id === history.activeRevision) {
+				this.activeRevision = i
+			}
+		}
+
+		this.historyLength = history.revisions.length
+
+		if (this.activeRevision < MIN_PREV_HISTORY_LENGTH) {
+			this.historyStart = 0
+		}
+		if (this.historyLength - 1 - this.activeRevision < MIN_NEXT_HISTORY_LENGTH) {
+			this.historyEnd = this.historyLength - 1
+		}
 	}
 
 	push(stage) {
@@ -16,6 +69,9 @@ export default class StageHistory {
 					this.revisions[this.activeRevision + 1] = JSON.stringify(revision)
 					this.activeRevision++
 						this.historyLength = this.activeRevision + 1
+					if (this.unsavedStart < 0) {
+						this.unsavedStart = this.activeRevision
+					}
 					resolve()
 				})
 				.catch((error) => {
@@ -30,7 +86,9 @@ export default class StageHistory {
 			let revision = Revision.fromJSON(this.revisions[this.activeRevision - 1])
 			stage = revision.stage
 			this.activeRevision--
+				this.extendHistory()
 		}
+
 		return stage
 	}
 
@@ -40,21 +98,187 @@ export default class StageHistory {
 			let revision = Revision.fromJSON(this.revisions[this.activeRevision + 1])
 			stage = revision.stage
 			this.activeRevision++
+				this.extendHistory()
+		}
+
+		return stage
+	}
+
+	getActiveRevision() {
+		let stage = null
+		if (this.historyLength > 0) {
+			let revision = Revision.fromJSON(this.revisions[this.activeRevision])
+			stage = revision.stage
 		}
 		return stage
 	}
 
 	save() {
-		this.persist()
+		if (!this.savePromise) {
+			if (this.unsavedStart >= 0) {
+				this.savePromise = new Promise((resolve, reject) => {
+					this.persist()
+						.then(() => {
+							this.unsavedStart = -1
+							this.savedActiveRevision = this.activeRevision
+							resolve()
+							this.savePromise = null
+						})
+						.catch((error) => {
+							reject(error)
+							this.savePromise = null
+						})
+				})
+			} else if (this.savedActiveRevision !== this.activeRevision) {
+				let savingActiveRevision = this.activeRevision
+				this.savePromise = new Promise((resolve, reject) => {
+					this.saveActiveRevision(savingActiveRevision)
+						.then(() => {
+							this.unsavedStart = -1
+							this.savedActiveRevision = savingActiveRevision
+							resolve()
+							this.savePromise = null
+						})
+						.catch((error) => {
+							reject(error)
+							this.savePromise = null
+						})
+				})
+			}
+		}
+		return this.savePromise
 	}
 
 	persist() {
 		console.log("Persist history");
-		// return new Promise((resolve, reject) => {
-		// 	fetchAPI('/stage/')
-		// 	xhr.onload = () => resolve(xhr.responseText);
-		// 	xhr.onerror = () => reject(xhr.statusText);
-		// });
+		let revisions = []
+		let activeRevisionID
+		for (let i = this.unsavedStart; i < this.historyLength; i++) {
+			let revision = Revision.fromJSON(this.revisions[i])
+			revisions.push(revision)
+			if (i === this.activeRevision) {
+				activeRevisionID = revision.id
+			}
+		}
+		let body = {
+			startRevisionID: Revision.fromJSON(this.revisions[this.unsavedStart - 1]).id,
+			activeRevisionID: activeRevisionID,
+			revisions: revisions,
+		}
+		return new Promise((resolve, reject) => {
+			fetchAPI(`/stage/${this.stageID}/history`, {
+					method: 'PUT',
+					body: JSON.stringify(body)
+				},
+				(history) => {
+					resolve()
+				},
+				(error) => {
+					reject(error)
+				},
+				"Error saving history"
+			)
+		})
+	}
+
+	saveActiveRevision(activeRevision) {
+		console.log("Save active revision");
+		let body = {
+			activeRevisionID: Revision.fromJSON(this.revisions[activeRevision]).id,
+		}
+		return new Promise((resolve, reject) => {
+			fetchAPI(`/stage/${this.stageID}/history/activeRevision`, {
+					method: 'PUT',
+					body: JSON.stringify(body)
+				},
+				(history) => {
+					resolve()
+				},
+				(error) => {
+					reject(error)
+				},
+				"Error saving active revision"
+			)
+		})
+	}
+
+	extendHistory() {
+		if (!this.lazyLoadingPromise) {
+			if (this.activeRevision < MIN_PREV_HISTORY_LENGTH && isNaN(this.historyStart)) {
+				this.extendPrevHistory(BATCH_HISTORY_LENGTH)
+			} else if (this.historyLength < this.activeRevision + MIN_NEXT_HISTORY_LENGTH && isNaN(this.historyEnd)) {
+				this.extendNextHistory(BATCH_HISTORY_LENGTH)
+			}
+		}
+	}
+
+	extendPrevHistory(length) {
+		let from = Revision.fromJSON(this.revisions[0]).id
+		this.lazyLoadingPromise = new Promise((resolve, reject) => {
+			fetchAPI(`/stage/${this.stageID}/history?from=${from}&prev=${length}&next=0`, {},
+				(history) => {
+					this.handleExtendPrevRequestSuccess(history)
+					resolve(history)
+					this.lazyLoadingPromise = null
+				},
+				(error) => {
+					reject(error)
+					this.lazyLoadingPromise = null
+				},
+				"Error fetching history"
+			)
+		})
+	}
+
+	handleExtendPrevRequestSuccess(history) {
+		let newRevisions = []
+		for (let i = 0; i < history.revisions.length - 1; i++) {
+			let revision = history.revisions[i]
+			newRevisions.push(JSON.stringify(revision))
+		}
+
+		this.revisions = newRevisions.concat(this.revisions)
+		this.historyLength += newRevisions.length
+		this.activeRevision += newRevisions.length
+
+		if (newRevisions.length < BATCH_HISTORY_LENGTH) {
+			this.historyStart = 0
+		}
+	}
+
+	extendNextHistory(length) {
+		let from = Revision.fromJSON(this.revisions[this.historyLength - 1]).id
+		this.lazyLoadingPromise = new Promise((resolve, reject) => {
+			fetchAPI(`/stage/${this.stageID}/history?from=${from}&prev=0&next=${length}`, {},
+				(history) => {
+					this.handleExtendNextRequestSuccess(history)
+					resolve(history)
+					this.lazyLoadingPromise = null
+				},
+				(error) => {
+					reject(error)
+					this.lazyLoadingPromise = null
+				},
+				"Error fetching history"
+			)
+		})
+	}
+
+	handleExtendNextRequestSuccess(history) {
+		if (isNaN(this.historyEnd)) {
+			let newRevisions = []
+			for (let i = 1; i < history.revisions.length; i++) {
+				let revision = history.revisions[i]
+				newRevisions.push(JSON.stringify(revision))
+			}
+
+			this.revisions = this.revisions.concat(newRevisions)
+			this.historyLength += newRevisions.length
+
+			if (newRevisions.length < BATCH_HISTORY_LENGTH) {
+				this.historyEnd = this.historyLength - 1
+			}
+		}
 	}
 }
 
@@ -68,7 +292,7 @@ class Revision {
 	static fromJSON(json) {
 		let parsed = JSON.parse(json)
 		let date = new Date(parsed.date)
-		return new Revision(parsed.stage, date, parsed.id)
+		return new Revision(parsed.stage, parsed.id, date)
 	}
 
 	static createRevision(stage) {

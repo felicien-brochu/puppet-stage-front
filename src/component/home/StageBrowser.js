@@ -13,6 +13,7 @@ import alert from '../../util/alert'
 export default class StageBrowser extends React.Component {
 	static propTypes = {
 		onCreate: PropTypes.func,
+		onDelete: PropTypes.func,
 	}
 
 	constructor(props) {
@@ -28,6 +29,7 @@ export default class StageBrowser extends React.Component {
 		this.handleEditClick = this.handleEditClick.bind(this)
 		this.handleRemoveClick = this.handleRemoveClick.bind(this)
 		this.handleDuplicateClick = this.handleDuplicateClick.bind(this)
+		this.handleRemoveStageSuccess = this.handleRemoveStageSuccess.bind(this)
 	}
 
 	render() {
@@ -103,7 +105,7 @@ export default class StageBrowser extends React.Component {
 		console.log("Remove stage: " + stage.name)
 		fetchAPI("/stage/" + stage.id, {
 			method: 'DELETE',
-		}, this.handleRemoveStageSuccess.bind(this), null, "Error deleting stage:")
+		}, this.handleRemoveStageSuccess, null, "Error deleting stage:")
 	}
 
 	handleRemoveStageSuccess(stage) {
@@ -111,12 +113,9 @@ export default class StageBrowser extends React.Component {
 		console.log(stage)
 		alert.successAlert("Stage successfully deleted")
 
-		let stages = this.state.stages.filter((p) => {
-			return p.id !== stage.id
-		})
-		this.setState({
-			stages: stages
-		})
+		if (typeof this.props.onDelete === 'function') {
+			this.props.onDelete(stage)
+		}
 	}
 
 	handleDuplicateClick() {
