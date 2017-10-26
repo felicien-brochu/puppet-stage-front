@@ -24,11 +24,13 @@ export default class SequenceList extends React.Component {
 	static propTypes = {
 		puppet: PropTypes.object.isRequired,
 		sequences: PropTypes.array.isRequired,
+		scrollY: PropTypes.number.isRequired,
+		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
+
 		onNewDriverSequence: PropTypes.func,
 		onDriverSequenceChange: PropTypes.func,
 		onNewBasicSequence: PropTypes.func,
 		onBasicSequenceChange: PropTypes.func,
-		scrollY: PropTypes.number.isRequired,
 	}
 
 	constructor(props) {
@@ -67,7 +69,9 @@ export default class SequenceList extends React.Component {
 				id="sequence-list-context-menu"
 				renderTag="div"
 			>
-				<SequenceListActionBar/>
+				<SequenceListActionBar
+					saveState={this.props.saveState}/>
+
 				<div className="main-list-container">
 					{this.renderList()}
 				</div>

@@ -114,3 +114,52 @@
 	height: 13px;
 	margin: 0 0 1px 4px;
 }
+
+.save-indicator {
+	display: block;
+	width: 30px;
+	height: 30px;
+
+	.circle {
+		width: 8px;
+		height: 8px;
+		margin: 11px;
+		// vertical-align: middle;
+		// margin: auto;
+		display: inline-block;
+		@include border-radius(100px);
+		transition: 0.2s;
+	}
+
+	&.saved .circle {
+		margin: 15px;
+		width: 0;
+		height: 0;
+	}
+
+	&.saving .circle {
+		animation-duration: 0.5s;
+		animation-name: changewidth;
+		animation-iteration-count: infinite;
+		animation-direction: alternate;
+		animation-timing-function: ease-out;
+		background-color: $accent-color;
+	}
+
+	&.modified .circle {
+		background-color: $accent-color;
+	}
+	@keyframes changewidth {
+		0% {
+			margin: 15px;
+			width: 0;
+			height: 0;
+		}
+
+		100% {
+			width: 10px;
+			height: 10px;
+			margin: 10px;
+		}
+	}
+}

@@ -10,6 +10,7 @@ export default class SequenceEditor extends React.Component {
 	static propTypes = {
 		stage: PropTypes.object.isRequired,
 		puppet: PropTypes.object.isRequired,
+		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
 		onStageChange: PropTypes.func.isRequired,
 	}
 
@@ -49,6 +50,7 @@ export default class SequenceEditor extends React.Component {
 				<SequenceList
 					sequences={this.props.stage.sequences}
 					puppet={this.props.puppet}
+					saveState={this.props.saveState}
 
 					onScrollY={this.handleScrollY}
 					scrollY={this.state.scrollY}

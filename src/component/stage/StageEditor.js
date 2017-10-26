@@ -18,12 +18,13 @@ export default class StageEditor extends React.Component {
 			stage: null,
 		}
 
-		this.stageID = props.match.params.id
-		this.history = new StageHistory(this.stageID)
-
 		this.handleStageChange = this.handleStageChange.bind(this)
+		this.handleSaveStateChange = this.handleSaveStateChange.bind(this)
 		this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this)
 		this.handleGlobalWheel = this.handleGlobalWheel.bind(this)
+
+		this.stageID = props.match.params.id
+		this.history = new StageHistory(this.stageID, this.handleSaveStateChange)
 	}
 
 	componentWillMount() {
@@ -54,6 +55,7 @@ export default class StageEditor extends React.Component {
 					<SequenceEditor
 						stage={this.state.stage}
 						puppet={this.state.puppet}
+						saveState={this.state.saveState}
 						onStageChange={this.handleStageChange}
 					/>
 					{/* </SplitPane> */}
@@ -82,8 +84,10 @@ export default class StageEditor extends React.Component {
 		if (save) {
 			this.history.push(stage)
 		}
+
 		this.setState({
 			stage: stage,
+			saveState: this.history.getSaveState(),
 		})
 	}
 
@@ -264,5 +268,13 @@ export default class StageEditor extends React.Component {
 
 	handleSave() {
 		this.history.save()
+	}
+
+	handleSaveStateChange(saveState) {
+		if (saveState !== this.state.saveState) {
+			this.setState({
+				saveState: saveState,
+			})
+		}
 	}
 }

@@ -8,10 +8,9 @@ const
 
 
 export default class StageHistory {
-	constructor(stageID, onSaveSuccess, onSaveError) {
+	constructor(stageID, onSaveStateChange) {
 		this.stageID = stageID
-		this.onSaveSuccess = onSaveSuccess
-		this.onSaveError = onSaveError
+		this.onSaveStateChange = onSaveStateChange
 
 		this.revisions = []
 		this.activeRevision = -1
@@ -31,6 +30,7 @@ export default class StageHistory {
 			fetchAPI(`/stage/${this.stageID}/history?prev=${MIN_PREV_HISTORY_LENGTH}&next=${MIN_NEXT_HISTORY_LENGTH}`, {},
 				(history) => {
 					this.handleInitRequestSuccess(history)
+					this.fireSaveStateChange()
 					resolve()
 				},
 				(error) => {
@@ -52,6 +52,7 @@ export default class StageHistory {
 			}
 		}
 
+		this.savedActiveRevision = this.activeRevision
 		this.historyLength = history.revisions.length
 
 		if (this.activeRevision < MIN_PREV_HISTORY_LENGTH) {
@@ -69,10 +70,11 @@ export default class StageHistory {
 					this.revisions[this.activeRevision + 1] = JSON.stringify(revision)
 					this.activeRevision++
 						this.historyLength = this.activeRevision + 1
-					if (this.unsavedStart < 0) {
+					if (this.unsavedStart < 0 || this.unsavedStart > this.activeRevision) {
 						this.unsavedStart = this.activeRevision
 					}
 					resolve()
+					this.fireSaveStateChange()
 				})
 				.catch((error) => {
 					reject(error)
@@ -87,6 +89,7 @@ export default class StageHistory {
 			stage = revision.stage
 			this.activeRevision--
 				this.extendHistory()
+			this.fireSaveStateChange()
 		}
 
 		return stage
@@ -99,6 +102,7 @@ export default class StageHistory {
 			stage = revision.stage
 			this.activeRevision++
 				this.extendHistory()
+			this.fireSaveStateChange()
 		}
 
 		return stage
@@ -113,6 +117,24 @@ export default class StageHistory {
 		return stage
 	}
 
+	getSaveState() {
+		let saveState = 'saved'
+		if (this.savePromise) {
+			saveState = 'saving'
+		} else if (this.unsavedStart >= 0) {
+			saveState = 'modified'
+		} else if (this.savedActiveRevision !== this.activeRevision) {
+			saveState = 'traveled'
+		}
+		return saveState
+	}
+
+	fireSaveStateChange() {
+		if (typeof this.onSaveStateChange === 'function') {
+			this.onSaveStateChange(this.getSaveState())
+		}
+	}
+
 	save() {
 		if (!this.savePromise) {
 			if (this.unsavedStart >= 0) {
@@ -123,27 +145,32 @@ export default class StageHistory {
 							this.savedActiveRevision = this.activeRevision
 							resolve()
 							this.savePromise = null
+							this.fireSaveStateChange()
 						})
 						.catch((error) => {
 							reject(error)
 							this.savePromise = null
+							this.fireSaveStateChange()
 						})
 				})
+				this.fireSaveStateChange()
 			} else if (this.savedActiveRevision !== this.activeRevision) {
 				let savingActiveRevision = this.activeRevision
 				this.savePromise = new Promise((resolve, reject) => {
 					this.saveActiveRevision(savingActiveRevision)
 						.then(() => {
-							this.unsavedStart = -1
 							this.savedActiveRevision = savingActiveRevision
 							resolve()
 							this.savePromise = null
+							this.fireSaveStateChange()
 						})
 						.catch((error) => {
 							reject(error)
 							this.savePromise = null
+							this.fireSaveStateChange()
 						})
 				})
+				this.fireSaveStateChange()
 			}
 		}
 		return this.savePromise
@@ -153,9 +180,11 @@ export default class StageHistory {
 		console.log("Persist history");
 		let revisions = []
 		let activeRevisionID
-		for (let i = this.unsavedStart; i < this.historyLength; i++) {
+		for (let i = 0; i < this.historyLength; i++) {
 			let revision = Revision.fromJSON(this.revisions[i])
-			revisions.push(revision)
+			if (i >= this.unsavedStart) {
+				revisions.push(revision)
+			}
 			if (i === this.activeRevision) {
 				activeRevisionID = revision.id
 			}
@@ -165,6 +194,7 @@ export default class StageHistory {
 			activeRevisionID: activeRevisionID,
 			revisions: revisions,
 		}
+
 		return new Promise((resolve, reject) => {
 			fetchAPI(`/stage/${this.stageID}/history`, {
 					method: 'PUT',

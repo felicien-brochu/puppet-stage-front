@@ -50,7 +50,7 @@ export default class TimeRuler extends React.Component {
 				width = 1
 			}
 
-			let scale = width / (timeline.end - timeline.start)
+			let scale = timeline.getScale()
 			let unitWidth = unit.interval * scale
 
 			// Out of stage time markers
@@ -70,7 +70,7 @@ export default class TimeRuler extends React.Component {
 
 			x = timeline.paddingLeft + (timeline.duration - timeline.start) * scale
 
-			if (x < timeline.width) {
+			if (x < timeline.width + timeline.paddingRight) {
 				elements.push(
 					<rect
 						className="ruler-out-time"
@@ -143,7 +143,7 @@ export default class TimeRuler extends React.Component {
 			return `${intFormatter.format(m)}:${intFormatter.format(s)}s`
 		}
 		let intervals = [{
-			interval: units.FRAME_TIME, // 1 frame at 60 fps
+			interval: units.FRAME_TIME, // 1 frame
 			format: frameFormat,
 		}, {
 			interval: 2 * units.FRAME_TIME,

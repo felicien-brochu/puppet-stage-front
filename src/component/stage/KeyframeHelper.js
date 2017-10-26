@@ -12,6 +12,7 @@ export default class KeyframeHelper {
 			mode,
 			deltaMin,
 			deltaMax,
+			lastDeltaT,
 		} = translation
 
 		let deltaT = (newClientX - clientX) * (1 / timeScale)
@@ -20,7 +21,7 @@ export default class KeyframeHelper {
 		deltaT = Math.max(deltaT, deltaMin)
 		deltaT = Math.min(deltaT, deltaMax)
 
-		if (deltaT !== 0) {
+		if (deltaT !== lastDeltaT) {
 			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
 
 			for (let [sequenceID, keyframes] of stageKeyframes) {
@@ -47,7 +48,8 @@ export default class KeyframeHelper {
 				})
 			}
 
-			translation.hasChanged = true
+			translation.lastDeltaT = deltaT
+			translation.hasChanged = deltaT !== 0
 			return true
 		}
 
@@ -137,6 +139,7 @@ export default class KeyframeHelper {
 			mode: mode,
 			deltaMin: deltaMin,
 			deltaMax: deltaMax,
+			lastDeltaT: 0,
 			hasChanged: false,
 		}
 	}
@@ -183,11 +186,11 @@ export default class KeyframeHelper {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
 				keyframes.keyframes[i].p.t += deltaT
-				keyframes.keyframes[i].p.t = Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME
+				keyframes.keyframes[i].p.t = Math.round(Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME)
 				keyframes.keyframes[i].c1.t += deltaT
-				keyframes.keyframes[i].c1.t = Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME
+				keyframes.keyframes[i].c1.t = Math.round(Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME)
 				keyframes.keyframes[i].c2.t += deltaT
-				keyframes.keyframes[i].c2.t = Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME
+				keyframes.keyframes[i].c2.t = Math.round(Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME)
 			}
 		}
 	}
@@ -196,11 +199,11 @@ export default class KeyframeHelper {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
 				keyframes.keyframes[i].p.t = refTime + scaleFactor * (keyframes.keyframes[i].p.t - refTime)
-				keyframes.keyframes[i].p.t = Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME
+				keyframes.keyframes[i].p.t = Math.round(Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME)
 				keyframes.keyframes[i].c1.t = refTime + scaleFactor * (keyframes.keyframes[i].c1.t - refTime)
-				keyframes.keyframes[i].c1.t = Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME
+				keyframes.keyframes[i].c1.t = Math.round(Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME)
 				keyframes.keyframes[i].c2.t = refTime + scaleFactor * (keyframes.keyframes[i].c2.t - refTime)
-				keyframes.keyframes[i].c2.t = Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME
+				keyframes.keyframes[i].c2.t = Math.round(Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME)
 			}
 		}
 	}
