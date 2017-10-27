@@ -59,12 +59,87 @@
 					padding: 0;
 
 					.sequence-label {
-						margin-left: 37px;
+						margin-left: 4px;
 					}
 
 					.basic-sequence-list-item {
 						background-color: $active-background-color;
 						border-bottom: solid 1px $background-color;
+						display: flex;
+
+						.keyframe-navigator {
+							display: flex;
+							justify-content: center;
+							align-items: center;
+
+							button.svg-button {
+								position: relative;
+								width: 12px;
+								height: 16px;
+								border: none;
+								background: none;
+								border-radius: 0;
+								padding: 0;
+								margin: 0;
+
+								&:enabled:hover {
+									background-color: $inactive-color;
+									border-radius: 2px;
+								}
+
+								&:disabled > svg {
+									fill: $inactive-color;
+								}
+
+								&:enabled:active > svg {
+									fill: $accent-color;
+								}
+
+								svg {
+									width: 12px;
+									height: 16px;
+									position: absolute;
+									top: 0;
+									left: 0;
+									right: 0;
+									bottom: 0;
+									fill: $primary-color;
+								}
+							}
+
+							.keyframe-button {
+								position: relative;
+								width: 16px;
+								height: 16px;
+
+								&:hover {
+									background-color: $inactive-color;
+									border-radius: 2px;
+								}
+
+								input {
+									display: none;
+
+									&:checked + .keyframe-shape {
+										fill: $accent-color;
+										stroke: none;
+									}
+								}
+
+								svg.keyframe-shape {
+									width: 16px;
+									height: 16px;
+									position: absolute;
+									top: 0;
+									left: 0;
+									right: 0;
+									bottom: 0;
+									fill: $inactive-color;
+									stroke: $primary-color;
+									stroke-width: 2px;
+								}
+							}
+						}
 					}
 				}
 			}
@@ -124,8 +199,6 @@
 		width: 8px;
 		height: 8px;
 		margin: 11px;
-		// vertical-align: middle;
-		// margin: auto;
 		display: inline-block;
 		@include border-radius(100px);
 		transition: 0.2s;
@@ -148,6 +221,10 @@
 
 	&.modified .circle {
 		background-color: $accent-color;
+	}
+
+	&.traveled .circle {
+		background-color: $primary-color;
 	}
 	@keyframes changewidth {
 		0% {

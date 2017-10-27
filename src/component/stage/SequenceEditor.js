@@ -20,6 +20,9 @@ export default class SequenceEditor extends React.Component {
 		this.state = {
 			scrollY: 0,
 			selectedKeyframes: [],
+			currentTime: 0,
+			startTime: 0,
+			endTime: props.stage.duration,
 		}
 
 		this.translation = {
@@ -40,6 +43,9 @@ export default class SequenceEditor extends React.Component {
 		this.handleSingleKeyframeMouseDown = this.handleSingleKeyframeMouseDown.bind(this)
 		this.handleTranslateKeyframesStop = this.handleTranslateKeyframesStop.bind(this)
 		this.handleTranslateKeyframes = this.handleTranslateKeyframes.bind(this)
+		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
+		this.handleTimeWindowChange = this.handleTimeWindowChange.bind(this)
+		this.handleGoToTime = this.handleGoToTime.bind(this)
 	}
 
 	render() {
@@ -48,9 +54,10 @@ export default class SequenceEditor extends React.Component {
 				{this.renderSVGDefs()}
 
 				<SequenceList
-					sequences={this.props.stage.sequences}
+					stage={this.props.stage}
 					puppet={this.props.puppet}
 					saveState={this.props.saveState}
+					currentTime={this.state.currentTime}
 
 					onScrollY={this.handleScrollY}
 					scrollY={this.state.scrollY}
@@ -59,14 +66,20 @@ export default class SequenceEditor extends React.Component {
 					onDriverSequenceChange={this.handleDriverSequenceChange}
 					onNewBasicSequence={this.handleNewBasicSequence}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
+					onGoToTime={this.handleGoToTime}
 				/>
 				<Timeline
 					stage={this.props.stage}
 					scrollY={this.state.scrollY}
 					selectedKeyframes={this.state.selectedKeyframes}
+					currentTime={this.state.currentTime}
+					startTime={this.state.startTime}
+					endTime={this.state.endTime}
 
 					onScrollY={this.handleScrollY}
+					onCurrentTimeChange={this.handleCurrentTimeChange}
 					onScaleChange={this.handleTimeScaleChange}
+					onTimeWindowChange={this.handleTimeWindowChange}
 					onUnselectKeyframes={this.handleUnselectKeyframes}
 					onSelectKeyframes={this.handleSelectKeyframes}
 					onSingleKeyframeMouseDown={this.handleSingleKeyframeMouseDown}
@@ -134,6 +147,11 @@ export default class SequenceEditor extends React.Component {
 						</g>
 					</g>
 
+
+					<polygon id="arrow-left-button-shape" points="20,50 70,20 70,80"/>
+					<polygon id="arrow-right-button-shape" points="20,20 20,80 70,50"/>
+					<polygon id="keyframe-button-shape" points="50,20 80,50 50,80 20,50"/>
+
 				</defs>
 			</svg>
 		)
@@ -181,6 +199,19 @@ export default class SequenceEditor extends React.Component {
 		let scrollY = this.state.scrollY + deltaY
 		this.setState({
 			scrollY: scrollY,
+		})
+	}
+
+	handleCurrentTimeChange(time) {
+		this.setState({
+			currentTime: time,
+		})
+	}
+
+	handleTimeWindowChange(startTime, endTime) {
+		this.setState({
+			startTime: startTime,
+			endTime: endTime,
 		})
 	}
 
@@ -251,6 +282,34 @@ export default class SequenceEditor extends React.Component {
 			})
 
 			this.fireStageChange(stage, false)
+		}
+	}
+
+	handleGoToTime(t) {
+		if (t < this.state.startTime || t > this.state.endTime) {
+			let timeWindow = this.state.endTime - this.state.startTime
+			let startTime = t - timeWindow / 2
+			if (startTime < 0) {
+				startTime = 0
+			}
+			let endTime = startTime + timeWindow
+			if (endTime > this.props.stage.duration) {
+				endTime = this.props.stage.duration
+				startTime = endTime - timeWindow
+			}
+
+			startTime = Math.round(startTime)
+			endTime = Math.round(endTime)
+
+			this.setState({
+				startTime: startTime,
+				endTime: endTime,
+				currentTime: t,
+			})
+		} else {
+			this.setState({
+				currentTime: t,
+			})
 		}
 	}
 }

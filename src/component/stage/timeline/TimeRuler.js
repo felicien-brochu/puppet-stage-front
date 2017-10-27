@@ -253,7 +253,7 @@ export default class TimeRuler extends React.Component {
 
 		// Magnet on frame
 		if (t % units.FRAME_TIME !== 0) {
-			t = Math.round(t / units.FRAME_TIME) * units.FRAME_TIME
+			t = Math.round(Math.round(t / units.FRAME_TIME) * units.FRAME_TIME)
 		}
 		this.fireCurrentTimeChange(t)
 	}

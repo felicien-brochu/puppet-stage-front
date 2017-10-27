@@ -12,6 +12,11 @@ export default class Model {
 		return servos
 	}
 
+	static getServo(puppet, servoID) {
+		let servos = Model.getServos(puppet.boards)
+		return servos[servoID]
+	}
+
 	static indexOfID(list, id) {
 		let index = -1
 		list.forEach((item, i) => {
@@ -45,8 +50,8 @@ export default class Model {
 		return null
 	}
 
-	static getBasicSequence(stage, basicSequenceID) {
-		for (let driverSequence of stage.sequences) {
+	static getBasicSequence(sequences, basicSequenceID) {
+		for (let driverSequence of sequences) {
 			let sequence = Model.itemOfID(driverSequence.sequences, basicSequenceID)
 			if (sequence) {
 				return sequence

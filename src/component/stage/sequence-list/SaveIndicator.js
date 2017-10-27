@@ -13,7 +13,8 @@ export default class SaveIndicator extends React.Component {
 		let className = classNames("save-indicator", {
 			saved: saveState === 'saved',
 			saving: saveState === 'saving',
-			modified: saveState === 'modified' || saveState === 'traveled',
+			modified: saveState === 'modified',
+			traveled: saveState === 'traveled',
 		})
 		return (
 			<div className={className}>

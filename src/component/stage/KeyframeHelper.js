@@ -34,7 +34,7 @@ export default class KeyframeHelper {
 				KeyframeHelper.sortKeyframes(keyframes)
 				KeyframeHelper.removeDoubleKeyframes(keyframes)
 
-				let sequence = model.getBasicSequence(stage, sequenceID)
+				let sequence = model.getBasicSequence(stage.sequences, sequenceID)
 				sequence.keyframes = keyframes.keyframes
 
 				// Update selected keyframes
@@ -242,7 +242,7 @@ export default class KeyframeHelper {
 	static collectSelectedKeyframes(stage, selectedKeyframes) {
 		let keyframes = new Map()
 		for (let keyframe of selectedKeyframes) {
-			let sequence = model.getBasicSequence(stage, keyframe.sequenceID)
+			let sequence = model.getBasicSequence(stage.sequences, keyframe.sequenceID)
 			if (!keyframes.has(keyframe.sequenceID)) {
 				keyframes.set(keyframe.sequenceID, {
 					keyframes: JSON.parse(JSON.stringify(sequence.keyframes)),
@@ -253,5 +253,141 @@ export default class KeyframeHelper {
 			keyframes.get(keyframe.sequenceID).selected[keyframe.index] = true
 		}
 		return keyframes
+	}
+
+	static getCurrentTimeKeyframe(currentTime, sequence) {
+		for (let i = 0; i < sequence.keyframes.length; i++) {
+			if (sequence.keyframes[i].p.t === currentTime) {
+				return {
+					sequenceID: sequence.id,
+					index: i,
+				}
+			}
+		}
+		return null
+	}
+
+	static indexOfTime(currentTime, sequence) {
+		let i
+		for (i = 0; i < sequence.keyframes.length; i++) {
+			if (sequence.keyframes[i].p.t > currentTime) {
+				break
+			}
+		}
+		return i
+	}
+
+	static getPrevKeyframes(currentTime, sequence) {
+		let keyframes = []
+		for (let i = 0; i < sequence.keyframes.length; i++) {
+			if (sequence.keyframes[i].p.t < currentTime) {
+				keyframes.push({
+					sequenceID: sequence.id,
+					index: i,
+				})
+			}
+		}
+		return keyframes
+	}
+
+	static getNextKeyframes(currentTime, sequence) {
+		let keyframes = []
+		for (let i = 0; i < sequence.keyframes.length; i++) {
+			if (sequence.keyframes[i].p.t > currentTime) {
+				keyframes.push({
+					sequenceID: sequence.id,
+					index: i,
+				})
+			}
+		}
+		return keyframes
+	}
+
+	static newBasicSequenceKeyframeAt(basicSequence, t) {
+		let value = KeyframeHelper.getBasicSequenceValueAt(basicSequence, t)
+		return {
+			p: {
+				t: t,
+				v: value,
+			},
+			c1: {
+				t: t,
+				v: value,
+			},
+			c2: {
+				t: t,
+				v: value,
+			},
+		}
+	}
+
+	static getBasicSequenceValueAt(sequence, t) {
+		let keyframes = sequence.keyframes
+		if (keyframes.length === 0) {
+			return sequence.defaultValue
+		} else if (keyframes.length === 1) {
+			return keyframes[0].p.v
+		} else {
+			if (t <= keyframes[0].p.t) {
+				return keyframes[0].p.v
+			} else if (t >= keyframes[keyframes.length - 1].p.t) {
+				return keyframes[keyframes.length - 1].p.v
+			} else {
+				let keyframe1, keyframe2
+				for (let i = 0; i < keyframes.length - 1; i++) {
+					if (t <= keyframes[i + 1].p.t) {
+						keyframe1 = keyframes[i]
+						keyframe2 = keyframes[i + 1]
+						break
+					}
+				}
+
+				if (t === keyframe2.p.t) {
+					return keyframe2.p.v
+				} else {
+					return Bezier.valueAt(t, keyframe1.p, keyframe1.c2, keyframe2.p, keyframe2.c1)
+				}
+			}
+		}
+	}
+}
+
+class Bezier {
+
+	static valueAt(t, p1, c1, p2, c2) {
+		let progress = 0.5
+		let min = 0.
+		let max = 1.
+		let point
+
+		while (true) {
+			point = Bezier.progressPointAt(progress, p1, c1, p2, c2)
+			if (Math.abs(point.t - t) < units.BEZIER_TIME_PRECISION) {
+				break
+			} else if (point.t < t) {
+				min = progress
+			} else {
+				max = progress
+			}
+			progress = (max + min) / 2
+		}
+		return point.v
+	}
+
+
+	static progressPointAt(progress, p1, c1, p2, c2) {
+		var a = Bezier.progressPoint(progress, p1, c1)
+		var b = Bezier.progressPoint(progress, c1, c2)
+		var c = Bezier.progressPoint(progress, c2, p2)
+		var d = Bezier.progressPoint(progress, a, b)
+		var e = Bezier.progressPoint(progress, b, c)
+		return Bezier.progressPoint(progress, d, e)
+	}
+
+	static progressPoint(progress, a, b) {
+		return {
+			t: (b.t - a.t) * progress + a.t,
+			v: (b.v - a.v) * progress + a.v,
+		}
 	}
 }

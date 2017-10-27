@@ -75,22 +75,11 @@ export default class BasicSequenceModal extends React.Component {
 			return
 		}
 
-		let sequence = {
-			start: 0,
-			duration: 1e10, // 10 s = 1e10 ns
-			keyframes: [],
-			slave: false,
-		}
+		let sequence = {}
 		if (this.props.sequence) {
-			sequence = {
-				...this.props.sequence,
-			}
+			sequence = JSON.parse(JSON.stringify(this.props.sequence))
 		}
-		sequence = {
-			...sequence,
-			name: name,
-		}
-
+		sequence.name = name
 
 		if (typeof this.props.onConfirm === 'function') {
 			this.props.onConfirm(sequence, this.props.driverSequence)

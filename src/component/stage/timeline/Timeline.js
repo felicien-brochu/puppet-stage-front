@@ -10,7 +10,7 @@ import TimeScroll from './TimeScroll'
 const PADDING_LEFT = 16
 const PADDING_RIGHT = 16
 const SCALE_MAX = 50 / units.FRAME_TIME // 50px by frame
-const SCALE_STEP = 70
+const SCALE_STEP = 12
 
 export default class Timeline extends React.Component {
 
@@ -19,8 +19,13 @@ export default class Timeline extends React.Component {
 		graphMode: PropTypes.bool,
 		scrollY: PropTypes.number.isRequired,
 		selectedKeyframes: PropTypes.array.isRequired,
+		currentTime: PropTypes.number.isRequired,
+		startTime: PropTypes.number.isRequired,
+		endTime: PropTypes.number.isRequired,
 
 		onScrollY: PropTypes.func.isRequired,
+		onCurrentTimeChange: PropTypes.func.isRequired,
+		onTimeWindowChange: PropTypes.func.isRequired,
 		onScaleChange: PropTypes.func.isRequired,
 		onSelectKeyframes: PropTypes.func.isRequired,
 		onUnselectKeyframes: PropTypes.func.isRequired,
@@ -35,9 +40,6 @@ export default class Timeline extends React.Component {
 		super(props)
 
 		this.state = {
-			currentTime: 0,
-			startTime: 0,
-			endTime: props.stage.duration,
 			viewWidth: 0,
 			viewHeight: 0,
 		}
@@ -47,7 +49,6 @@ export default class Timeline extends React.Component {
 		this.handleScrollY = this.handleScrollY.bind(this)
 		this.handleScrollScale = this.handleScrollScale.bind(this)
 		this.handleScrollToT = this.handleScrollToT.bind(this)
-		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
 	}
 
 	render() {
@@ -59,10 +60,10 @@ export default class Timeline extends React.Component {
 
 				<TimeRuler
 					timeline={this.getViewState()}
-					onCurrentTimeChange={this.handleCurrentTimeChange}/>
+					onCurrentTimeChange={this.props.onCurrentTimeChange}/>
 
 				<TimeCursor
-					currentTime={this.state.currentTime}
+					currentTime={this.props.currentTime}
 					timeline={this.getViewState()}/>
 
 
@@ -110,8 +111,8 @@ export default class Timeline extends React.Component {
 		let viewState = {
 			paddingLeft: PADDING_LEFT,
 			paddingRight: PADDING_RIGHT,
-			start: this.state.startTime,
-			end: this.state.endTime,
+			start: this.props.startTime,
+			end: this.props.endTime,
 			width: this.state.viewWidth,
 			height: this.state.viewHeight,
 			duration: this.props.stage.duration,
@@ -123,7 +124,7 @@ export default class Timeline extends React.Component {
 
 	handleResize(width, height) {
 		if (width !== this.state.viewWidth && typeof this.props.onScaleChange === 'function') {
-			let scale = (width - PADDING_LEFT - PADDING_RIGHT) / (this.state.endTime - this.state.startTime)
+			let scale = (width - PADDING_LEFT - PADDING_RIGHT) / (this.props.endTime - this.props.startTime)
 			this.props.onScaleChange(scale)
 		}
 		this.setState({
@@ -135,20 +136,17 @@ export default class Timeline extends React.Component {
 	handleScrollX(delta) {
 		let scale = this.getScale()
 		let deltaT = 1 / scale * delta
-		let startTime = this.state.startTime + deltaT
-		let endTime = this.state.endTime + deltaT
+		let startTime = this.props.startTime + deltaT
+		let endTime = this.props.endTime + deltaT
 		if (startTime < 0) {
 			startTime = 0
-			endTime = this.state.endTime - this.state.startTime
+			endTime = this.props.endTime - this.props.startTime
 		}
 		if (endTime > this.props.stage.duration) {
-			startTime = this.state.startTime + this.props.stage.duration - this.state.endTime
+			startTime = this.props.startTime + this.props.stage.duration - this.props.endTime
 			endTime = this.props.stage.duration
 		}
-		this.setState({
-			startTime: startTime,
-			endTime: endTime,
-		})
+		this.props.onTimeWindowChange(startTime, endTime)
 	}
 
 	handleScrollY(deltaY) {
@@ -182,14 +180,14 @@ export default class Timeline extends React.Component {
 	}
 
 	getScale() {
-		return (this.state.viewWidth - PADDING_LEFT - PADDING_RIGHT) / (this.state.endTime - this.state.startTime)
+		return (this.state.viewWidth - PADDING_LEFT - PADDING_RIGHT) / (this.props.endTime - this.props.startTime)
 	}
 
 	setScale(scale, from) {
 		let oldScale = this.getScale()
-		let fromT = this.state.startTime + 1 / oldScale * (from - PADDING_LEFT)
+		let fromT = this.props.startTime + 1 / oldScale * (from - PADDING_LEFT)
 
-		let start = oldScale * (this.state.startTime - fromT) / scale + fromT
+		let start = oldScale * (this.props.startTime - fromT) / scale + fromT
 
 		this.moveTo(start, scale)
 
@@ -212,20 +210,11 @@ export default class Timeline extends React.Component {
 			end = start + 1 / scale * (this.state.viewWidth - PADDING_LEFT - PADDING_RIGHT)
 		}
 
-		this.setState({
-			startTime: start,
-			endTime: end,
-		})
+		this.props.onTimeWindowChange(start, end)
 	}
 
 	handleScrollToT(t) {
 		this.moveTo(t, this.getScale())
-	}
-
-	handleCurrentTimeChange(time) {
-		this.setState({
-			currentTime: time,
-		})
 	}
 }
 

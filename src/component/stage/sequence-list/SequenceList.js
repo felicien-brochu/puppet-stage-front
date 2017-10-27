@@ -23,22 +23,22 @@ export default class SequenceList extends React.Component {
 
 	static propTypes = {
 		puppet: PropTypes.object.isRequired,
-		sequences: PropTypes.array.isRequired,
+		stage: PropTypes.object.isRequired,
 		scrollY: PropTypes.number.isRequired,
+		currentTime: PropTypes.number.isRequired,
 		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
 
-		onNewDriverSequence: PropTypes.func,
-		onDriverSequenceChange: PropTypes.func,
-		onNewBasicSequence: PropTypes.func,
-		onBasicSequenceChange: PropTypes.func,
+		onNewDriverSequence: PropTypes.func.isRequired,
+		onDriverSequenceChange: PropTypes.func.isRequired,
+		onNewBasicSequence: PropTypes.func.isRequired,
+		onBasicSequenceChange: PropTypes.func.isRequired,
+		onGoToTime: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
 		super(props)
 
 		this.state = {
-			sequences: props.sequences,
-
 			driverSequenceModal: {
 				show: false,
 				sequence: null,
@@ -53,6 +53,8 @@ export default class SequenceList extends React.Component {
 
 		this.handleContextMenuClick = this.handleContextMenuClick.bind(this)
 		this.handleDriverSequenceExpand = this.handleDriverSequenceExpand.bind(this)
+		this.handleBasicSequenceChange = this.handleBasicSequenceChange.bind(this)
+		this.handleGoToKeyframe = this.handleGoToKeyframe.bind(this)
 		this.handleCreateDriverSequence = this.handleCreateDriverSequence.bind(this)
 		this.handleCreateUpdateDriverSequence = this.handleCreateUpdateDriverSequence.bind(this)
 		this.handleCancelDriverSequenceModal = this.handleCancelDriverSequenceModal.bind(this)
@@ -118,19 +120,22 @@ export default class SequenceList extends React.Component {
 	}
 
 	renderList() {
-		if (this.props.sequences.length === 0) {
+		if (this.props.stage.sequences.length === 0) {
 			return null
 		}
 
 		let sequenceItems = []
-		for (let i = 0; i < this.props.sequences.length; i++) {
-			let sequence = this.props.sequences[i]
+		for (let i = 0; i < this.props.stage.sequences.length; i++) {
+			let sequence = this.props.stage.sequences[i]
 			sequenceItems.push(
 				<DriverSequenceItem
 					key={sequence.id}
 					sequence={sequence}
 					color={i}
-					onExpand={this.handleDriverSequenceExpand}/>
+					currentTime={this.props.currentTime}
+					onExpand={this.handleDriverSequenceExpand}
+					onBasicSequenceChange={this.handleBasicSequenceChange}
+					onGoToKeyframe={this.handleGoToKeyframe}/>
 			)
 		}
 		return (
@@ -227,6 +232,11 @@ export default class SequenceList extends React.Component {
 
 	createDriverSequence(sequence) {
 		UUID.getUUID().then((uuid) => {
+			sequence = {
+				...sequence,
+				sequences: [],
+				expanded: true,
+			}
 			sequence.id = uuid
 			if (typeof this.props.onNewDriverSequence === 'function') {
 				this.props.onNewDriverSequence(sequence)
@@ -276,7 +286,7 @@ export default class SequenceList extends React.Component {
 	}
 
 	handleEditBasicSequence(sequence) {
-		let driverSequence = model.getBasicSequenceParent(this.props.sequences, sequence.id)
+		let driverSequence = model.getBasicSequenceParent(this.props.stage.sequences, sequence.id)
 		this.setState({
 			basicSequenceModal: {
 				show: true,
@@ -294,9 +304,22 @@ export default class SequenceList extends React.Component {
 		}
 	}
 
+	handleBasicSequenceChange(basicSequence, driverSequence) {
+		this.updateBasicSequence(basicSequence, driverSequence)
+	}
+
 	createBasicSequence(sequence, driverSequence) {
 		UUID.getUUID().then((uuid) => {
-			sequence.id = uuid
+			let defaultValue = model.getServo(this.props.puppet, driverSequence.servoID).defaultPosition
+			sequence = {
+				...sequence,
+				id: uuid,
+				defaultValue: defaultValue,
+				start: 0,
+				duration: this.props.stage.duration, // 10 s = 1e10 ns
+				keyframes: [],
+				slave: false,
+			}
 			if (typeof this.props.onNewBasicSequence === 'function') {
 				this.props.onNewBasicSequence(sequence, driverSequence)
 			}
@@ -309,7 +332,7 @@ export default class SequenceList extends React.Component {
 				}
 			})
 		}).catch((error) => {
-			console.log(error)
+			console.error(error)
 		})
 	}
 
@@ -342,5 +365,11 @@ export default class SequenceList extends React.Component {
 		if (typeof this.props.onDriverSequenceChange === 'function') {
 			this.props.onDriverSequenceChange(sequence, false)
 		}
+	}
+
+	handleGoToKeyframe(keyframe) {
+		let basicSequence = model.getBasicSequence(this.props.stage.sequences, keyframe.sequenceID)
+		let t = basicSequence.keyframes[keyframe.index].p.t
+		this.props.onGoToTime(t)
 	}
 }

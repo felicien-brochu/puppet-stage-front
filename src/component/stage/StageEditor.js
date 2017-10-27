@@ -7,6 +7,9 @@ import {
 import SequenceEditor from './SequenceEditor'
 import StageHistory from './StageHistory'
 import fetchAPI from '../../util/api'
+import {
+	entries
+} from '../../util/utils'
 
 export default class StageEditor extends React.Component {
 
@@ -25,6 +28,13 @@ export default class StageEditor extends React.Component {
 
 		this.stageID = props.match.params.id
 		this.history = new StageHistory(this.stageID, this.handleSaveStateChange)
+		this.keyBindings = {
+			ctrl: {
+				z: this.handleHistoryPrevious,
+				y: this.handleHistoryNext,
+				s: this.handleSave,
+			}
+		}
 	}
 
 	componentWillMount() {
@@ -230,21 +240,21 @@ export default class StageEditor extends React.Component {
 	}
 
 	handleGlobalKeyDown(e) {
-		if (e.ctrlKey) {
-			if (e.key === 'z') {
-				this.handleHistoryPrevious()
-				e.preventDefault()
-			} else if (e.key === 'y') {
-				this.handleHistoryNext()
-				e.preventDefault()
-			} else if (e.key === 's') {
-				this.handleSave()
-				e.preventDefault()
-			}
-		}
+		this.handleKeyBindings(e)
 
 		if (e.key === 'Alt' || e.key === 'Control') {
 			e.preventDefault()
+		}
+	}
+
+	handleKeyBindings(e) {
+		if (e.ctrlKey) {
+			for (let [key, handler] of entries()(this.keyBindings.ctrl))
+				if (e.key === key) {
+					handler.bind(this)(e)
+					e.preventDefault()
+					break
+				}
 		}
 	}
 

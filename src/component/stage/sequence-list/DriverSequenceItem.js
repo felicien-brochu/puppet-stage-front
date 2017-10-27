@@ -13,8 +13,12 @@ export default class DriverSequenceItem extends React.Component {
 
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
+		currentTime: PropTypes.number.isRequired,
 		color: PropTypes.number.isRequired,
-		onExpand: PropTypes.func,
+
+		onExpand: PropTypes.func.isRequired,
+		onBasicSequenceChange: PropTypes.func.isRequired,
+		onGoToKeyframe: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -56,7 +60,7 @@ export default class DriverSequenceItem extends React.Component {
 		if (this.props.sequence.expanded && this.props.sequence.sequences.length > 0) {
 			return (
 				<ul className="basic-sequence-list">
-					{this.props.sequence.sequences.map(this.renderBasicSequenceItem)}
+					{this.props.sequence.sequences.map(this.renderBasicSequenceItem.bind(this))}
 				</ul>
 			)
 		} else {
@@ -68,7 +72,10 @@ export default class DriverSequenceItem extends React.Component {
 		return (
 			<BasicSequenceItem
 				key={basicSequence.id}
-				sequence={basicSequence}/>
+				sequence={basicSequence}
+				currentTime={this.props.currentTime}
+				onBasicSequenceChange={(basicSequence) => {this.props.onBasicSequenceChange(basicSequence, this.props.sequence)}}
+				onGoToKeyframe={this.props.onGoToKeyframe}/>
 		)
 	}
 

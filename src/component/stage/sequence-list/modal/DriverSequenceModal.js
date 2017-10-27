@@ -101,14 +101,9 @@ export default class DriverSequenceModal extends React.Component {
 			return
 		}
 
-		let sequence = {
-			sequences: [],
-			expanded: true,
-		}
+		let sequence = {}
 		if (this.props.sequence) {
-			sequence = {
-				...this.props.sequence
-			}
+			sequence = JSON.parse(JSON.stringify(this.props.sequence))
 		}
 		sequence = {
 			...sequence,
