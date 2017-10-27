@@ -46,6 +46,7 @@ export default class SequenceEditor extends React.Component {
 		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
 		this.handleTimeWindowChange = this.handleTimeWindowChange.bind(this)
 		this.handleGoToTime = this.handleGoToTime.bind(this)
+		this.handleBasicSequenceTimeChange = this.handleBasicSequenceTimeChange.bind(this)
 	}
 
 	render() {
@@ -83,6 +84,7 @@ export default class SequenceEditor extends React.Component {
 					onUnselectKeyframes={this.handleUnselectKeyframes}
 					onSelectKeyframes={this.handleSelectKeyframes}
 					onSingleKeyframeMouseDown={this.handleSingleKeyframeMouseDown}
+					onBasicSequenceTimeChange={this.handleBasicSequenceTimeChange}
 				/>
 			</div>
 		)
@@ -147,6 +149,7 @@ export default class SequenceEditor extends React.Component {
 						</g>
 					</g>
 
+					<rect id="handle-shape" x="0" y="0" width="16" height="20"/>
 
 					<polygon id="arrow-left-button-shape" points="20,50 70,20 70,80"/>
 					<polygon id="arrow-right-button-shape" points="20,20 20,80 70,50"/>
@@ -311,5 +314,13 @@ export default class SequenceEditor extends React.Component {
 				currentTime: t,
 			})
 		}
+	}
+
+	handleBasicSequenceTimeChange(basicSequenceID, start, duration, confirmed) {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let basicSequence = model.getBasicSequence(stage.sequences, basicSequenceID)
+		basicSequence.start = start
+		basicSequence.duration = duration
+		this.fireStageChange(stage, confirmed)
 	}
 }

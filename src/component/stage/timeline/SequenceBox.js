@@ -1,8 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
+import units from '../../../util/units'
 
-const KEYFRAME_WIDTH = 11.3
+const
+	KEYFRAME_WIDTH = 11.3,
+	HANDLE_WIDTH = 16
 
 export default class SequenceBox extends React.Component {
 	static propTypes = {
@@ -27,6 +30,7 @@ export default class SequenceBox extends React.Component {
 		selectingKeyframes: PropTypes.array,
 
 		onKeyframeMouseDown: PropTypes.func,
+		onBasicSequenceTimeChange: PropTypes.func,
 	}
 
 	static defaultProps = {
@@ -44,6 +48,8 @@ export default class SequenceBox extends React.Component {
 
 		this.getSelectingKeyframes = this.getSelectingKeyframes.bind(this)
 		this.handleKeyframeMouseDown = this.handleKeyframeMouseDown.bind(this)
+		this.handleHandleDragMove = this.handleHandleDragMove.bind(this)
+		this.handleHandleDragUp = this.handleHandleDragUp.bind(this)
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -85,15 +91,17 @@ export default class SequenceBox extends React.Component {
 		}
 
 		let scale = timeline.getScale()
-		let marginLeft = timeline.paddingLeft + ((seqStart - timeline.start) * scale)
+		let x = timeline.paddingLeft + ((seqStart - timeline.start) * scale)
 		let width = seqDuration * scale
 
+		let handles = this.renderHandles()
 		let keyframes = this.renderKeyFrames()
 
 		let box = (
 			<svg className="sequence-box-box"
 				ref={container => this.container = container}>
-				<rect x={marginLeft} y={0} width={width} height={this.props.height-1}/>
+				<rect x={x} y={0} width={width} height={this.props.height-1}/>
+				{handles}
 				{keyframes}
 			</svg>
 		)
@@ -145,6 +153,51 @@ export default class SequenceBox extends React.Component {
 		}
 
 		return []
+	}
+
+	renderHandles() {
+		const {
+			timeline,
+			sequence,
+			start,
+			duration
+		} = this.props
+
+		let seqStart = start
+		let seqDuration = duration
+		if (sequence) {
+			seqStart = sequence.start
+			seqDuration = sequence.duration
+		}
+
+		let scale = timeline.getScale()
+		let x = timeline.paddingLeft + ((seqStart - timeline.start) * scale)
+		let width = seqDuration * scale
+
+		let handles = []
+
+		if (sequence && sequence.keyframes) {
+			handles.push(
+				<use
+					className="handle"
+					key="left-handle"
+					href="#handle-shape"
+					x={x - HANDLE_WIDTH / 2}
+					y="0"
+					onMouseDown={(e) => this.handleHandleMouseDown('left', e)}
+				/>)
+			handles.push(
+				<use
+					className="handle"
+					key="right-handle"
+					href="#handle-shape"
+					x={x + width - HANDLE_WIDTH / 2}
+					y="0"
+					onMouseDown={(e) => this.handleHandleMouseDown('right', e)}
+				/>)
+		}
+
+		return handles
 	}
 
 	renderKeyframe(t, i, selected, href) {
@@ -228,5 +281,74 @@ export default class SequenceBox extends React.Component {
 			}
 		}
 		return keyframes
+	}
+
+	handleHandleMouseDown(handle, e) {
+		this.handleDrag = {
+			startX: e.clientX,
+			startT: this.props.sequence.start,
+			duration: this.props.sequence.duration,
+			handle: handle,
+		}
+		window.addEventListener('mousemove', this.handleHandleDragMove)
+		window.addEventListener('mouseup', this.handleHandleDragUp)
+		e.stopPropagation()
+	}
+
+	handleHandleDragMove(e) {
+		let {
+			startTime,
+			duration
+		} = this.getNewSequenceTime(e.clientX)
+		if (typeof this.props.onBasicSequenceTimeChange === 'function') {
+			this.props.onBasicSequenceTimeChange(this.props.sequence.id, startTime, duration, false)
+		}
+	}
+
+	handleHandleDragUp(e) {
+		window.removeEventListener('mousemove', this.handleHandleDragMove)
+		window.removeEventListener('mouseup', this.handleHandleDragUp)
+		let {
+			startTime,
+			duration
+		} = this.getNewSequenceTime(e.clientX)
+		if (typeof this.props.onBasicSequenceTimeChange === 'function') {
+			this.props.onBasicSequenceTimeChange(this.props.sequence.id, startTime, duration, true)
+		}
+	}
+
+	getNewSequenceTime(clientX) {
+		let {
+			startX,
+			startT,
+			duration,
+			handle,
+		} = this.handleDrag
+
+		let sequenceTime
+		if (handle === 'left') {
+			let deltaT = Math.round(Math.round((clientX - startX) / this.props.timeline.getScale() / units.FRAME_TIME) * units.FRAME_TIME)
+			deltaT = Math.max(deltaT, -startT)
+			deltaT = Math.min(deltaT, Math.round(duration - units.FRAME_TIME))
+			sequenceTime = {
+				startTime: startT + deltaT,
+				duration: duration - deltaT,
+			}
+		} else if (handle === 'right') {
+			let deltaT = Math.round(Math.round((clientX - startX) / this.props.timeline.getScale() / units.FRAME_TIME) * units.FRAME_TIME)
+			deltaT = Math.max(deltaT, -Math.round(duration - units.FRAME_TIME))
+			deltaT = Math.min(deltaT, this.props.timeline.duration - startT - duration)
+			sequenceTime = {
+				startTime: startT,
+				duration: duration + deltaT,
+			}
+		} else {
+			sequenceTime = {
+				startTime: this.props.sequence.start,
+				duration: this.props.sequence.duration,
+			}
+		}
+
+		return sequenceTime
 	}
 }

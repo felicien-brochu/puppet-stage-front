@@ -22,6 +22,7 @@ export default class TimelineDriverSequence extends React.Component {
 		selectingKeyframes: PropTypes.array.isRequired,
 
 		onKeyframeMouseDown: PropTypes.func.isRequired,
+		onBasicSequenceTimeChange: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -74,6 +75,7 @@ export default class TimelineDriverSequence extends React.Component {
 						selectingKeyframes={this.props.selectingKeyframes}
 
 						onKeyframeMouseDown={this.props.onKeyframeMouseDown}
+						onBasicSequenceTimeChange={this.props.onBasicSequenceTimeChange}
 				/>
 				)
 			}

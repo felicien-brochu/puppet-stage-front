@@ -256,3 +256,11 @@
 		fill-opacity: 0.4;
 	}
 }
+
+.handle {
+	opacity: 0;
+
+	&:hover {
+		cursor: col-resize;
+	}
+}

@@ -11,6 +11,7 @@ export default class SequenceTimeline extends React.Component {
 		onSelectKeyframes: PropTypes.func.isRequired,
 		onUnselectKeyframes: PropTypes.func.isRequired,
 		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
+		onBasicSequenceTimeChange: PropTypes.func.isRequired,
 
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
@@ -59,6 +60,7 @@ export default class SequenceTimeline extends React.Component {
 					selectedKeyframes={this.props.selectedKeyframes}
 					selectingKeyframes={this.state.selection.selectingKeyframes}
 					onKeyframeMouseDown={this.props.onSingleKeyframeMouseDown}
+					onBasicSequenceTimeChange={this.props.onBasicSequenceTimeChange}
 				/>
 			)
 		}
