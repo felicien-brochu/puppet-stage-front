@@ -28,6 +28,8 @@ export default class BasicSequenceItem extends React.Component {
 		this.handleGoToNextKeyframe = this.handleGoToNextKeyframe.bind(this)
 		this.handleRemoveKeyframe = this.handleRemoveKeyframe.bind(this)
 		this.handleCreateDefaultKeyframe = this.handleCreateDefaultKeyframe.bind(this)
+		this.handleValueChange = this.handleValueChange.bind(this)
+		this.handleValueConfirmed = this.handleValueConfirmed.bind(this)
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -37,8 +39,9 @@ export default class BasicSequenceItem extends React.Component {
 	}
 
 	render() {
-		return (
+		let currentValue = KeyframeHelper.getBasicSequenceValueAt(this.props.sequence, this.props.currentTime)
 
+		return (
 			<ContextMenuTrigger
 				attributes={{
 					className: "basic-sequence-list-item"
@@ -65,9 +68,46 @@ export default class BasicSequenceItem extends React.Component {
 					{this.props.sequence.name}
 				</span>
 
-				<NumberInput/>
+				<NumberInput
+					defaultValue={currentValue}
+					min={0}
+					max={100}
+					scale={50}
+					percentFormat={true}
+					onChange={this.handleValueChange}
+					onValueConfirmed={this.handleValueConfirmed}/>
 			</ContextMenuTrigger>
 		)
+	}
+
+	handleValueChange(value) {
+		this.createOrUpdateCurrentKeyframe(value, false)
+	}
+
+	handleValueConfirmed(value) {
+		this.createOrUpdateCurrentKeyframe(value, true)
+	}
+
+	createOrUpdateCurrentKeyframe(value, save) {
+		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
+		let keyframe
+		let isNew = false
+
+		if (!this.currentTimeKeyframe) {
+			keyframe = KeyframeHelper.newBasicSequenceKeyframeAt(sequence, this.props.currentTime)
+			let keyframeIndex = KeyframeHelper.indexOfTime(this.props.currentTime, sequence)
+			sequence.keyframes.splice(keyframeIndex, 0, keyframe)
+			isNew = true
+		} else {
+			keyframe = sequence.keyframes[this.currentTimeKeyframe.index]
+		}
+
+		let deltaV = value - keyframe.p.v
+		keyframe.p.v += deltaV
+		keyframe.c1.v += deltaV
+		keyframe.c2.v += deltaV
+
+		this.props.onBasicSequenceChange(sequence, save || isNew)
 	}
 
 	handleGoToPrevKeyframe() {
@@ -81,7 +121,7 @@ export default class BasicSequenceItem extends React.Component {
 	handleRemoveKeyframe() {
 		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
 		sequence.keyframes.splice(this.currentTimeKeyframe.index, 1)
-		this.props.onBasicSequenceChange(sequence)
+		this.props.onBasicSequenceChange(sequence, true)
 	}
 
 	handleCreateDefaultKeyframe() {
@@ -89,6 +129,6 @@ export default class BasicSequenceItem extends React.Component {
 		let index = KeyframeHelper.indexOfTime(this.props.currentTime, sequence)
 		let keyframe = KeyframeHelper.newBasicSequenceKeyframeAt(this.props.sequence, this.props.currentTime)
 		sequence.keyframes.splice(index, 0, keyframe)
-		this.props.onBasicSequenceChange(sequence)
+		this.props.onBasicSequenceChange(sequence, true)
 	}
 }

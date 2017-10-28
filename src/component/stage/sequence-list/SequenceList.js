@@ -304,13 +304,15 @@ export default class SequenceList extends React.Component {
 		}
 	}
 
-	handleBasicSequenceChange(basicSequence, driverSequence) {
-		this.updateBasicSequence(basicSequence, driverSequence)
+	handleBasicSequenceChange(basicSequence, driverSequence, save = true) {
+		this.updateBasicSequence(basicSequence, driverSequence, save)
 	}
 
 	createBasicSequence(sequence, driverSequence) {
 		UUID.getUUID().then((uuid) => {
-			let defaultValue = model.getServo(this.props.puppet, driverSequence.servoID).defaultPosition
+			let servo = model.getServo(this.props.puppet.boards, driverSequence.servoID)
+
+			let defaultValue = (servo.defaultPosition - servo.min) / (servo.max - servo.min) * 100
 			sequence = {
 				...sequence,
 				id: uuid,
@@ -336,9 +338,9 @@ export default class SequenceList extends React.Component {
 		})
 	}
 
-	updateBasicSequence(sequence, driverSequence) {
+	updateBasicSequence(sequence, driverSequence, save = true) {
 		if (typeof this.props.onBasicSequenceChange === 'function') {
-			this.props.onBasicSequenceChange(sequence, driverSequence)
+			this.props.onBasicSequenceChange(sequence, driverSequence, save)
 		}
 
 		this.setState({

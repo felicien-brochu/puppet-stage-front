@@ -1,10 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import colorClasses from '../colorclasses'
 import {
 	ContextMenuTrigger
 } from 'react-contextmenu'
+import colorClasses from '../colorclasses'
 import BasicSequenceItem from './BasicSequenceItem'
 import ExpandButton from './ExpandButton'
 
@@ -74,7 +74,7 @@ export default class DriverSequenceItem extends React.Component {
 				key={basicSequence.id}
 				sequence={basicSequence}
 				currentTime={this.props.currentTime}
-				onBasicSequenceChange={(basicSequence) => {this.props.onBasicSequenceChange(basicSequence, this.props.sequence)}}
+				onBasicSequenceChange={(basicSequence, save) => {this.props.onBasicSequenceChange(basicSequence, this.props.sequence, save)}}
 				onGoToKeyframe={this.props.onGoToKeyframe}/>
 		)
 	}

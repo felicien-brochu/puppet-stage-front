@@ -267,10 +267,10 @@ export default class KeyframeHelper {
 		return null
 	}
 
-	static indexOfTime(currentTime, sequence) {
-		let i
-		for (i = 0; i < sequence.keyframes.length; i++) {
-			if (sequence.keyframes[i].p.t > currentTime) {
+	static indexOfTime(t, sequence) {
+		let i = 0
+		for (; i < sequence.keyframes.length; i++) {
+			if (sequence.keyframes[i].p.t > t) {
 				break
 			}
 		}

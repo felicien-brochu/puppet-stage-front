@@ -12,8 +12,8 @@ export default class Model {
 		return servos
 	}
 
-	static getServo(puppet, servoID) {
-		let servos = Model.getServos(puppet.boards)
+	static getServo(boards, servoID) {
+		let servos = Model.getServos(boards)
 		return servos[servoID]
 	}
 

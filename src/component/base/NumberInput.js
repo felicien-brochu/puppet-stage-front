@@ -10,6 +10,8 @@ export default class NumberInput extends React.Component {
 		max: PropTypes.number,
 		scale: PropTypes.number,
 		step: PropTypes.number,
+		percentFormat: PropTypes.bool,
+
 		onChange: PropTypes.func,
 		onValueConfirmed: PropTypes.func,
 	}
@@ -19,13 +21,14 @@ export default class NumberInput extends React.Component {
 		min: 0,
 		max: 100,
 		scale: 100,
+		percentFormat: false,
 	}
 
 	constructor(props) {
 		super(props)
 
 		this.state = {
-			value: props.defaultValue,
+			value: this.formatValue(props.defaultValue),
 			editing: 'none',
 			isEditing: false,
 		}
@@ -39,7 +42,7 @@ export default class NumberInput extends React.Component {
 
 	componentWillReceiveProps(nextProps) {
 		this.setState({
-			value: nextProps.defaultValue
+			value: this.formatValue(nextProps.defaultValue),
 		})
 	}
 
@@ -56,7 +59,7 @@ export default class NumberInput extends React.Component {
 		return (
 			<div className="number-input-container">
 				<input
-					type="number"
+					type="text"
 					className={inputClasses}
 					value={this.state.value}
 					onChange={this.handleChange}
@@ -74,46 +77,21 @@ export default class NumberInput extends React.Component {
 		)
 	}
 
-	handleChange(e) {
-		this.setValue(e.target.value)
-	}
+	setControlledValue(value) {
+		value = this.getControlledValue(value)
+		value = this.formatValue(value)
 
-	handleClick(e) {
+		if (this.state.value !== value) {
+			this.fireChange(value)
+		}
 		this.setState({
-			editing: 'text',
+			value: value
 		})
-		this.input.select()
+
+		return value
 	}
 
-	handleMouseDown(e) {
-		e.preventDefault()
-
-		let startValue = this.state.value,
-			startX = e.clientX,
-			startY = e.clientY
-
-		let handleMouseMove = function(e) {
-			this.onDragValue(startValue, e.clientX - startX, e.clientY - startY)
-		}.bind(this)
-
-		let handleMouseUp = function() {
-			document.removeEventListener('mouseup', handleMouseUp)
-			document.removeEventListener('mousemove', handleMouseMove)
-			this.confirmValue()
-		}.bind(this)
-
-		document.addEventListener('mousemove', handleMouseMove)
-		document.addEventListener('mouseup', handleMouseUp)
-	}
-
-	onDragValue(startValue, offsetX, offsetY) {
-		let scale = this.props.scale / 100
-		offsetX *= scale
-		offsetY *= scale
-		this.setValue(Number(startValue) + offsetX - offsetY)
-	}
-
-	setValue(value) {
+	getControlledValue(value) {
 		if (this.props.step !== undefined) {
 			let step = this.props.step
 			value /= step
@@ -125,42 +103,112 @@ export default class NumberInput extends React.Component {
 		} else if (this.props.min !== undefined && value < this.props.min) {
 			value = this.props.min
 		}
-		this.setState({
-			value: value
-		})
+		return value
+	}
 
-		if (typeof this.props.onChange === 'function') {
-			this.props.onChange(value)
+	formatValue(value) {
+		if (this.props.percentFormat) {
+			let formatter = new Intl.NumberFormat('en-US', {
+				minimumFractionDigits: 1,
+				maximumFractionDigits: 1,
+			})
+			value = formatter.format(value)
+		}
+		return value
+	}
+
+	handleChange(e) {
+		let value = e.target.value
+		if (!isNaN(value)) {
+			this.setState({
+				value: value,
+			})
 		}
 	}
 
+	handleClick(e) {
+		this.startValue = parseFloat(this.state.value)
+		this.setState({
+			editing: 'text',
+			value: this.state.value.trim(),
+		})
+		this.input.select()
+	}
+
+	handleMouseDown(e) {
+		e.preventDefault()
+		e.stopPropagation()
+
+		let startValue = this.state.value,
+			startX = e.clientX,
+			startY = e.clientY,
+			scaleDivisor = 1
+
+		if (e.ctrlKey) {
+			scaleDivisor = 20
+		}
+
+		let handleMouseMove = function(e) {
+			this.onDragValue(startValue, e.clientX - startX, e.clientY - startY, scaleDivisor)
+		}.bind(this)
+
+		let handleMouseUp = function() {
+			window.removeEventListener('mouseup', handleMouseUp)
+			window.removeEventListener('mousemove', handleMouseMove)
+
+			if (this.state.value !== startValue) {
+				this.confirmValue()
+			}
+		}.bind(this)
+
+		window.addEventListener('mousemove', handleMouseMove)
+		window.addEventListener('mouseup', handleMouseUp)
+	}
+
+	onDragValue(startValue, offsetX, offsetY, scaleDivisor) {
+		let scale = this.props.scale / 100 / scaleDivisor
+		offsetX *= scale
+		offsetY *= scale
+		this.setControlledValue(Number(startValue) + offsetX - offsetY)
+	}
+
 	confirmValue() {
-		if (typeof this.props.onChange === 'function') {
-			this.props.onChange(this.state.value)
-		}
-		if (typeof this.props.onValueConfirmed === 'function') {
-			this.props.onValueConfirmed(this.state.value)
-		}
+		let value = this.setControlledValue(this.state.value)
+		this.fireValueConfirmed(value)
 	}
 
 	exitEditing() {
 		this.setState({
 			editing: 'none',
+			value: this.formatValue(this.state.value),
 		})
 	}
 
 	handleBlur(e) {
 		if (this.state.editing === 'text') {
 			this.exitEditing()
-			this.confirmValue()
+			if (parseFloat(this.state.value) !== this.startValue) {
+				this.confirmValue()
+			}
 		}
 	}
 
 	handleKeyDown(e) {
 		if (this.state.editing === 'text' && (e.key === 'Enter' || e.key === 'Escape')) {
 			this.input.blur()
-			this.exitEditing()
-			this.confirmValue()
+			e.stopPropagation()
+		}
+	}
+
+	fireChange(value) {
+		if (typeof this.props.onChange === 'function') {
+			this.props.onChange(parseFloat(value))
+		}
+	}
+
+	fireValueConfirmed(value) {
+		if (typeof this.props.onValueConfirmed === 'function') {
+			this.props.onValueConfirmed(parseFloat(value))
 		}
 	}
 }

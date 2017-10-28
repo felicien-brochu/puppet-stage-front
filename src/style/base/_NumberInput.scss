@@ -1,35 +1,35 @@
 .number-input-container {
 	display: inline-block;
 	position: relative;
-	width: 3em;
-	height: 1em;
-	font-size: 0.7em;
+	width: 33px + 8px;
+	height: 20px;
+	font-size: 11px;
 	color: $accent-color;
-
-	.disabled {
-		display: none;
-	}
 
 	&:hover {
 		color: white;
 	}
 
 	.inner-component {
-		width: 100%;
-		height: 100%;
+		display: inline-block;
+		vertical-align: middle;
 		background: none;
-		position: absolute;
-		padding: 0.2em 0.4em;
+		padding: 0;
 		@include border-radius(0.2em);
 	}
 
 	.number-input {
+		font-family: 'Droid Sans Mono', 'Inconsolata', 'Courier', monospace;
 		@extend .inner-component;
 		-moz-appearance: textfield;
 		border: none;
 		font-size: inherit;
 		box-shadow: none;
 		color: inherit;
+		padding: 2px 4px;
+		width: 33px;
+		height: 11px;
+		text-align: right;
 
 		&::-webkit-inner-spin-button,
 		&::-webkit-outer-spin-button {
@@ -54,6 +54,11 @@
 
 	.drag-overlay {
 		@extend .inner-component;
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 33px + 8px;
+		height: 20px;
 
 		&:hover {
 			cursor: pointer;
@@ -61,6 +66,10 @@
 
 		&.edit-dragged {
 			cursor: ew-resize;
+		}
+
+		&.disabled {
+			display: none;
 		}
 	}
 }
