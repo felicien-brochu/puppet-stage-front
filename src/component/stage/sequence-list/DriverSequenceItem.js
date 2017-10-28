@@ -7,6 +7,7 @@ import {
 import colorClasses from '../colorclasses'
 import BasicSequenceItem from './BasicSequenceItem'
 import ExpandButton from './ExpandButton'
+import ToggleButton from './ToggleButton'
 
 
 export default class DriverSequenceItem extends React.Component {
@@ -17,6 +18,7 @@ export default class DriverSequenceItem extends React.Component {
 
 		onExpand: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
+		onDriverSequenceChange: PropTypes.func.isRequired,
 		onGoToKeyframe: PropTypes.func.isRequired,
 	}
 
@@ -24,9 +26,19 @@ export default class DriverSequenceItem extends React.Component {
 		super(props)
 
 		this.handleExpand = this.handleExpand.bind(this)
+		this.handlePreviewEnabledChange = this.handlePreviewEnabledChange.bind(this)
+		this.handlePlayEnabledChange = this.handlePlayEnabledChange.bind(this)
 	}
 
 	render() {
+		let previewEnabled = false
+		for (let basicSequence of this.props.sequence.sequences) {
+			if (basicSequence.previewEnabled) {
+				previewEnabled = true
+				break
+			}
+		}
+
 		return (
 			<ContextMenuTrigger
 				attributes={{
@@ -41,6 +53,17 @@ export default class DriverSequenceItem extends React.Component {
 				renderTag="li"
 			>
 				<div className="driver-sequence-title">
+
+					<ToggleButton
+						shape="#eye-shape"
+						checked={previewEnabled}
+						onChange={this.handlePreviewEnabledChange}/>
+
+					<ToggleButton
+						shape="#point-shape"
+						checked={this.props.sequence.playEnabled}
+						onChange={this.handlePlayEnabledChange}/>
+
 					<ExpandButton
 						expanded={this.props.sequence.expanded}
 						onExpand={this.handleExpand}
@@ -83,5 +106,20 @@ export default class DriverSequenceItem extends React.Component {
 		if (typeof this.props.onExpand === 'function') {
 			this.props.onExpand(this.props.sequence, expanded)
 		}
+	}
+
+	handlePreviewEnabledChange(enabled) {
+		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
+
+		for (let basicSequence of sequence.sequences) {
+			basicSequence.previewEnabled = enabled
+		}
+		this.props.onDriverSequenceChange(sequence)
+	}
+
+	handlePlayEnabledChange(enabled) {
+		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
+		sequence.playEnabled = enabled
+		this.props.onDriverSequenceChange(sequence)
 	}
 }

@@ -5,6 +5,7 @@ import {
 } from 'react-contextmenu'
 import KeyframeHelper from '../KeyframeHelper'
 import NumberInput from '../../base/NumberInput'
+import ToggleButton from './ToggleButton'
 import KeyframeNavigator from './KeyframeNavigator'
 
 
@@ -30,6 +31,9 @@ export default class BasicSequenceItem extends React.Component {
 		this.handleCreateDefaultKeyframe = this.handleCreateDefaultKeyframe.bind(this)
 		this.handleValueChange = this.handleValueChange.bind(this)
 		this.handleValueConfirmed = this.handleValueConfirmed.bind(this)
+		this.handlePreviewEnabledChange = this.handlePreviewEnabledChange.bind(this)
+		this.handlePlayEnabledChange = this.handlePlayEnabledChange.bind(this)
+		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -54,19 +58,27 @@ export default class BasicSequenceItem extends React.Component {
 				}}
 				renderTag="li"
 			>
-				<KeyframeNavigator
-					currentTimeKeyframe={this.currentTimeKeyframe}
-					prevKeyframes={this.prevKeyframes}
-					nextKeyframes={this.nextKeyframes}
 
-					onGoToPrevKeyframe={this.handleGoToPrevKeyframe}
-					onGoToNextKeyframe={this.handleGoToNextKeyframe}
-					onRemoveKeyframe={this.handleRemoveKeyframe}
-					onCreateKeyframe={this.handleCreateDefaultKeyframe}/>
+				<ToggleButton
+					shape="#eye-shape"
+					checked={this.props.sequence.previewEnabled}
+					onChange={this.handlePreviewEnabledChange}/>
+
+				<ToggleButton
+					shape="#point-shape"
+					checked={this.props.sequence.playEnabled}
+					onChange={this.handlePlayEnabledChange}/>
+
+				<ToggleButton
+					shape="#graph-shape"
+					checked={this.props.sequence.showGraph}
+					onChange={this.handleShowGraphChange}/>
+
 
 				<span className="sequence-label">
 					{this.props.sequence.name}
 				</span>
+
 
 				<NumberInput
 					defaultValue={currentValue}
@@ -76,8 +88,36 @@ export default class BasicSequenceItem extends React.Component {
 					percentFormat={true}
 					onChange={this.handleValueChange}
 					onValueConfirmed={this.handleValueConfirmed}/>
+
+				<KeyframeNavigator
+					currentTimeKeyframe={this.currentTimeKeyframe}
+					prevKeyframes={this.prevKeyframes}
+					nextKeyframes={this.nextKeyframes}
+
+					onGoToPrevKeyframe={this.handleGoToPrevKeyframe}
+					onGoToNextKeyframe={this.handleGoToNextKeyframe}
+					onRemoveKeyframe={this.handleRemoveKeyframe}
+					onCreateKeyframe={this.handleCreateDefaultKeyframe}/>
 			</ContextMenuTrigger>
 		)
+	}
+
+	handlePreviewEnabledChange(enabled) {
+		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
+		sequence.previewEnabled = enabled
+		this.props.onBasicSequenceChange(sequence)
+	}
+
+	handlePlayEnabledChange(enabled) {
+		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
+		sequence.playEnabled = enabled
+		this.props.onBasicSequenceChange(sequence)
+	}
+
+	handleShowGraphChange(show) {
+		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
+		sequence.showGraph = show
+		this.props.onBasicSequenceChange(sequence)
 	}
 
 	handleValueChange(value) {

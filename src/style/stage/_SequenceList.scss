@@ -29,7 +29,7 @@
 				display: inline-block;
 				font-size: 12px;
 				vertical-align: top;
-				width: 200px;
+				width: 250px;
 				white-space: pre;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -47,6 +47,15 @@
 				.driver-sequence-title {
 					background-color: $background-color;
 					font-weight: bold;
+					display: flex;
+					justify-content: left;
+					align-items: center;
+
+					.toggle-button input:hover:not(:checked) + .button-icon {
+						visibility: visible;
+						fill: $inactive-color;
+						stroke: $inactive-color;
+					}
 
 					.sequence-label {
 						margin-left: 4px;
@@ -59,7 +68,7 @@
 					padding: 0;
 
 					.sequence-label {
-						margin-left: 4px;
+						margin-left: 35px;
 					}
 
 					.basic-sequence-list-item {
@@ -67,8 +76,13 @@
 						border-bottom: solid 1px $background-color;
 						display: flex;
 
+						.number-input-container {
+							margin: 0 20px;
+						}
+
 						.keyframe-navigator {
 							display: flex;
+							align-self: center;
 							justify-content: center;
 							align-items: center;
 
@@ -156,7 +170,7 @@
 	display: inline-block;
 	width: 14px;
 	height: 14px;
-	margin: 0 0 0 2px;
+	margin: 0 0 0 20px;
 	transform: rotate(-90deg);
 
 	&.disabled {
@@ -242,5 +256,38 @@
 			height: 10px;
 			margin: 10px;
 		}
+	}
+}
+
+.toggle-button {
+	position: relative;
+	align-self: center;
+	width: 16px;
+	height: 16px;
+	margin-right: 4px;
+	background-color: $background-color;
+	border-radius: 1px;
+
+	input {
+		display: none;
+
+		&:checked + .button-icon {
+			visibility: visible;
+		}
+	}
+
+	svg.button-icon {
+		width: 16px;
+		height: 16px;
+		// background-color: $selected-background-color;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		fill: $primary-color;
+		stroke: $primary-color;
+		stroke-width: 0;
+		visibility: hidden;
 	}
 }

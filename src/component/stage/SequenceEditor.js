@@ -179,6 +179,15 @@ export default class SequenceEditor extends React.Component {
 					<polygon id="arrow-right-button-shape" points="20,20 20,80 70,50"/>
 					<polygon id="keyframe-button-shape" points="50,20 80,50 50,80 20,50"/>
 
+
+					<path id="eye-shape" d="M9,50c22.8,29.3,59.2,29.3,82,0C72.8,20.7,27.2,20.7,9,50z M50,65c-8.3,0-15-6.7-15-15s6.7-15,15-15
+					s15,6.7,15,15S58.3,65,50,65z"/>
+
+					<circle id="point-shape" cx="50" cy="50" r="25"/>
+					<path id="graph-shape" d="M12,75c0,0,10.3-32.1,25.8-30.4c15.5,1.7,17.9,11.7,31.5,8.6S88,25,88,25" style={{
+							strokeWidth: "10px",
+							fill: "none",
+					}}/>
 				</defs>
 			</svg>
 		)

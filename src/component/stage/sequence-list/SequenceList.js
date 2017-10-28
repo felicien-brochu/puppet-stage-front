@@ -135,6 +135,7 @@ export default class SequenceList extends React.Component {
 					currentTime={this.props.currentTime}
 					onExpand={this.handleDriverSequenceExpand}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
+					onDriverSequenceChange={this.props.onDriverSequenceChange}
 					onGoToKeyframe={this.handleGoToKeyframe}/>
 			)
 		}
