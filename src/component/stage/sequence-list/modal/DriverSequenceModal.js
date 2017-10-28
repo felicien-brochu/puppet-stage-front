@@ -22,7 +22,7 @@ export default class DriverSequenceModal extends React.Component {
 
 		this.handleRequestClose = this.handleRequestClose.bind(this)
 		this.handleCancelClick = this.handleCancelClick.bind(this)
-		this.handleOKClick = this.handleOKClick.bind(this)
+		this.handleSubmit = this.handleSubmit.bind(this)
 	}
 
 	render() {
@@ -58,25 +58,27 @@ export default class DriverSequenceModal extends React.Component {
 					</button>
 				</div>
 				<div className="content">
-					<div className="value-panel">
-						<div className="row">
-							<span className="label">servo</span>
-							<select
-								ref="servoSelect"
-								defaultValue={defaultServoID}
-							>
-								{options}
-							</select>
+					<form onSubmit={this.handleSubmit}>
+						<div className="value-panel">
+							<div className="row">
+								<span className="label">servo</span>
+								<select
+									ref="servoSelect"
+									defaultValue={defaultServoID}
+								>
+									{options}
+								</select>
+							</div>
+							<div className="row">
+								<span className="label">name</span>
+								<input ref="nameInput" type="text" defaultValue={defaultName}/>
+							</div>
 						</div>
-						<div className="row">
-							<span className="label">name</span>
-							<input ref="nameInput" type="text" defaultValue={defaultName}/>
-						</div>
-					</div>
+					</form>
 				</div>
 				<div className="bottom-bar">
 					<button onClick={this.handleCancelClick}>Cancel</button>
-					<button onClick={this.handleOKClick}>OK</button>
+					<button onClick={this.handleSubmit}>OK</button>
 				</div>
 			</Modal>
 		)
@@ -94,7 +96,9 @@ export default class DriverSequenceModal extends React.Component {
 		}
 	}
 
-	handleOKClick() {
+	handleSubmit(e) {
+		e.preventDefault()
+
 		let servoID = this.refs.servoSelect.value
 		let name = this.refs.nameInput.value
 		if (servoID === "" || name === "") {
