@@ -3,8 +3,9 @@ import PropTypes from 'prop-types'
 import {
 	ContextMenuTrigger
 } from 'react-contextmenu'
-import KeyframeNavigator from './KeyframeNavigator'
 import KeyframeHelper from '../KeyframeHelper'
+import NumberInput from '../../base/NumberInput'
+import KeyframeNavigator from './KeyframeNavigator'
 
 
 export default class BasicSequenceItem extends React.Component {
@@ -63,6 +64,8 @@ export default class BasicSequenceItem extends React.Component {
 				<span className="sequence-label">
 					{this.props.sequence.name}
 				</span>
+
+				<NumberInput/>
 			</ContextMenuTrigger>
 		)
 	}

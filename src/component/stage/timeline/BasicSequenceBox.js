@@ -7,11 +7,12 @@ const
 	KEYFRAME_WIDTH = 11.3,
 	HANDLE_WIDTH = 16
 
-export default class SequenceBox extends React.Component {
+export default class BasicSequenceBox extends React.Component {
 	static propTypes = {
-		sequence: PropTypes.object,
-		start: PropTypes.number,
-		duration: PropTypes.number,
+		sequence: PropTypes.object.isRequired,
+		selectedKeyframes: PropTypes.array.isRequired,
+		selectingKeyframes: PropTypes.array.isRequired,
+
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
 			paddingRight: PropTypes.number.isRequired,
@@ -19,24 +20,10 @@ export default class SequenceBox extends React.Component {
 			end: PropTypes.number.isRequired,
 			width: PropTypes.number.isRequired,
 		}).isRequired,
-		renderTag: PropTypes.oneOfType([
-			PropTypes.node,
-			PropTypes.func
-		]),
 		height: PropTypes.number.isRequired,
-		disabled: PropTypes.bool,
-		attributes: PropTypes.object,
-		selectedKeyframes: PropTypes.array,
-		selectingKeyframes: PropTypes.array,
 
-		onKeyframeMouseDown: PropTypes.func,
-		onBasicSequenceTimeChange: PropTypes.func,
-	}
-
-	static defaultProps = {
-		renderTag: "div",
-		disabled: false,
-		attributes: {},
+		onKeyframeMouseDown: PropTypes.func.isRequired,
+		onBasicSequenceTimeChange: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -75,43 +62,24 @@ export default class SequenceBox extends React.Component {
 
 	render() {
 		const {
-			timeline,
 			sequence,
-			renderTag,
-			attributes,
-			start,
-			duration
+			timeline,
 		} = this.props
 
-		let seqStart = start
-		let seqDuration = duration
-		if (sequence) {
-			seqStart = sequence.start
-			seqDuration = sequence.duration
-		}
-
 		let scale = timeline.getScale()
-		let x = timeline.paddingLeft + ((seqStart - timeline.start) * scale)
-		let width = seqDuration * scale
+		let x = timeline.paddingLeft + ((sequence.start - timeline.start) * scale)
+		let width = sequence.duration * scale
 
-		let handles = this.renderHandles()
-		let keyframes = this.renderKeyFrames()
-
-		let box = (
-			<svg className="sequence-box-box"
-				ref={container => this.container = container}>
-				<rect x={x} y={0} width={width} height={this.props.height-1}/>
-				{handles}
-				{keyframes}
-			</svg>
+		return (
+			<li className="sequence-box timeline-basic-sequence">
+				<svg className="sequence-box-box"
+					ref={container => this.container = container}>
+					<rect x={x} y={0} width={width} height={this.props.height-1}/>
+					{this.renderHandles()}
+					{this.renderKeyFrames()}
+				</svg>
+			</li>
 		)
-
-		const newAttrs = {
-			...attributes,
-			style: {},
-			className: classNames("sequence-box", attributes.className),
-		}
-		return React.createElement(renderTag, newAttrs, box)
 	}
 
 	renderKeyFrames() {
@@ -159,20 +127,11 @@ export default class SequenceBox extends React.Component {
 		const {
 			timeline,
 			sequence,
-			start,
-			duration
 		} = this.props
 
-		let seqStart = start
-		let seqDuration = duration
-		if (sequence) {
-			seqStart = sequence.start
-			seqDuration = sequence.duration
-		}
-
 		let scale = timeline.getScale()
-		let x = timeline.paddingLeft + ((seqStart - timeline.start) * scale)
-		let width = seqDuration * scale
+		let x = timeline.paddingLeft + ((sequence.start - timeline.start) * scale)
+		let width = sequence.duration * scale
 
 		let handles = []
 
@@ -253,7 +212,7 @@ export default class SequenceBox extends React.Component {
 		let keyframes = []
 		let container = this.container.getBoundingClientRect()
 
-		if (this.props.sequence && this.props.sequence.keyframes && this.props.sequence.keyframes.length > 0 && container.y <= selectionRect.y + selectionRect.height &&
+		if (this.props.sequence.keyframes.length > 0 && container.y <= selectionRect.y + selectionRect.height &&
 			container.y + container.height >= selectionRect.y &&
 			container.x <= selectionRect.x + selectionRect.width &&
 			container.x + container.width >= selectionRect.x) {

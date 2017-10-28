@@ -15,7 +15,10 @@ export default class NumberInput extends React.Component {
 	}
 
 	static defaultProps = {
-		scale: 100
+		defaultValue: 0,
+		min: 0,
+		max: 100,
+		scale: 100,
 	}
 
 	constructor(props) {

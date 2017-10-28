@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import SequenceBox from './SequenceBox'
+import DriverSequenceBox from './DriverSequenceBox'
+import BasicSequenceBox from './BasicSequenceBox'
 import colorClasses from '../colorclasses'
 
 const DRIVER_SEQUENCE_BOX_HEIGHT = 20
@@ -39,16 +40,11 @@ export default class TimelineDriverSequence extends React.Component {
 				className={classNames("timeline-driver-sequence", colorClasses[this.props.color])}
 				key={this.props.sequence.id}
 			>
-				<SequenceBox
-					attributes={{
-						className: 'timeline-driver-sequence-box'
-					}}
+				<DriverSequenceBox
+					sequence={this.props.sequence}
+					
 					timeline={this.props.timeline}
-					start={this.computeStart()}
-					duration={this.computeEnd() - this.computeStart()}
 					height={DRIVER_SEQUENCE_BOX_HEIGHT}
-					renderTag="div"
-					disabled
 				/>
 				{this.renderBasicSequences()}
 			</li>
@@ -61,18 +57,16 @@ export default class TimelineDriverSequence extends React.Component {
 			for (let i = 0; i < this.props.sequence.sequences.length; i++) {
 				let basicSequence = this.props.sequence.sequences[i]
 				basicSequences.push(
-					<SequenceBox
+					<BasicSequenceBox
 						key={basicSequence.id}
 						ref={sequence => this.basicSequenceViews[i] = sequence}
-						attributes={{
-							className: 'timeline-basic-sequence'
-						}}
-						timeline={this.props.timeline}
+
 						sequence={basicSequence}
-						height={BASIC_SEQUENCE_BOX_HEIGHT}
-						renderTag="li"
 						selectedKeyframes={this.props.selectedKeyframes}
 						selectingKeyframes={this.props.selectingKeyframes}
+
+						timeline={this.props.timeline}
+						height={BASIC_SEQUENCE_BOX_HEIGHT}
 
 						onKeyframeMouseDown={this.props.onKeyframeMouseDown}
 						onBasicSequenceTimeChange={this.props.onBasicSequenceTimeChange}
@@ -87,29 +81,6 @@ export default class TimelineDriverSequence extends React.Component {
 		} else {
 			return null
 		}
-	}
-
-	computeStart() {
-		let min = Number.MAX_SAFE_INTEGER
-		for (let sequence of this.props.sequence.sequences) {
-			if (sequence.start < min) {
-				min = sequence.start
-			}
-		}
-		if (min === Number.MAX_SAFE_INTEGER) {
-			min = 0
-		}
-		return min
-	}
-
-	computeEnd() {
-		let max = 0
-		for (let sequence of this.props.sequence.sequences) {
-			if (sequence.start + sequence.duration > max) {
-				max = sequence.start + sequence.duration
-			}
-		}
-		return max
 	}
 
 	getSelectingKeyframes(selectionRect) {
