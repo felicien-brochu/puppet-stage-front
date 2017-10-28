@@ -159,6 +159,10 @@
 	margin: 0 0 0 2px;
 	transform: rotate(-90deg);
 
+	&.disabled {
+		visibility: hidden;
+	}
+
 	input {
 		display: none;
 

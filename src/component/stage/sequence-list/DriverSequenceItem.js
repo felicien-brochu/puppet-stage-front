@@ -43,7 +43,8 @@ export default class DriverSequenceItem extends React.Component {
 				<div className="driver-sequence-title">
 					<ExpandButton
 						expanded={this.props.sequence.expanded}
-						onExpand={this.handleExpand}/>
+						onExpand={this.handleExpand}
+						disabled={this.props.sequence.sequences.length === 0}/>
 
 					<span className={classNames("color-tile", colorClasses[this.props.sequence.color])}/>
 					<span className="sequence-label">

@@ -1,12 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import classNames from 'classnames'
 
 
 export default class ExpandButton extends React.Component {
 
 	static propTypes = {
 		expanded: PropTypes.bool.isRequired,
+		disabled: PropTypes.bool,
 		onExpand: PropTypes.func,
+	}
+
+	static defaultProps = {
+		disabled: false,
 	}
 
 	constructor(props) {
@@ -17,7 +23,9 @@ export default class ExpandButton extends React.Component {
 
 	render() {
 		return (
-			<label className="expand-button">
+			<label className={classNames("expand-button", {
+				"disabled": this.props.disabled,
+			})}>
 				<input
 					type="checkbox"
 					checked={this.props.expanded}
