@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import UUID from '../../../util/uuid'
 import model from '../../../util/model'
+import colorClasses from '../colorclasses'
 import {
 	ContextMenuTrigger,
 	ContextMenu,
@@ -131,7 +132,6 @@ export default class SequenceList extends React.Component {
 				<DriverSequenceItem
 					key={sequence.id}
 					sequence={sequence}
-					color={i}
 					currentTime={this.props.currentTime}
 					onExpand={this.handleDriverSequenceExpand}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
@@ -236,7 +236,7 @@ export default class SequenceList extends React.Component {
 				name: sequence.name,
 				servoID: sequence.servoID,
 				expanded: true,
-				color: this.props.stage.sequences.length,
+				color: this.props.stage.sequences.length % colorClasses.length,
 				playEnabled: true,
 				sequences: [],
 			}
@@ -251,8 +251,7 @@ export default class SequenceList extends React.Component {
 				}
 			})
 		}).catch((error) => {
-			console.console.error();
-			(error)
+			console.error(error);
 		})
 	}
 

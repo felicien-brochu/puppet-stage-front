@@ -1,9 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import model from '../../util/model'
+import {
+	entries
+} from '../../util/utils'
+import KeyframeHelper from './KeyframeHelper'
 import SequenceList from './sequence-list/SequenceList'
 import Timeline from './timeline/Timeline'
-import KeyframeHelper from './KeyframeHelper'
 
 export default class SequenceEditor extends React.Component {
 
@@ -30,8 +33,6 @@ export default class SequenceEditor extends React.Component {
 			clientY: 0,
 		}
 
-		this.timeScale = 1
-
 		this.handleScrollY = this.handleScrollY.bind(this)
 		this.handleNewDriverSequence = this.handleNewDriverSequence.bind(this)
 		this.handleDriverSequenceChange = this.handleDriverSequenceChange.bind(this)
@@ -47,6 +48,29 @@ export default class SequenceEditor extends React.Component {
 		this.handleTimeWindowChange = this.handleTimeWindowChange.bind(this)
 		this.handleGoToTime = this.handleGoToTime.bind(this)
 		this.handleBasicSequenceTimeChange = this.handleBasicSequenceTimeChange.bind(this)
+		this.handleDeleteSelectedKeyframes = this.handleDeleteSelectedKeyframes.bind(this)
+		this.handleKeyBindings = this.handleKeyBindings.bind(this)
+
+		this.timeScale = 1
+		this.keyBindings = {
+			Delete: this.handleDeleteSelectedKeyframes,
+		}
+	}
+
+	componentWillMount() {
+		this.initGlobalEvents()
+	}
+
+	componentWillUnmount() {
+		this.removeGlobalEvents()
+	}
+
+	initGlobalEvents() {
+		window.addEventListener('keydown', this.handleKeyBindings)
+	}
+
+	removeGlobalEvents() {
+		window.removeEventListener('keydown', this.handleKeyBindings)
 	}
 
 	render() {
@@ -198,6 +222,19 @@ export default class SequenceEditor extends React.Component {
 		}
 	}
 
+	handleKeyBindings(e) {
+		if (e.target.tagName === 'BODY') {
+			for (let [key, handler] of entries()(this.keyBindings)) {
+				if (e.key === key) {
+					handler.bind(this)(e)
+					e.stopPropagation()
+					e.preventDefault()
+					break
+				}
+			}
+		}
+	}
+
 	handleScrollY(deltaY) {
 		let scrollY = this.state.scrollY + deltaY
 		this.setState({
@@ -236,8 +273,35 @@ export default class SequenceEditor extends React.Component {
 		})
 	}
 
+	handleDeleteSelectedKeyframes() {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let indexesMap = new Map()
+		for (let keyframe of this.state.selectedKeyframes) {
+			let sequenceID = keyframe.sequenceID
+			if (!indexesMap.has(sequenceID)) {
+				indexesMap.set(sequenceID, [])
+			}
+			indexesMap.get(sequenceID).push(keyframe.index)
+		}
+
+		for (let [sequenceID, indexes] of indexesMap) {
+			let basicSequence = model.getBasicSequence(stage.sequences, sequenceID)
+			indexes.sort()
+			let deletedCount = 0
+			for (let index of indexes) {
+				basicSequence.keyframes.splice(index - deletedCount, 1)
+				deletedCount++
+			}
+		}
+
+		this.setState({
+			selectedKeyframes: [],
+		})
+		this.fireStageChange(stage)
+	}
+
 	handleSingleKeyframeMouseDown(e, newKeyframe) {
-		let selectedKeyframes = Array.from(this.state.selectedKeyframes)
+		let selectedKeyframes = JSON.parse(JSON.stringify(this.state.selectedKeyframes))
 		let translateCallback
 
 		if (e.shiftKey || e.ctrlKey) {

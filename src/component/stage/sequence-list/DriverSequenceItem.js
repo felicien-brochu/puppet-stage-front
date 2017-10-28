@@ -14,7 +14,6 @@ export default class DriverSequenceItem extends React.Component {
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
 		currentTime: PropTypes.number.isRequired,
-		color: PropTypes.number.isRequired,
 
 		onExpand: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
@@ -46,7 +45,7 @@ export default class DriverSequenceItem extends React.Component {
 						expanded={this.props.sequence.expanded}
 						onExpand={this.handleExpand}/>
 
-					<span className={classNames("color-tile", colorClasses[this.props.color])}/>
+					<span className={classNames("color-tile", colorClasses[this.props.sequence.color])}/>
 					<span className="sequence-label">
 						{this.props.sequence.name}
 					</span>
