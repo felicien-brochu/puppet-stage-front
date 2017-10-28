@@ -110,7 +110,6 @@ export default class StageBrowser extends React.Component {
 
 	handleRemoveStageSuccess(stage) {
 		console.log("Stage Deleted")
-		console.log(stage)
 		alert.successAlert("Stage successfully deleted")
 
 		if (typeof this.props.onDelete === 'function') {

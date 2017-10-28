@@ -17,8 +17,8 @@ function fetchAPI(path, conf, onSuccess, onError, errorMessage = "Error: ") {
 						}
 					})
 			} else {
-				console.log(errorMessage)
-				console.log(response)
+				console.error(errorMessage)
+				console.error(response)
 
 				let preventDefault = false
 				if (typeof onError === 'function') {
@@ -33,8 +33,8 @@ function fetchAPI(path, conf, onSuccess, onError, errorMessage = "Error: ") {
 			}
 		})
 		.catch((error) => {
-			console.log(errorMessage)
-			console.log(error)
+			console.error(errorMessage)
+			console.error(error)
 
 			let preventDefault = false
 			if (onError) {

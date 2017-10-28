@@ -70,7 +70,6 @@ export default class Home extends React.Component {
 
 	handleCreateStageSuccess(stage) {
 		console.log("Stage Created")
-		console.log(stage)
 		alert.successAlert("Stage successfully created: " + JSON.stringify(stage))
 
 		let stages = Array.from(this.state.stages)

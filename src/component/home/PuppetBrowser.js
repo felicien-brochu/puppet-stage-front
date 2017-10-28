@@ -88,7 +88,6 @@ export default class PuppetBrowser extends React.Component {
 
 	handleCreatePuppetSuccess(puppet) {
 		console.log("Puppet Created")
-		console.log(puppet)
 		alert.successAlert("Puppet successfully created: " + JSON.stringify(puppet))
 
 		let puppets = Array.from(this.state.puppets)
@@ -147,7 +146,6 @@ export default class PuppetBrowser extends React.Component {
 
 	handleRemovePuppetSuccess(puppet) {
 		console.log("Puppet Deleted")
-		console.log(puppet)
 		alert.successAlert("Puppet successfully deleted")
 
 		let puppets = this.state.puppets.filter((p) => {

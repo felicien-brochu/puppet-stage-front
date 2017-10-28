@@ -27,15 +27,15 @@ function fetchUUIDs(number, errorMessage = "Error retrieving uuids: ") {
 								reject()
 							})
 					} else {
-						console.log(errorMessage)
-						console.log(response)
+						console.error(errorMessage)
+						console.error(response)
 						reject()
 						fetchingPromise = null
 					}
 				})
 				.catch((error) => {
-					console.log(errorMessage)
-					console.log(error)
+					console.error(errorMessage)
+					console.error(error)
 					reject()
 					fetchingPromise = null
 				})

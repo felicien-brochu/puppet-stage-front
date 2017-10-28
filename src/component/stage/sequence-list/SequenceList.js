@@ -185,7 +185,6 @@ export default class SequenceList extends React.Component {
 	}
 
 	handleContextMenuClick(e, data) {
-		console.log(data)
 		switch (data.action) {
 			case NEW_DRIVER_SEQUENCE:
 				this.handleCreateDriverSequence()
@@ -233,11 +232,14 @@ export default class SequenceList extends React.Component {
 	createDriverSequence(sequence) {
 		UUID.getUUID().then((uuid) => {
 			sequence = {
-				...sequence,
-				sequences: [],
+				id: uuid,
+				name: sequence.name,
+				servoID: sequence.servoID,
 				expanded: true,
+				color: this.props.stage.sequences.length,
+				playEnabled: true,
+				sequences: [],
 			}
-			sequence.id = uuid
 			if (typeof this.props.onNewDriverSequence === 'function') {
 				this.props.onNewDriverSequence(sequence)
 			}
@@ -249,7 +251,8 @@ export default class SequenceList extends React.Component {
 				}
 			})
 		}).catch((error) => {
-			console.log(error)
+			console.console.error();
+			(error)
 		})
 	}
 
@@ -314,13 +317,17 @@ export default class SequenceList extends React.Component {
 
 			let defaultValue = (servo.defaultPosition - servo.min) / (servo.max - servo.min) * 100
 			sequence = {
-				...sequence,
 				id: uuid,
+				name: sequence.name,
 				defaultValue: defaultValue,
 				start: 0,
 				duration: this.props.stage.duration, // 10 s = 1e10 ns
-				keyframes: [],
 				slave: false,
+				playEnabled: true,
+				previewEnabled: false,
+				showGraph: false,
+				keyframes: [],
+
 			}
 			if (typeof this.props.onNewBasicSequence === 'function') {
 				this.props.onNewBasicSequence(sequence, driverSequence)
