@@ -108,8 +108,9 @@ export default class KeyframeHelper {
 		// time for the scale in var refTime.
 		if (scaleEnabled) {
 			if (boundaries.minT !== boundaries.maxT) {
-				let isMin = KeyframeHelper.equals(targetKeyframe, boundaries.minKeyframe)
-				let isMax = KeyframeHelper.equals(targetKeyframe, boundaries.maxKeyframe)
+				let keyframe = KeyframeHelper.getKeyframeFromRef(stage.sequences, targetKeyframe)
+				let isMin = keyframe.p.t === boundaries.minT
+				let isMax = keyframe.p.t === boundaries.maxT
 
 				if (isMin || isMax) {
 					mode = 'scale'
@@ -144,12 +145,15 @@ export default class KeyframeHelper {
 		}
 	}
 
+	static getKeyframeFromRef(sequences, keyframeRef) {
+		let sequence = model.getBasicSequence(sequences, keyframeRef.sequenceID)
+		return sequence.keyframes[keyframeRef.index]
+	}
+
 	static getSelectionBoundaries(stageKeyframes, selectedKeyframes) {
 		let
 			minT = Number.MAX_VALUE,
-			maxT = 0,
-			minKeyframe,
-			maxKeyframe
+			maxT = 0
 
 		for (let keyframe of selectedKeyframes) {
 			for (let [sequenceID, keyframes] of stageKeyframes) {
@@ -157,17 +161,9 @@ export default class KeyframeHelper {
 					if (keyframe.sequenceID === sequenceID && keyframe.index === i) {
 						if (minT > keyframes.keyframes[i].p.t) {
 							minT = keyframes.keyframes[i].p.t
-							minKeyframe = {
-								sequenceID: sequenceID,
-								index: i,
-							}
 						}
 						if (maxT < keyframes.keyframes[i].p.t) {
 							maxT = keyframes.keyframes[i].p.t
-							maxKeyframe = {
-								sequenceID: sequenceID,
-								index: i,
-							}
 						}
 					}
 				}
@@ -177,8 +173,6 @@ export default class KeyframeHelper {
 		return {
 			minT: minT,
 			maxT: maxT,
-			minKeyframe: minKeyframe,
-			maxKeyframe: maxKeyframe,
 		}
 	}
 
