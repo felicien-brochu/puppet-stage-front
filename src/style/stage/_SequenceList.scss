@@ -51,7 +51,7 @@
 					justify-content: left;
 					align-items: center;
 
-					.toggle-button input:hover:not(:checked) + .button-icon {
+					.toggle-button input:not(:checked) + .button-icon {
 						visibility: visible;
 						fill: $inactive-color;
 						stroke: $inactive-color;
@@ -69,6 +69,7 @@
 
 					.sequence-label {
 						margin-left: 35px;
+						font-weight: bold;
 					}
 
 					.basic-sequence-list-item {
@@ -273,6 +274,8 @@
 
 		&:checked + .button-icon {
 			visibility: visible;
+			fill: $primary-color;
+			stroke: $primary-color;
 		}
 	}
 
@@ -285,8 +288,6 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		fill: $primary-color;
-		stroke: $primary-color;
 		stroke-width: 0;
 		visibility: hidden;
 	}
