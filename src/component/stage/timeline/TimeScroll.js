@@ -12,12 +12,7 @@ const SCROLL_BAR_WIDTH = 16
 
 export default class TimeScroll extends React.Component {
 	static propTypes = {
-		onScrollX: PropTypes.func.isRequired,
-		onScrollY: PropTypes.func.isRequired,
-		onScrollScale: PropTypes.func.isRequired,
-		onScrollToT: PropTypes.func.isRequired,
-		onResize: PropTypes.func.isRequired,
-
+		contentChildRef: PropTypes.func.isRequired,
 		scrollY: PropTypes.number.isRequired,
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
@@ -27,6 +22,12 @@ export default class TimeScroll extends React.Component {
 			width: PropTypes.number.isRequired,
 			duration: PropTypes.number.isRequired,
 		}).isRequired,
+
+		onScrollX: PropTypes.func.isRequired,
+		onScrollY: PropTypes.func.isRequired,
+		onScrollScale: PropTypes.func.isRequired,
+		onScrollToT: PropTypes.func.isRequired,
+		onResize: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -38,25 +39,40 @@ export default class TimeScroll extends React.Component {
 		this.handleWheel = this.handleWheel.bind(this)
 	}
 
+	componentDidMount() {
+		this.updateContentRef()
+	}
+
+	componentDidUpdate() {
+		this.updateContentRef()
+	}
+
+	updateContentRef() {
+		this.contentRef = this.props.contentChildRef()
+		if (!this.contentRef) {
+			this.contentRef = this.childrenContainer
+		}
+	}
+
 	render() {
 		return (
 			<div
 				className="time-scroll"
 				onWheel={this.handleWheel}
 			>
-				<div
-					className="children-container"
-					ref="childrenContainer"
-					style={{
-						top: -this.props.scrollY,
-					}}
-				>
-					{this.props.children}
-				</div>
 				<div className="horizontal-pane">
+					<div
+						className="children-container"
+						ref={childrenContainer => this.childrenContainer = childrenContainer}
+						style={{
+							top: -this.props.scrollY,
+						}}
+					>
+						{this.props.children}
+					</div>
 					<ScrollBar
 						orientation="vertical"
-						contentSize={this.refs.childrenContainer ? this.refs.childrenContainer.getBoundingClientRect().height : 0}
+						contentSize={this.getContentHeight()}
 						viewStart={this.props.scrollY}
 						viewEnd={this.props.timeline.height + this.props.scrollY}
 						onScroll={this.handleScrollToY}
@@ -72,6 +88,24 @@ export default class TimeScroll extends React.Component {
 				/>
 			</div>
 		)
+	}
+
+	renderChildren() {
+		let children = this.props.children
+		if (this.props.contentChildIndex >= 0) {
+			let i = 0
+			children = React.Children.map(this.props.children, child => {
+				console.log(this);
+				if (i === this.props.contentChildIndex) {
+					child = React.cloneElement(child, {
+						ref: (contentChild) => this.contentChild = contentChild
+					})
+				}
+				i++
+				return child
+			})
+		}
+		return children
 	}
 
 	getScale() {
@@ -112,7 +146,7 @@ export default class TimeScroll extends React.Component {
 		if (deltaY !== 0) {
 			if (e.altKey || e.ctrlKey) {
 				let scale = deltaY < 0 ? -1 : 1
-				let rect = this.refs.childrenContainer.getBoundingClientRect()
+				let rect = this.childrenContainer.getBoundingClientRect()
 				this.fireScrollScale(scale, {
 					x: e.clientX - rect.x,
 					y: e.clientY - rect.y,
@@ -121,7 +155,7 @@ export default class TimeScroll extends React.Component {
 				this.fireScrollX(deltaY)
 			} else {
 				let viewHeight = this.props.timeline.height
-				let contentHeight = this.refs.childrenContainer.getBoundingClientRect().height
+				let contentHeight = this.getContentHeight()
 
 				if (contentHeight > viewHeight) {
 					let scrollY = Math.min(this.props.scrollY + deltaY, contentHeight - viewHeight)
@@ -136,6 +170,14 @@ export default class TimeScroll extends React.Component {
 		}
 
 		e.preventDefault()
+	}
+
+	getContentHeight() {
+		if (!this.contentRef) {
+			return 0
+		} else {
+			return this.contentRef.getBoundingClientRect().height
+		}
 	}
 
 	fireScrollToT(x) {
@@ -164,7 +206,7 @@ export default class TimeScroll extends React.Component {
 
 
 	handleResize(width, height) {
-		let contentHeight = this.refs.childrenContainer.getBoundingClientRect().height
+		let contentHeight = this.getContentHeight()
 
 		if (contentHeight - this.props.scrollY < height && this.props.scrollY > 0) {
 			let scrollY = Math.max(contentHeight - height, 0)

@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import units from '../../../util/units'
 import SequenceTimeline from './SequenceTimeline'
@@ -16,12 +17,12 @@ export default class Timeline extends React.Component {
 
 	static propTypes = {
 		stage: PropTypes.object.isRequired,
-		graphMode: PropTypes.bool,
 		scrollY: PropTypes.number.isRequired,
 		selectedKeyframes: PropTypes.array.isRequired,
 		currentTime: PropTypes.number.isRequired,
 		startTime: PropTypes.number.isRequired,
 		endTime: PropTypes.number.isRequired,
+		showGraph: PropTypes.bool.isRequired,
 
 		onScrollY: PropTypes.func.isRequired,
 		onCurrentTimeChange: PropTypes.func.isRequired,
@@ -31,10 +32,6 @@ export default class Timeline extends React.Component {
 		onUnselectKeyframes: PropTypes.func.isRequired,
 		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
 		onBasicSequenceTimeChange: PropTypes.func.isRequired,
-	}
-
-	static defaultProps = {
-		graphMode: false,
 	}
 
 	constructor(props) {
@@ -50,6 +47,8 @@ export default class Timeline extends React.Component {
 		this.handleScrollY = this.handleScrollY.bind(this)
 		this.handleScrollScale = this.handleScrollScale.bind(this)
 		this.handleScrollToT = this.handleScrollToT.bind(this)
+
+		this.getNestedContentChildRef = this.getNestedContentChildRef.bind(this)
 	}
 
 	render() {
@@ -69,6 +68,7 @@ export default class Timeline extends React.Component {
 
 
 				<TimeScroll
+					contentChildRef={this.getNestedContentChildRef}
 					scrollY={this.props.scrollY}
 					onScrollX={this.handleScrollX}
 					onScrollY={this.handleScrollY}
@@ -84,8 +84,16 @@ export default class Timeline extends React.Component {
 		)
 	}
 
+	getNestedContentChildRef() {
+		if (!this.props.showGraph && this.sequenceTimeline) {
+			return ReactDOM.findDOMNode(this.sequenceTimeline.refs.sequenceList)
+		} else {
+			return null
+		}
+	}
+
 	renderTimelineBody() {
-		if (this.props.graphMode) {
+		if (this.props.showGraph) {
 			return (
 				<GraphTimeline
 					timeline={this.getViewState()}
@@ -99,6 +107,7 @@ export default class Timeline extends React.Component {
 					timeline={this.getViewState()}
 					sequences={this.props.stage.sequences}
 					selectedKeyframes={this.props.selectedKeyframes}
+					ref={sequenceTimeline => this.sequenceTimeline = sequenceTimeline}
 
 					onSelectKeyframes={this.props.onSelectKeyframes}
 					onUnselectKeyframes={this.props.onUnselectKeyframes}

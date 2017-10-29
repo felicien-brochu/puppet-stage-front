@@ -1,0 +1,153 @@
+.sequence-list-container {
+	height: 100%;
+}
+
+.sequence-timeline {
+	flex-grow: 1;
+	position: relative;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	background-color: $background-color;
+
+	.timeline-driver-sequence {
+		background-color: $background-color;
+
+		.sequence-box {}
+
+		&.red svg.sequence-box-box rect {
+			fill: $red;
+		}
+
+		&.yellow svg.sequence-box-box rect {
+			fill: $yellow;
+		}
+
+		&.aqua svg.sequence-box-box rect {
+			fill: $aqua;
+		}
+
+		&.pink svg.sequence-box-box rect {
+			fill: $pink;
+		}
+
+		&.lavender svg.sequence-box-box rect {
+			fill: $lavender;
+		}
+
+		&.peach svg.sequence-box-box rect {
+			fill: $peach;
+		}
+
+		&.seafoam svg.sequence-box-box rect {
+			fill: $seafoam;
+		}
+
+		&.blue svg.sequence-box-box rect {
+			fill: $blue;
+		}
+
+		&.green svg.sequence-box-box rect {
+			fill: $green;
+		}
+
+		&.purple svg.sequence-box-box rect {
+			fill: $purple;
+		}
+
+		&.orange svg.sequence-box-box rect {
+			fill: $orange;
+		}
+
+		&.brown svg.sequence-box-box rect {
+			fill: $brown;
+		}
+
+		&.fuchsia svg.sequence-box-box rect {
+			fill: $fuchsia;
+		}
+
+		&.cyan svg.sequence-box-box rect {
+			fill: $cyan;
+		}
+
+		&.sandstone svg.sequence-box-box rect {
+			fill: $sandstone;
+		}
+
+		&.darkgreen svg.sequence-box-box rect {
+			fill: $darkgreen;
+		}
+
+		.timeline-driver-sequence-box {
+			height: 19px;
+			margin-bottom: 1px;
+
+			svg.sequence-box-box {
+				width: 100%;
+				height: 19px;
+
+				rect {
+					filter: url(  '#noise-effect');
+				}
+			}
+		}
+
+		.timeline-basic-sequence {
+			height: 20px;
+			background-color: $active-background-color;
+			margin-bottom: 1px;
+
+			svg.sequence-box-box {
+				width: 100%;
+				height: 20px;
+
+				rect {
+					filter: url(  '#desaturate-effect');
+				}
+			}
+		}
+
+		.timeline-basic-sequence-list {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+	}
+}
+
+.keyframe-diamond {
+	fill: $primary-color;
+
+	&.selected {
+		filter: url(#highlight-effect);
+	}
+}
+
+.keyframe-end-diamond,
+.keyframe-start-diamond {
+	fill: $inactive-color;
+}
+
+.selection-overlay {
+	position: absolute;
+	pointer-events: none;
+	z-index: 50;
+	width: 100%;
+	height: 100%;
+
+	rect {
+		stroke: $primary-color;
+		stroke-width: 1px;
+		fill: $primary-color;
+		fill-opacity: 0.4;
+	}
+}
+
+.handle {
+	opacity: 0;
+
+	&:hover {
+		cursor: col-resize;
+	}
+}

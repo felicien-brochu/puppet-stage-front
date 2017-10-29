@@ -13,8 +13,9 @@ export default class GraphTimeline extends React.Component {
 
 	render() {
 		return (
-			<div className="graph-timeline">
-			</div>
+			<svg className="graph-timeline">
+
+			</svg>
 		)
 	}
 }

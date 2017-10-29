@@ -67,10 +67,13 @@ export default class SequenceTimeline extends React.Component {
 
 		return (
 			<div
+				className="sequence-list-container"
 				ref={container => this.container = container}
 				onMouseDown={this.handleMouseDown}>
 				<SelectionOverlay selection={this.state.selection}/>
-				<ul className="sequence-timeline" style={this.props.style}>
+				<ul
+					className="sequence-timeline"
+				ref="sequenceList">
 					{driverSequences}
 				</ul>
 			</div>

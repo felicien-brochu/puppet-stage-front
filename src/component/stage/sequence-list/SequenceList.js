@@ -28,12 +28,14 @@ export default class SequenceList extends React.Component {
 		scrollY: PropTypes.number.isRequired,
 		currentTime: PropTypes.number.isRequired,
 		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
+		showGraph: PropTypes.bool.isRequired,
 
 		onNewDriverSequence: PropTypes.func.isRequired,
 		onDriverSequenceChange: PropTypes.func.isRequired,
 		onNewBasicSequence: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
 		onGoToTime: PropTypes.func.isRequired,
+		onShowGraphChange: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -73,7 +75,9 @@ export default class SequenceList extends React.Component {
 				renderTag="div"
 			>
 				<SequenceListActionBar
-					saveState={this.props.saveState}/>
+					saveState={this.props.saveState}
+					showGraph={this.props.showGraph}
+					onShowGraphChange={this.props.onShowGraphChange}/>
 
 				<div className="main-list-container">
 					{this.renderList()}

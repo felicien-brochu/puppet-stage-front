@@ -26,11 +26,7 @@ export default class SequenceEditor extends React.Component {
 			currentTime: 0,
 			startTime: 0,
 			endTime: props.stage.duration,
-		}
-
-		this.translation = {
-			clientX: 0,
-			clientY: 0,
+			showGraph: false,
 		}
 
 		this.handleScrollY = this.handleScrollY.bind(this)
@@ -50,10 +46,14 @@ export default class SequenceEditor extends React.Component {
 		this.handleBasicSequenceTimeChange = this.handleBasicSequenceTimeChange.bind(this)
 		this.handleDeleteSelectedKeyframes = this.handleDeleteSelectedKeyframes.bind(this)
 		this.handleKeyBindings = this.handleKeyBindings.bind(this)
+		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
 
+
+		this.translation = {}
 		this.timeScale = 1
 		this.keyBindings = {
 			Delete: this.handleDeleteSelectedKeyframes,
+			Tab: this.handleToggleGraph,
 		}
 	}
 
@@ -83,15 +83,16 @@ export default class SequenceEditor extends React.Component {
 					puppet={this.props.puppet}
 					saveState={this.props.saveState}
 					currentTime={this.state.currentTime}
+					scrollY={this.state.scrollY}
+					showGraph={this.state.showGraph}
 
 					onScrollY={this.handleScrollY}
-					scrollY={this.state.scrollY}
-
 					onNewDriverSequence={this.handleNewDriverSequence}
 					onDriverSequenceChange={this.handleDriverSequenceChange}
 					onNewBasicSequence={this.handleNewBasicSequence}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
 					onGoToTime={this.handleGoToTime}
+					onShowGraphChange={this.handleShowGraphChange}
 				/>
 				<Timeline
 					stage={this.props.stage}
@@ -100,6 +101,7 @@ export default class SequenceEditor extends React.Component {
 					currentTime={this.state.currentTime}
 					startTime={this.state.startTime}
 					endTime={this.state.endTime}
+					showGraph={this.state.showGraph}
 
 					onScrollY={this.handleScrollY}
 					onCurrentTimeChange={this.handleCurrentTimeChange}
@@ -184,10 +186,24 @@ export default class SequenceEditor extends React.Component {
 					s15,6.7,15,15S58.3,65,50,65z"/>
 
 					<circle id="point-shape" cx="50" cy="50" r="25"/>
+
 					<path id="graph-shape" d="M12,75c0,0,10.3-32.1,25.8-30.4c15.5,1.7,17.9,11.7,31.5,8.6S88,25,88,25" style={{
 							strokeWidth: "10px",
 							fill: "none",
 					}}/>
+					
+
+					<g id="graph-button-shape" className="stroke-only">
+						<rect x="20" y="28" width="64" height="50"/>
+						<path d="M30,40c31,0,16,28,46,28"/>
+						<line x1="11" y1="40" x2="19" y2="40"/>
+						<line x1="11" y1="56" x2="19" y2="56"/>
+						<line x1="11" y1="72" x2="19" y2="72"/>
+						<line x1="23" y1="30" x2="23" y2="20"/>
+						<line x1="56" y1="30" x2="56" y2="20"/>
+						<line x1="40" y1="30" x2="40" y2="16"/>
+						<line x1="74" y1="30" x2="74" y2="16"/>
+					</g>
 				</defs>
 			</svg>
 		)
@@ -395,5 +411,17 @@ export default class SequenceEditor extends React.Component {
 		basicSequence.start = start
 		basicSequence.duration = duration
 		this.fireStageChange(stage, confirmed)
+	}
+
+	handleShowGraphChange(showGraph) {
+		this.setState({
+			showGraph: showGraph,
+		})
+	}
+
+	handleToggleGraph() {
+		this.setState({
+			showGraph: !this.state.showGraph,
+		})
 	}
 }
