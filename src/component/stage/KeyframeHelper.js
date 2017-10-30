@@ -1,119 +1,9 @@
 import units from '../../util/units'
 import model from '../../util/model'
 
+const SMOOTHING_DELAY = 20
+
 export default class KeyframeHelper {
-
-	static applyTranslation(stage, selectedKeyframes, translation, newClientX, newClientY, timeScale, valueScale) {
-		let {
-			initialKeyframes,
-			clientX,
-			clientY,
-			refTime,
-			refValue,
-			timeInterval,
-			valueInterval,
-			mode,
-			deltaTMin,
-			deltaTMax,
-			deltaVMin,
-			deltaVMax,
-			lastDeltaT,
-			lastDeltaV,
-			scaleTime,
-			scaleValue,
-			modifyValue,
-		} = translation
-
-		let deltaT = (newClientX - clientX) * (1 / timeScale)
-		deltaT = Math.round(deltaT / units.FRAME_TIME) * units.FRAME_TIME
-
-		deltaT = Math.max(deltaT, deltaTMin)
-		deltaT = Math.min(deltaT, deltaTMax)
-
-		let deltaV = -(newClientY - clientY) * (1 / valueScale)
-		deltaV = Math.max(deltaV, deltaVMin)
-		deltaV = Math.min(deltaV, deltaVMax)
-
-		if (deltaT !== lastDeltaT || (modifyValue && deltaV !== lastDeltaV)) {
-			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
-
-			for (let [sequenceID, keyframes] of stageKeyframes) {
-				if (mode === 'translate') {
-					KeyframeHelper.translateKeyframesTime(keyframes, deltaT)
-					if (modifyValue) {
-						KeyframeHelper.translateKeyframesValue(keyframes, deltaV)
-					}
-				} else if (mode === 'scale') {
-					if (scaleTime) {
-						let scaleTimeFactor = (timeInterval + deltaT) / timeInterval
-						KeyframeHelper.scaleKeyframesTime(keyframes, scaleTimeFactor, refTime)
-					}
-					if (scaleValue) {
-						let scaleValueFactor = (valueInterval + deltaV) / valueInterval
-						KeyframeHelper.scaleKeyframesValue(keyframes, scaleValueFactor, refValue)
-					}
-				}
-				KeyframeHelper.sortKeyframes(keyframes)
-				KeyframeHelper.removeDoubleKeyframes(keyframes)
-
-				let sequence = model.getBasicSequence(stage.sequences, sequenceID)
-				sequence.keyframes = keyframes.keyframes
-
-				// Update selected keyframes
-				keyframes.selected.forEach((selected, index) => {
-					if (selected) {
-						selectedKeyframes.push({
-							sequenceID: sequenceID,
-							index: index,
-						})
-					}
-				})
-			}
-
-			translation.lastDeltaT = deltaT
-			translation.lastDeltaV = deltaV
-			translation.hasChanged = deltaT !== 0 || (modifyValue && deltaV !== 0)
-			return true
-		}
-
-		return false
-	}
-
-	static equals(keyframe1, keyframe2) {
-		return keyframe1.sequenceID === keyframe2.sequenceID && keyframe1.index === keyframe2.index
-	}
-
-	static mergeSelectedKeyframes(selectedKeyframes, newKeyframes) {
-		selectedKeyframes = Array.from(selectedKeyframes)
-		newKeyframes = Array.from(newKeyframes)
-
-		// Remove intersection
-		for (let i = 0; i < selectedKeyframes.length; i++) {
-			let keyframe = selectedKeyframes[i]
-			for (let j = 0; j < newKeyframes.length; j++) {
-				let newKeyframe = newKeyframes[j]
-				if (keyframe.sequenceID === newKeyframe.sequenceID && keyframe.index === newKeyframe.index) {
-					newKeyframes.splice(j, 1)
-					selectedKeyframes.splice(i, 1)
-					i--
-					break
-				}
-			}
-		}
-
-		return selectedKeyframes.concat(newKeyframes)
-	}
-
-	static containsKeyframe(keyframes, keyframe) {
-		let found = false
-		for (let i = 0; i < keyframes.length; i++) {
-			if (KeyframeHelper.equals(keyframes[i], keyframe)) {
-				found = true
-				break
-			}
-		}
-		return found
-	}
 
 	static constructTranslationObject(stage, selectedKeyframes, targetKeyframe, scaleEnabled, clientX, clientY, modifyValue) {
 		let
@@ -207,7 +97,168 @@ export default class KeyframeHelper {
 			hasChanged: false,
 			scaleTime: scaleTime,
 			scaleValue: scaleValue,
+			scheduler: {
+				timeoutID: NaN,
+				pendingModification: {},
+				lastModification: 0,
+			},
 		}
+	}
+
+	static applySmoothTranslation(stage, selectedKeyframes, translation, newClientX, newClientY, timeScale, valueScale) {
+		let {
+			scheduler,
+		} = translation
+
+		scheduler.pendingModification = {
+			stage: stage,
+			selectedKeyframes: selectedKeyframes,
+			newClientX: newClientX,
+			newClientY: newClientY,
+			timeScale: timeScale,
+			valueScale: valueScale,
+		}
+
+		if (isNaN(scheduler.timeoutID)) {
+			return new Promise((resolve) => {
+				let now = new Date().getTime()
+				let delay = Math.max(SMOOTHING_DELAY - now + scheduler.lastModification, 0)
+				scheduler.timeoutID = window.setTimeout(() => KeyframeHelper.applyTranslation(translation, resolve), delay)
+			})
+		}
+
+		return Promise.reject()
+	}
+
+
+	static applyTranslation(translation, resolve) {
+		let {
+			initialKeyframes,
+			clientX,
+			clientY,
+			refTime,
+			refValue,
+			timeInterval,
+			valueInterval,
+			mode,
+			deltaTMin,
+			deltaTMax,
+			deltaVMin,
+			deltaVMax,
+			lastDeltaT,
+			lastDeltaV,
+			scaleTime,
+			scaleValue,
+			modifyValue,
+			scheduler,
+		} = translation
+
+		let {
+			stage,
+			selectedKeyframes,
+			newClientX,
+			newClientY,
+			timeScale,
+			valueScale,
+		} = scheduler.pendingModification
+
+		let hasChanged = false
+		let deltaT = (newClientX - clientX) * (1 / timeScale)
+		deltaT = Math.round(deltaT / units.FRAME_TIME) * units.FRAME_TIME
+
+		deltaT = Math.max(deltaT, deltaTMin)
+		deltaT = Math.min(deltaT, deltaTMax)
+
+		let deltaV = -(newClientY - clientY) * (1 / valueScale)
+		deltaV = Math.max(deltaV, deltaVMin)
+		deltaV = Math.min(deltaV, deltaVMax)
+
+		if (deltaT !== lastDeltaT || (modifyValue && deltaV !== lastDeltaV)) {
+			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
+
+			for (let [sequenceID, keyframes] of stageKeyframes) {
+				if (mode === 'translate') {
+					KeyframeHelper.translateKeyframesTime(keyframes, deltaT)
+					if (modifyValue) {
+						KeyframeHelper.translateKeyframesValue(keyframes, deltaV)
+					}
+				} else if (mode === 'scale') {
+					if (scaleTime) {
+						let scaleTimeFactor = (timeInterval + deltaT) / timeInterval
+						KeyframeHelper.scaleKeyframesTime(keyframes, scaleTimeFactor, refTime)
+					}
+					if (scaleValue) {
+						let scaleValueFactor = (valueInterval + deltaV) / valueInterval
+						KeyframeHelper.scaleKeyframesValue(keyframes, scaleValueFactor, refValue)
+					}
+				}
+				KeyframeHelper.sortKeyframes(keyframes)
+				KeyframeHelper.removeDoubleKeyframes(keyframes)
+
+				let sequence = model.getBasicSequence(stage.sequences, sequenceID)
+				sequence.keyframes = keyframes.keyframes
+
+				// Update selected keyframes
+				keyframes.selected.forEach((selected, index) => {
+					if (selected) {
+						selectedKeyframes.push({
+							sequenceID: sequenceID,
+							index: index,
+						})
+					}
+				})
+			}
+
+			translation.lastDeltaT = deltaT
+			translation.lastDeltaV = deltaV
+			translation.hasChanged = deltaT !== 0 || (modifyValue && deltaV !== 0)
+
+			hasChanged = true
+		}
+
+		scheduler.timeoutID = NaN
+		scheduler.lastModification = new Date().getTime()
+		resolve({
+			hasChanged: hasChanged,
+			stage: stage,
+			selectedKeyframes: selectedKeyframes,
+		})
+	}
+
+	static equals(keyframe1, keyframe2) {
+		return keyframe1.sequenceID === keyframe2.sequenceID && keyframe1.index === keyframe2.index
+	}
+
+	static mergeSelectedKeyframes(selectedKeyframes, newKeyframes) {
+		selectedKeyframes = Array.from(selectedKeyframes)
+		newKeyframes = Array.from(newKeyframes)
+
+		// Remove intersection
+		for (let i = 0; i < selectedKeyframes.length; i++) {
+			let keyframe = selectedKeyframes[i]
+			for (let j = 0; j < newKeyframes.length; j++) {
+				let newKeyframe = newKeyframes[j]
+				if (keyframe.sequenceID === newKeyframe.sequenceID && keyframe.index === newKeyframe.index) {
+					newKeyframes.splice(j, 1)
+					selectedKeyframes.splice(i, 1)
+					i--
+					break
+				}
+			}
+		}
+
+		return selectedKeyframes.concat(newKeyframes)
+	}
+
+	static containsKeyframe(keyframes, keyframe) {
+		let found = false
+		for (let i = 0; i < keyframes.length; i++) {
+			if (KeyframeHelper.equals(keyframes[i], keyframe)) {
+				found = true
+				break
+			}
+		}
+		return found
 	}
 
 	static getKeyframeFromRef(sequences, keyframeRef) {

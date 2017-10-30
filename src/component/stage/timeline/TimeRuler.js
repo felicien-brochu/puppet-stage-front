@@ -6,7 +6,6 @@ const RULER_HEIGHT = 30
 
 export default class TimeRuler extends React.Component {
 	static propTypes = {
-		onCurrentTimeChange: PropTypes.func.isRequired,
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
 			paddingRight: PropTypes.number.isRequired,
@@ -15,6 +14,8 @@ export default class TimeRuler extends React.Component {
 			width: PropTypes.number.isRequired,
 			duration: PropTypes.number.isRequired,
 		}).isRequired,
+
+		onCurrentTimeChange: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {

@@ -373,15 +373,17 @@ export default class SequenceEditor extends React.Component {
 	handleTranslateKeyframes(e) {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let selectedKeyframes = []
-		let hasChanged = KeyframeHelper.applyTranslation(stage, selectedKeyframes, this.translation, e.clientX, e.clientY, this.timeScale, this.valueScale)
+		KeyframeHelper.applySmoothTranslation(stage, selectedKeyframes, this.translation, e.clientX, e.clientY, this.timeScale, this.valueScale)
+			.then((result) => {
+				if (result.hasChanged) {
+					this.setState({
+						selectedKeyframes: result.selectedKeyframes,
+					})
 
-		if (hasChanged) {
-			this.setState({
-				selectedKeyframes: selectedKeyframes,
+					this.fireStageChange(result.stage, false)
+				}
 			})
-
-			this.fireStageChange(stage, false)
-		}
+			.catch(() => {})
 	}
 
 	handleGoToTime(t) {
