@@ -3,33 +3,55 @@ import model from '../../util/model'
 
 export default class KeyframeHelper {
 
-	static applyTranslation(stage, selectedKeyframes, translation, newClientX, timeScale) {
+	static applyTranslation(stage, selectedKeyframes, translation, newClientX, newClientY, timeScale, valueScale) {
 		let {
 			initialKeyframes,
 			clientX,
+			clientY,
 			refTime,
-			refDuration,
+			refValue,
+			timeInterval,
+			valueInterval,
 			mode,
-			deltaMin,
-			deltaMax,
+			deltaTMin,
+			deltaTMax,
+			deltaVMin,
+			deltaVMax,
 			lastDeltaT,
+			lastDeltaV,
+			scaleTime,
+			scaleValue,
+			modifyValue,
 		} = translation
 
 		let deltaT = (newClientX - clientX) * (1 / timeScale)
 		deltaT = Math.round(deltaT / units.FRAME_TIME) * units.FRAME_TIME
 
-		deltaT = Math.max(deltaT, deltaMin)
-		deltaT = Math.min(deltaT, deltaMax)
+		deltaT = Math.max(deltaT, deltaTMin)
+		deltaT = Math.min(deltaT, deltaTMax)
 
-		if (deltaT !== lastDeltaT) {
+		let deltaV = -(newClientY - clientY) * (1 / valueScale)
+		deltaV = Math.max(deltaV, deltaVMin)
+		deltaV = Math.min(deltaV, deltaVMax)
+
+		if (deltaT !== lastDeltaT || (modifyValue && deltaV !== lastDeltaV)) {
 			let stageKeyframes = new Map(JSON.parse(JSON.stringify([...initialKeyframes])))
 
 			for (let [sequenceID, keyframes] of stageKeyframes) {
 				if (mode === 'translate') {
-					KeyframeHelper.translateKeyframes(keyframes, deltaT)
+					KeyframeHelper.translateKeyframesTime(keyframes, deltaT)
+					if (modifyValue) {
+						KeyframeHelper.translateKeyframesValue(keyframes, deltaV)
+					}
 				} else if (mode === 'scale') {
-					let scaleFactor = (refDuration + deltaT) / refDuration
-					KeyframeHelper.scaleKeyframes(keyframes, scaleFactor, refTime)
+					if (scaleTime) {
+						let scaleTimeFactor = (timeInterval + deltaT) / timeInterval
+						KeyframeHelper.scaleKeyframesTime(keyframes, scaleTimeFactor, refTime)
+					}
+					if (scaleValue) {
+						let scaleValueFactor = (valueInterval + deltaV) / valueInterval
+						KeyframeHelper.scaleKeyframesValue(keyframes, scaleValueFactor, refValue)
+					}
 				}
 				KeyframeHelper.sortKeyframes(keyframes)
 				KeyframeHelper.removeDoubleKeyframes(keyframes)
@@ -49,7 +71,8 @@ export default class KeyframeHelper {
 			}
 
 			translation.lastDeltaT = deltaT
-			translation.hasChanged = deltaT !== 0
+			translation.lastDeltaV = deltaV
+			translation.hasChanged = deltaT !== 0 || (modifyValue && deltaV !== 0)
 			return true
 		}
 
@@ -92,38 +115,73 @@ export default class KeyframeHelper {
 		return found
 	}
 
-	static constructTranslationObject(stage, selectedKeyframes, targetKeyframe, scaleEnabled, clientX, clientY) {
+	static constructTranslationObject(stage, selectedKeyframes, targetKeyframe, scaleEnabled, clientX, clientY, modifyValue) {
 		let
 			mode = 'translate',
 			initialKeyframes = KeyframeHelper.collectSelectedKeyframes(stage, selectedKeyframes),
 			refTime = 0,
-			refDuration = 0,
-			boundaries = KeyframeHelper.getSelectionBoundaries(initialKeyframes, selectedKeyframes),
-			deltaMin = -boundaries.minT,
-			deltaMax = stage.duration - boundaries.maxT
+			refValue = 0,
+			timeInterval = 0,
+			valueInterval = 0,
+			scaleTime = false,
+			scaleValue = false
+
+		let {
+			minT,
+			maxT,
+			minV,
+			maxV
+		} = KeyframeHelper.getSelectionBoundaries(initialKeyframes, selectedKeyframes)
+
+		let
+			deltaTMin = -minT,
+			deltaTMax = stage.duration - maxT,
+			deltaVMin = -minV,
+			deltaVMax = units.MAX_VALUE - maxV
 
 		// Enable Translate Scale if Alt key is down and if the target keyframe is
 		// the first or the last of selection. Store the fix point of
 		// time for the scale in var refTime.
 		if (scaleEnabled) {
-			if (boundaries.minT !== boundaries.maxT) {
+			if (minT !== maxT) {
 				let keyframe = KeyframeHelper.getKeyframeFromRef(stage.sequences, targetKeyframe)
-				let isMin = keyframe.p.t === boundaries.minT
-				let isMax = keyframe.p.t === boundaries.maxT
+				let
+					isMinT = keyframe.p.t === minT,
+					isMaxT = keyframe.p.t === maxT,
+					isMinV = keyframe.p.v === minV,
+					isMaxV = keyframe.p.v === maxV
 
-				if (isMin || isMax) {
+				scaleTime = isMinT || isMaxT
+				scaleValue = modifyValue && (isMinV || isMaxV)
+				if (scaleTime || scaleValue) {
 					mode = 'scale'
+				}
 
-					if (isMin) {
-						refTime = boundaries.maxT
-						refDuration = boundaries.minT - boundaries.maxT
-						deltaMin = -boundaries.minT
-						deltaMax = stage.duration - boundaries.minT
-					} else if (isMax) {
-						refTime = boundaries.minT
-						refDuration = boundaries.maxT - boundaries.minT
-						deltaMin = -boundaries.maxT
-						deltaMax = stage.duration - boundaries.maxT
+				if (scaleTime) {
+					if (isMinT) {
+						refTime = maxT
+						timeInterval = minT - maxT
+						deltaTMin = -minT
+						deltaTMax = stage.duration - minT
+					} else if (isMaxT) {
+						refTime = minT
+						timeInterval = maxT - minT
+						deltaTMin = -maxT
+						deltaTMax = stage.duration - maxT
+					}
+				}
+
+				if (scaleValue) {
+					if (isMinV) {
+						refValue = maxV
+						valueInterval = minV - maxV
+						deltaVMin = -minV
+						deltaVMax = units.MAX_VALUE - minV
+					} else if (isMaxV) {
+						refValue = minV
+						valueInterval = maxV - minV
+						deltaVMin = -maxV
+						deltaVMax = units.MAX_VALUE - maxV
 					}
 				}
 			}
@@ -132,15 +190,23 @@ export default class KeyframeHelper {
 		return {
 			initialSelectedKeyframes: JSON.parse(JSON.stringify(selectedKeyframes)),
 			initialKeyframes: initialKeyframes,
+			modifyValue: modifyValue,
 			clientX: clientX,
 			clientY: clientY,
 			refTime: refTime,
-			refDuration: refDuration,
+			refValue: refValue,
+			timeInterval: timeInterval,
+			valueInterval: valueInterval,
 			mode: mode,
-			deltaMin: deltaMin,
-			deltaMax: deltaMax,
+			deltaTMin: deltaTMin,
+			deltaTMax: deltaTMax,
+			deltaVMin: deltaVMin,
+			deltaVMax: deltaVMax,
 			lastDeltaT: 0,
+			lastDeltaV: 0,
 			hasChanged: false,
+			scaleTime: scaleTime,
+			scaleValue: scaleValue,
 		}
 	}
 
@@ -151,19 +217,19 @@ export default class KeyframeHelper {
 
 	static getSelectionBoundaries(stageKeyframes, selectedKeyframes) {
 		let
-			minT = Number.MAX_VALUE,
-			maxT = 0
+			minT = Number.POSITIVE_INFINITY,
+			maxT = Number.NEGATIVE_INFINITY,
+			minV = Number.POSITIVE_INFINITY,
+			maxV = Number.NEGATIVE_INFINITY
 
 		for (let keyframe of selectedKeyframes) {
 			for (let [sequenceID, keyframes] of stageKeyframes) {
 				for (let i = 0; i < keyframes.keyframes.length; i++) {
 					if (keyframe.sequenceID === sequenceID && keyframe.index === i) {
-						if (minT > keyframes.keyframes[i].p.t) {
-							minT = keyframes.keyframes[i].p.t
-						}
-						if (maxT < keyframes.keyframes[i].p.t) {
-							maxT = keyframes.keyframes[i].p.t
-						}
+						minT = Math.min(minT, keyframes.keyframes[i].p.t)
+						maxT = Math.max(maxT, keyframes.keyframes[i].p.t)
+						minV = Math.min(minV, keyframes.keyframes[i].p.v)
+						maxV = Math.max(maxV, keyframes.keyframes[i].p.v)
 					}
 				}
 			}
@@ -172,10 +238,12 @@ export default class KeyframeHelper {
 		return {
 			minT: minT,
 			maxT: maxT,
+			minV: minV,
+			maxV: maxV,
 		}
 	}
 
-	static translateKeyframes(keyframes, deltaT) {
+	static translateKeyframesTime(keyframes, deltaT) {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
 				keyframes.keyframes[i].p.t += deltaT
@@ -188,7 +256,17 @@ export default class KeyframeHelper {
 		}
 	}
 
-	static scaleKeyframes(keyframes, scaleFactor, refTime) {
+	static translateKeyframesValue(keyframes, deltaV) {
+		for (let i = 0; i < keyframes.selected.length; i++) {
+			if (keyframes.selected[i]) {
+				keyframes.keyframes[i].p.v += deltaV
+				keyframes.keyframes[i].c1.v += deltaV
+				keyframes.keyframes[i].c2.v += deltaV
+			}
+		}
+	}
+
+	static scaleKeyframesTime(keyframes, scaleFactor, refTime) {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
 				keyframes.keyframes[i].p.t = refTime + scaleFactor * (keyframes.keyframes[i].p.t - refTime)
@@ -197,6 +275,16 @@ export default class KeyframeHelper {
 				keyframes.keyframes[i].c1.t = Math.round(Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME)
 				keyframes.keyframes[i].c2.t = refTime + scaleFactor * (keyframes.keyframes[i].c2.t - refTime)
 				keyframes.keyframes[i].c2.t = Math.round(Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME)
+			}
+		}
+	}
+
+	static scaleKeyframesValue(keyframes, scaleFactor, refValue) {
+		for (let i = 0; i < keyframes.selected.length; i++) {
+			if (keyframes.selected[i]) {
+				keyframes.keyframes[i].p.v = refValue + scaleFactor * (keyframes.keyframes[i].p.v - refValue)
+				keyframes.keyframes[i].c1.v = refValue + scaleFactor * (keyframes.keyframes[i].c1.v - refValue)
+				keyframes.keyframes[i].c2.v = refValue + scaleFactor * (keyframes.keyframes[i].c2.v - refValue)
 			}
 		}
 	}

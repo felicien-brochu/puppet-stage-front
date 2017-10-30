@@ -35,6 +35,7 @@ export default class SequenceEditor extends React.Component {
 		this.handleNewBasicSequence = this.handleNewBasicSequence.bind(this)
 		this.handleBasicSequenceChange = this.handleBasicSequenceChange.bind(this)
 		this.handleTimeScaleChange = this.handleTimeScaleChange.bind(this)
+		this.handleValueScaleChange = this.handleValueScaleChange.bind(this)
 		this.handleUnselectKeyframes = this.handleUnselectKeyframes.bind(this)
 		this.handleSelectKeyframes = this.handleSelectKeyframes.bind(this)
 		this.handleSingleKeyframeMouseDown = this.handleSingleKeyframeMouseDown.bind(this)
@@ -51,6 +52,7 @@ export default class SequenceEditor extends React.Component {
 
 		this.translation = {}
 		this.timeScale = 1
+		this.valueScale = 1
 		this.keyBindings = {
 			Delete: this.handleDeleteSelectedKeyframes,
 			Tab: this.handleToggleGraph,
@@ -105,7 +107,8 @@ export default class SequenceEditor extends React.Component {
 
 					onScrollY={this.handleScrollY}
 					onCurrentTimeChange={this.handleCurrentTimeChange}
-					onScaleChange={this.handleTimeScaleChange}
+					onTimeScaleChange={this.handleTimeScaleChange}
+					onValueScaleChange={this.handleValueScaleChange}
 					onTimeWindowChange={this.handleTimeWindowChange}
 					onUnselectKeyframes={this.handleUnselectKeyframes}
 					onSelectKeyframes={this.handleSelectKeyframes}
@@ -284,6 +287,10 @@ export default class SequenceEditor extends React.Component {
 		this.timeScale = timeScale
 	}
 
+	handleValueScaleChange(valueScale) {
+		this.valueScale = valueScale
+	}
+
 	handleUnselectKeyframes() {
 		this.setState({
 			selectedKeyframes: [],
@@ -349,7 +356,7 @@ export default class SequenceEditor extends React.Component {
 
 	handleTranslateKeyframesStart(targetKeyframe, e) {
 		if (this.state.selectedKeyframes.length > 0) {
-			this.translation = KeyframeHelper.constructTranslationObject(this.props.stage, this.state.selectedKeyframes, targetKeyframe, e.altKey, e.clientX, e.clientY)
+			this.translation = KeyframeHelper.constructTranslationObject(this.props.stage, this.state.selectedKeyframes, targetKeyframe, e.altKey, e.clientX, e.clientY, this.state.showGraph)
 
 			window.addEventListener('mouseup', this.handleTranslateKeyframesStop)
 			window.addEventListener('mousemove', this.handleTranslateKeyframes)
@@ -366,7 +373,7 @@ export default class SequenceEditor extends React.Component {
 	handleTranslateKeyframes(e) {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let selectedKeyframes = []
-		let hasChanged = KeyframeHelper.applyTranslation(stage, selectedKeyframes, this.translation, e.clientX, this.timeScale)
+		let hasChanged = KeyframeHelper.applyTranslation(stage, selectedKeyframes, this.translation, e.clientX, e.clientY, this.timeScale, this.valueScale)
 
 		if (hasChanged) {
 			this.setState({

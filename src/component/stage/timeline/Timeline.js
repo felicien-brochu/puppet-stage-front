@@ -27,7 +27,7 @@ export default class Timeline extends React.Component {
 		onScrollY: PropTypes.func.isRequired,
 		onCurrentTimeChange: PropTypes.func.isRequired,
 		onTimeWindowChange: PropTypes.func.isRequired,
-		onScaleChange: PropTypes.func.isRequired,
+		onTimeScaleChange: PropTypes.func.isRequired,
 		onSelectKeyframes: PropTypes.func.isRequired,
 		onUnselectKeyframes: PropTypes.func.isRequired,
 		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
@@ -100,6 +100,7 @@ export default class Timeline extends React.Component {
 					sequences={this.props.stage.sequences}
 					selectedKeyframes={this.props.selectedKeyframes}
 
+					onValueScaleChange={this.props.onValueScaleChange}
 					onSelectKeyframes={this.props.onSelectKeyframes}
 					onUnselectKeyframes={this.props.onUnselectKeyframes}
 					onSingleKeyframeMouseDown={this.props.onSingleKeyframeMouseDown}
@@ -138,9 +139,9 @@ export default class Timeline extends React.Component {
 	}
 
 	handleResize(width, height) {
-		if (width !== this.state.viewWidth && typeof this.props.onScaleChange === 'function') {
+		if (width !== this.state.viewWidth && typeof this.props.onTimeScaleChange === 'function') {
 			let scale = (width - PADDING_LEFT - PADDING_RIGHT) / (this.props.endTime - this.props.startTime)
-			this.props.onScaleChange(scale)
+			this.props.onTimeScaleChange(scale)
 		}
 		this.setState({
 			viewWidth: width,
@@ -206,8 +207,8 @@ export default class Timeline extends React.Component {
 
 		this.moveTo(start, scale)
 
-		if (typeof this.props.onScaleChange === 'function') {
-			this.props.onScaleChange(scale)
+		if (typeof this.props.onTimeScaleChange === 'function') {
+			this.props.onTimeScaleChange(scale)
 		}
 	}
 

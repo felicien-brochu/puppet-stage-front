@@ -8,8 +8,6 @@ import SelectionOverlay from './SelectionOverlay'
 
 const PADDING_TOP = 30
 const PADDING_BOTTOM = 30
-const VALUE_HARD_MIN = 0
-const VALUE_HARD_MAX = 100
 const POINT_WIDTH = 6
 const HANDLE_RADIUS = 2.5
 
@@ -25,6 +23,7 @@ export default class GraphTimeline extends React.Component {
 			width: PropTypes.number.isRequired,
 		}).isRequired,
 
+		onValueScaleChange: PropTypes.func.isRequired,
 		onSelectKeyframes: PropTypes.func.isRequired,
 		onUnselectKeyframes: PropTypes.func.isRequired,
 		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
@@ -35,7 +34,7 @@ export default class GraphTimeline extends React.Component {
 
 		this.state = {
 			minValue: 0,
-			maxValue: 100,
+			maxValue: units.MAX_VALUE,
 			selection: {
 				selecting: false,
 				selectingKeyframes: [],
@@ -53,6 +52,10 @@ export default class GraphTimeline extends React.Component {
 		this.handleMouseUpWindow = this.handleMouseUpWindow.bind(this)
 		this.handleMouseMoveWindow = this.handleMouseMoveWindow.bind(this)
 		this.handleActiveSelectionChange = this.handleActiveSelectionChange.bind(this)
+	}
+
+	componentDidUpdate() {
+		this.checkValueScaleChange()
 	}
 
 	render() {
@@ -91,8 +94,8 @@ export default class GraphTimeline extends React.Component {
 			innerWidth = 1
 		}
 		let horizontalUnit = units.chooseTimeUnit(innerWidth, start, end)
-		let horizontalScale = this.getHorizontalScale()
-		let unitWidth = horizontalUnit.interval * horizontalScale
+		let timeScale = this.getTimeScale()
+		let unitWidth = horizontalUnit.interval * timeScale
 
 
 		for (let i = Math.floor(start / horizontalUnit.interval); i <= Math.ceil(end / horizontalUnit.interval); i++) {
@@ -127,7 +130,7 @@ export default class GraphTimeline extends React.Component {
 		}
 
 		// Out of stage time markers
-		let x = paddingLeft + (0 - start) * horizontalScale
+		let x = paddingLeft + (0 - start) * timeScale
 
 		if (x > 0) {
 			grid.push(
@@ -141,7 +144,7 @@ export default class GraphTimeline extends React.Component {
 				/>)
 		}
 
-		x = paddingLeft + (duration - start) * horizontalScale
+		x = paddingLeft + (duration - start) * timeScale
 
 		if (x < width + paddingRight) {
 			grid.push(
@@ -163,7 +166,7 @@ export default class GraphTimeline extends React.Component {
 			maxValue
 		} = this.state
 		let verticalUnit = units.choosePercentUnit(innerHeight, minValue, maxValue)
-		let verticalScale = this.getVerticalScale()
+		let valueScale = this.getValueScale()
 
 		for (let i = Math.floor(minValue / verticalUnit.interval); i <= Math.ceil(maxValue / verticalUnit.interval); i++) {
 			let value = i * verticalUnit.interval
@@ -193,7 +196,7 @@ export default class GraphTimeline extends React.Component {
 		}
 
 		// Hard min
-		let y = this.valueToY(VALUE_HARD_MIN)
+		let y = this.valueToY(units.MIN_VALUE)
 		grid.push(
 			<line
 				className="graph-hard-bound-line"
@@ -206,7 +209,7 @@ export default class GraphTimeline extends React.Component {
 		)
 
 		// Hard max
-		y = this.valueToY(VALUE_HARD_MAX)
+		y = this.valueToY(units.MAX_VALUE)
 		grid.push(
 			<line
 				className="graph-hard-bound-line"
@@ -392,6 +395,7 @@ export default class GraphTimeline extends React.Component {
 						className={classNames("graph-point", {
 							"selected": selected,
 						})}
+						onMouseDown={(e) => this.handleKeyframeMouseDown(sequence.id, i, e)}
 						x={px - POINT_WIDTH / 2}
 						y={py - POINT_WIDTH / 2}
 						width={POINT_WIDTH}
@@ -410,6 +414,19 @@ export default class GraphTimeline extends React.Component {
 			</g>
 		)
 	}
+
+
+	handleKeyframeMouseDown(sequenceID, index, e) {
+		if (typeof this.props.onSingleKeyframeMouseDown === 'function') {
+			this.props.onSingleKeyframeMouseDown(e, {
+				sequenceID: sequenceID,
+				index: index,
+			})
+		}
+		e.stopPropagation()
+		e.preventDefault()
+	}
+
 
 	handleMouseDown(e) {
 		window.addEventListener('mouseup', this.handleMouseUpWindow)
@@ -530,17 +547,25 @@ export default class GraphTimeline extends React.Component {
 	}
 
 	valueToY(value) {
-		return this.props.timeline.height - PADDING_BOTTOM - (value - this.state.minValue) * this.getVerticalScale()
+		return this.props.timeline.height - PADDING_BOTTOM - (value - this.state.minValue) * this.getValueScale()
 	}
 
 	timeToX(t) {
-		return this.props.timeline.paddingLeft + (t - this.props.timeline.start) * this.getHorizontalScale()
+		return this.props.timeline.paddingLeft + (t - this.props.timeline.start) * this.getTimeScale()
 	}
-	getVerticalScale() {
+	getValueScale() {
 		return (this.props.timeline.height - PADDING_TOP - PADDING_BOTTOM) / (this.state.maxValue - this.state.minValue)
 	}
 
-	getHorizontalScale() {
+	getTimeScale() {
 		return this.props.timeline.getScale()
+	}
+
+	checkValueScaleChange() {
+		let valueScale = this.getValueScale()
+		if (!this.valueScale || this.valueScale !== valueScale) {
+			this.valueScale = valueScale
+			this.props.onValueScaleChange(valueScale)
+		}
 	}
 }

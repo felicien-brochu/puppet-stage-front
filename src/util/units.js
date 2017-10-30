@@ -6,6 +6,8 @@ class Units {
 	static MIN_PX_BY_TIME_INTERVAL = 60
 	static MIN_PX_BY_TIME_INTER_INTERVAL = 40
 	static MIN_PX_BY_PERCENT_INTERVAL = 30
+	static MIN_VALUE = 0
+	static MAX_VALUE = 100
 
 	static TIME_INTERVALS = [{
 		interval: FRAME_TIME, // 1 frame
