@@ -1,7 +1,7 @@
 import units from '../../util/units'
 import model from '../../util/model'
 
-const SMOOTHING_DELAY = 20
+const SMOOTHING_DELAY = 40
 
 export default class KeyframeHelper {
 

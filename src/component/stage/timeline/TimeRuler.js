@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import units from '../../../util/units'
 
 const RULER_HEIGHT = 30
+const SMOOTHING_DELAY = 20
 
 export default class TimeRuler extends React.Component {
 	static propTypes = {
@@ -24,6 +25,12 @@ export default class TimeRuler extends React.Component {
 		this.handleMouseDown = this.handleMouseDown.bind(this)
 		this.handleMouseMoveWindow = this.handleMouseMoveWindow.bind(this)
 		this.handleMouseUpWindow = this.handleMouseUpWindow.bind(this)
+
+		this.scheduler = {
+			timeoutID: NaN,
+			lastModification: 0,
+			clientX: 0,
+		}
 	}
 
 	render() {
@@ -146,8 +153,19 @@ export default class TimeRuler extends React.Component {
 	}
 
 	handleTimeMove(e) {
+		let scheduler = this.scheduler
+		scheduler.clientX = e.clientX
+		if (isNaN(scheduler.timeoutID)) {
+			let now = new Date().getTime()
+			let delay = Math.max(SMOOTHING_DELAY - now + scheduler.lastModification, 0)
+			scheduler.timeoutID = window.setTimeout(this.handleAsyncTimeMove.bind(this), delay)
+		}
+	}
+
+	handleAsyncTimeMove() {
+		let scheduler = this.scheduler
 		let timeline = this.props.timeline
-		let x = e.clientX - this.refs.container.getBoundingClientRect().x
+		let x = scheduler.clientX - this.refs.container.getBoundingClientRect().x
 		let t = (x - timeline.paddingLeft) / timeline.getScale() + timeline.start
 		t = Math.max(t, 0)
 		t = Math.min(t, timeline.duration)
@@ -157,6 +175,8 @@ export default class TimeRuler extends React.Component {
 			t = Math.round(Math.round(t / units.FRAME_TIME) * units.FRAME_TIME)
 		}
 		this.fireCurrentTimeChange(t)
+		scheduler.timeoutID = NaN
+		scheduler.lastModification = new Date().getTime()
 	}
 
 	fireCurrentTimeChange(time) {
