@@ -81,11 +81,10 @@ export default class KeyframeHelper {
 		return selectedKeyframes.concat(newKeyframes)
 	}
 
-	static containsKeyframe(selectedKeyframes, newKeyframe) {
+	static containsKeyframe(keyframes, keyframe) {
 		let found = false
-		for (let i = 0; i < selectedKeyframes.length; i++) {
-			let keyframe = selectedKeyframes[i]
-			if (keyframe.sequenceID === newKeyframe.sequenceID && keyframe.index === newKeyframe.index) {
+		for (let i = 0; i < keyframes.length; i++) {
+			if (KeyframeHelper.equals(keyframes[i], keyframe)) {
 				found = true
 				break
 			}

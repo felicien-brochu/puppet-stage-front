@@ -26,7 +26,7 @@ export default class SequenceEditor extends React.Component {
 			currentTime: 0,
 			startTime: 0,
 			endTime: props.stage.duration,
-			showGraph: false,
+			showGraph: true,
 		}
 
 		this.handleScrollY = this.handleScrollY.bind(this)
@@ -191,7 +191,7 @@ export default class SequenceEditor extends React.Component {
 							strokeWidth: "10px",
 							fill: "none",
 					}}/>
-					
+
 
 					<g id="graph-button-shape" className="stroke-only">
 						<rect x="20" y="28" width="64" height="50"/>

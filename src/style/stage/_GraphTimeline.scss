@@ -1,6 +1,138 @@
+.graph-timeline-container {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-flow: column;
+}
+
 .graph-timeline {
+	width: 100%;
 	flex-grow: 1;
 	margin: 0;
 	padding: 0;
 	background-color: $active-background-color;
+
+	.graph-grid-line {
+		stroke: $deep-background-color;
+		stroke-width: 1px;
+	}
+
+	.graph-hard-bound-line {
+		stroke-width: 2px;
+		stroke: $deep-background-color;
+		fill: none;
+	}
+
+	.graph-out-time {
+		fill: $background-color;
+	}
+
+	.graph-grid-text {
+		fill: $primary-color;
+		font-size: 10px;
+		font-family: Arial;
+		font-weight: bold;
+	}
+
+	.default-value-graph {
+		stroke-width: 1px;
+		opacity: 0.7;
+		stroke-dasharray: 4px 4px;
+		stroke-dashoffset: 4px;
+		fill: none;
+	}
+
+	.value-graph {
+		stroke-width: 1.5px;
+		fill: none;
+	}
+
+	.control-handle-circle,
+	.control-handle-line,
+	.graph-point.selected {
+		fill: $yellow;
+		stroke: $yellow;
+	}
+
+	.graph-basic-sequence {
+		&.red {
+			stroke: $red;
+			fill: $red;
+		}
+
+		&.yellow {
+			stroke: $yellow;
+			fill: $yellow;
+		}
+
+		&.aqua {
+			stroke: $aqua;
+			fill: $aqua;
+		}
+
+		&.pink {
+			stroke: $pink;
+			fill: $pink;
+		}
+
+		&.lavender {
+			stroke: $lavender;
+			fill: $lavender;
+		}
+
+		&.peach {
+			stroke: $peach;
+			fill: $peach;
+		}
+
+		&.seafoam {
+			stroke: $seafoam;
+			fill: $seafoam;
+		}
+
+		&.blue {
+			stroke: $blue;
+			fill: $blue;
+		}
+
+		&.green {
+			stroke: $green;
+			fill: $green;
+		}
+
+		&.purple {
+			stroke: $purple;
+			fill: $purple;
+		}
+
+		&.orange {
+			stroke: $orange;
+			fill: $orange;
+		}
+
+		&.brown {
+			stroke: $brown;
+			fill: $brown;
+		}
+
+		&.fuchsia {
+			stroke: $fuchsia;
+			fill: $fuchsia;
+		}
+
+		&.cyan {
+			stroke: $cyan;
+			fill: $cyan;
+		}
+
+		&.sandstone {
+			stroke: $sandstone;
+			fill: $sandstone;
+		}
+
+		&.darkgreen {
+			stroke: $darkgreen;
+			fill: $darkgreen;
+		}
+	}
 }

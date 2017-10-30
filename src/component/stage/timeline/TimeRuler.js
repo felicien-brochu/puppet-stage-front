@@ -2,8 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import units from '../../../util/units'
 
-const MIN_PX_BY_INTERVAL = 60
-const MIN_PX_BY_INTER_INTERVAL = 40
 const RULER_HEIGHT = 30
 
 export default class TimeRuler extends React.Component {
@@ -44,11 +42,11 @@ export default class TimeRuler extends React.Component {
 		let elements = []
 		if (this.props.timeline.width) {
 			let timeline = this.props.timeline
-			let unit = this.computeTimeUnit()
 			let width = timeline.width - timeline.paddingLeft - timeline.paddingRight
 			if (width < 1) {
 				width = 1
 			}
+			let unit = units.chooseTimeUnit(width, timeline.start, timeline.end)
 
 			let scale = timeline.getScale()
 			let unitWidth = unit.interval * scale
@@ -60,7 +58,7 @@ export default class TimeRuler extends React.Component {
 				elements.push(
 					<rect
 						className="ruler-out-time"
-						key={'out-time-before'}
+						key="out-time-before"
 						x={0}
 						y={-1}
 						width={x}
@@ -74,7 +72,7 @@ export default class TimeRuler extends React.Component {
 				elements.push(
 					<rect
 						className="ruler-out-time"
-						key={'out-time-after'}
+						key="out-time-after"
 						x={x}
 						y={-1}
 						width={timeline.width - x + 32}
@@ -87,7 +85,7 @@ export default class TimeRuler extends React.Component {
 				let x = timeline.paddingLeft + (t - timeline.start) * scale
 
 				// Inter-Graduation
-				if (unitWidth >= MIN_PX_BY_INTER_INTERVAL * 2) {
+				if (unit.showInterIntervals) {
 					elements.push(
 						<line
 							className="ruler-line"
@@ -123,104 +121,6 @@ export default class TimeRuler extends React.Component {
 		}
 
 		return elements
-	}
-
-	computeTimeUnit() {
-
-		let intFormatter = new Intl.NumberFormat('fr-FR', {
-			minimumIntegerDigits: 2,
-		})
-
-		function frameFormat(t) {
-			let s = Math.floor(t / 1e9)
-			let f = (t - s * 1e9) / units.FRAME_TIME
-			return `${intFormatter.format(s)}:${intFormatter.format(f)}f`
-		}
-
-		function secondFormat(t) {
-			let m = Math.floor(t / 60e9)
-			let s = Math.floor((t - m * 60e9) / 1e9)
-			return `${intFormatter.format(m)}:${intFormatter.format(s)}s`
-		}
-		let intervals = [{
-			interval: units.FRAME_TIME, // 1 frame
-			format: frameFormat,
-		}, {
-			interval: 2 * units.FRAME_TIME,
-			format: frameFormat,
-		}, {
-			interval: 5 * units.FRAME_TIME,
-			format: frameFormat,
-		}, {
-			interval: 10 * units.FRAME_TIME,
-			format: frameFormat,
-		}, {
-			interval: 15 * units.FRAME_TIME,
-			format: frameFormat,
-		}, {
-			interval: 20 * units.FRAME_TIME,
-			format: frameFormat,
-		}, {
-			interval: 30 * units.FRAME_TIME,
-			format: frameFormat,
-		}, {
-			interval: 1e9,
-			format: frameFormat,
-		}, {
-			interval: 2e9,
-			format: frameFormat,
-		}, {
-			interval: 5e9,
-			format: secondFormat,
-		}, {
-			interval: 10e9,
-			format: secondFormat,
-		}, {
-			interval: 20e9,
-			format: secondFormat,
-		}, {
-			interval: 30e9,
-			format: secondFormat,
-		}, {
-			interval: 60e9,
-			format: secondFormat,
-		}, {
-			interval: 120e9,
-			format: secondFormat,
-		}, {
-			interval: 300e9,
-			format: secondFormat,
-		}, {
-			interval: 600e9,
-			format: secondFormat,
-		}, {
-			interval: 1200e9,
-			format: secondFormat,
-		}, {
-			interval: 1800e9,
-			format: secondFormat,
-		}, {
-			interval: 3600e9,
-			format: secondFormat,
-		}, ]
-
-		let unit = intervals[intervals.length - 1]
-		let {
-			width,
-			start,
-			end,
-			paddingLeft,
-			paddingRight
-		} = this.props.timeline
-		let innerWidth = width - paddingLeft - paddingRight
-		for (let u of intervals) {
-			let unitWidth = innerWidth / ((end - start) / u.interval)
-			if (unitWidth >= MIN_PX_BY_INTERVAL) {
-				unit = u
-				break
-			}
-		}
-		return unit
 	}
 
 	handleMouseDown(e) {

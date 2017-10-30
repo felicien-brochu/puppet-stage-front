@@ -7,12 +7,6 @@ export default class SequenceTimeline extends React.Component {
 	static propTypes = {
 		sequences: PropTypes.array.isRequired,
 		selectedKeyframes: PropTypes.array.isRequired,
-
-		onSelectKeyframes: PropTypes.func.isRequired,
-		onUnselectKeyframes: PropTypes.func.isRequired,
-		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
-		onBasicSequenceTimeChange: PropTypes.func.isRequired,
-
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
 			paddingRight: PropTypes.number.isRequired,
@@ -20,6 +14,11 @@ export default class SequenceTimeline extends React.Component {
 			end: PropTypes.number.isRequired,
 			width: PropTypes.number.isRequired,
 		}).isRequired,
+
+		onSelectKeyframes: PropTypes.func.isRequired,
+		onUnselectKeyframes: PropTypes.func.isRequired,
+		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
+		onBasicSequenceTimeChange: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {

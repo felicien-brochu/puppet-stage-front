@@ -99,6 +99,10 @@ export default class Timeline extends React.Component {
 					timeline={this.getViewState()}
 					sequences={this.props.stage.sequences}
 					selectedKeyframes={this.props.selectedKeyframes}
+
+					onSelectKeyframes={this.props.onSelectKeyframes}
+					onUnselectKeyframes={this.props.onUnselectKeyframes}
+					onSingleKeyframeMouseDown={this.props.onSingleKeyframeMouseDown}
 				/>
 			)
 		} else {
@@ -124,9 +128,9 @@ export default class Timeline extends React.Component {
 			paddingRight: PADDING_RIGHT,
 			start: this.props.startTime,
 			end: this.props.endTime,
+			duration: this.props.stage.duration,
 			width: this.state.viewWidth,
 			height: this.state.viewHeight,
-			duration: this.props.stage.duration,
 		}
 
 		viewState.getScale = () => (viewState.width - viewState.paddingLeft - viewState.paddingRight) / (viewState.end - viewState.start)
