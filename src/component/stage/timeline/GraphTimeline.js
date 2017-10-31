@@ -548,11 +548,13 @@ export default class GraphTimeline extends React.Component {
 
 		let sequence = model.getBasicSequence(this.props.sequences, keyframeRef.sequenceID)
 		sequence = JSON.parse(JSON.stringify(sequence))
-		let container = this.container.getBoundingClientRect()
-		let deltaX = modif.clientX - clientX,
+		let
+			timeScale = this.getTimeScale(),
+			valueScale = this.getValueScale(),
+			deltaX = modif.clientX - clientX,
 			deltaY = modif.clientY - clientY,
-			deltaT = deltaX / this.getTimeScale(),
-			deltaV = -deltaY / this.getValueScale()
+			deltaT = deltaX / timeScale,
+			deltaV = -deltaY / valueScale
 
 		let
 			newKeyframe = sequence.keyframes[keyframeRef.index],
@@ -563,6 +565,12 @@ export default class GraphTimeline extends React.Component {
 		newC.t = Math.max(newC.t, minT)
 		newC.t = Math.min(newC.t, maxT)
 		newC.v = c.v + deltaV
+
+		let distance = Math.sqrt(((newC.t - keyframe.p.t) * timeScale) ** 2 + ((newC.v - keyframe.p.v) * valueScale) ** 2)
+		if (distance < MIN_HANDLE_DISTANCE) {
+			newC.t = keyframe.p.t
+			newC.v = keyframe.p.v
+		}
 
 		this.props.onBasicSequenceChange(sequence, model.getBasicSequenceParent(this.props.sequences, sequence.id), scheduler.save)
 		scheduler.timeoutID = NaN
