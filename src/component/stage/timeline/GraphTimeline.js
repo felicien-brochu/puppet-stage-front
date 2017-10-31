@@ -9,11 +9,12 @@ import SelectionOverlay from './SelectionOverlay'
 
 const PADDING_TOP = 30
 const PADDING_BOTTOM = 30
-const POINT_WIDTH = 6
-const HANDLE_RADIUS = 2.5
+const POINT_WIDTH = 7
+const HANDLE_RADIUS = 3
 const MIN_HANDLE_DISTANCE = POINT_WIDTH / 2 + 10
 const SHOW_HANDLE_BUTTON_DISTANCE = 15
 const SHOW_HANDLE_BUTTON_RADIUS = 3.5
+const SMOOTHING_DELAY = 20
 
 export default class GraphTimeline extends React.Component {
 	static propTypes = {
@@ -56,6 +57,8 @@ export default class GraphTimeline extends React.Component {
 		this.handleMouseUpWindow = this.handleMouseUpWindow.bind(this)
 		this.handleMouseMoveWindow = this.handleMouseMoveWindow.bind(this)
 		this.handleActiveSelectionChange = this.handleActiveSelectionChange.bind(this)
+		this.handleHandleMouseUp = this.handleHandleMouseUp.bind(this)
+		this.handleHandleMouseMove = this.handleHandleMouseMove.bind(this)
 	}
 
 	componentDidUpdate() {
@@ -363,7 +366,11 @@ export default class GraphTimeline extends React.Component {
 							className="control-handle-circle"
 							cx={c1x}
 							cy={c1y}
-							r={HANDLE_RADIUS}/>
+							r={HANDLE_RADIUS}
+							onMouseDown={(e) => this.handleHandleMouseDown(e, {
+								sequenceID: sequence.id,
+								index: i,
+							}, 'c1')}/>
 					)
 				}
 
@@ -384,7 +391,11 @@ export default class GraphTimeline extends React.Component {
 							className="control-handle-circle"
 							cx={c2x}
 							cy={c2y}
-							r={HANDLE_RADIUS}/>
+							r={HANDLE_RADIUS}
+							onMouseDown={(e) => this.handleHandleMouseDown(e, {
+								sequenceID: sequence.id,
+								index: i,
+							}, 'c2')}/>
 					)
 				}
 
@@ -442,6 +453,122 @@ export default class GraphTimeline extends React.Component {
 		)
 	}
 
+	handleHandleMouseDown(e, keyframeRef, controlPointKey) {
+		e.stopPropagation()
+		e.preventDefault()
+
+
+		let sequence = model.getBasicSequence(this.props.sequences, keyframeRef.sequenceID)
+		let keyframe = sequence.keyframes[keyframeRef.index]
+		let minT, maxT
+
+		if (controlPointKey === 'c1') {
+			if (keyframeRef.index === 0) {
+				minT = 0
+			} else {
+				let prevKeyframe = sequence.keyframes[keyframeRef.index - 1]
+				minT = prevKeyframe.p.t
+			}
+			maxT = keyframe.p.t
+		}
+
+		if (controlPointKey === 'c2') {
+			if (keyframeRef.index === sequence.keyframes.length - 1) {
+				maxT = this.props.timeline.duration
+			} else {
+				let nextKeyframe = sequence.keyframes[keyframeRef.index + 1]
+				maxT = nextKeyframe.p.t
+			}
+			minT = keyframe.p.t
+		}
+
+		this.handleTranslation = {
+			clientX: e.clientX,
+			clientY: e.clientY,
+			controlPointKey: controlPointKey,
+			keyframeRef: keyframeRef,
+			keyframe: JSON.parse(JSON.stringify(keyframe)),
+			minT: minT,
+			maxT: maxT,
+			scheduler: {
+				lastModification: 0,
+				timeoutID: NaN,
+				save: false,
+				pendingModification: {
+					clientX: e.clientX,
+					clientY: e.clientY,
+				},
+			}
+		}
+
+		window.addEventListener('mousemove', this.handleHandleMouseMove)
+		window.addEventListener('mouseup', this.handleHandleMouseUp)
+	}
+
+	handleHandleMouseUp(e) {
+		e.stopPropagation()
+		window.removeEventListener('mousemove', this.handleHandleMouseMove)
+		window.removeEventListener('mouseup', this.handleHandleMouseUp)
+		this.handleHandleMove(e, true)
+	}
+
+	handleHandleMouseMove(e) {
+		e.stopPropagation()
+		this.handleHandleMove(e, false)
+	}
+
+	handleHandleMove(e, save) {
+		let scheduler = this.handleTranslation.scheduler
+		scheduler.pendingModification = {
+			clientX: e.clientX,
+			clientY: e.clientY,
+		}
+		scheduler.save = save
+
+		if (isNaN(scheduler.timeoutID)) {
+			let now = new Date().getTime()
+			let delay = Math.max(SMOOTHING_DELAY - now + scheduler.lastModification, 0)
+			scheduler.timeoutID = window.setTimeout(this.handleAsyncHandleMove.bind(this), delay)
+		}
+	}
+
+	handleAsyncHandleMove() {
+		let {
+			clientX,
+			clientY,
+			maxT,
+			minT,
+			controlPointKey,
+			keyframeRef,
+			keyframe,
+			scheduler,
+		} = this.handleTranslation
+
+		let modif = scheduler.pendingModification
+
+		let sequence = model.getBasicSequence(this.props.sequences, keyframeRef.sequenceID)
+		sequence = JSON.parse(JSON.stringify(sequence))
+		let container = this.container.getBoundingClientRect()
+		let deltaX = modif.clientX - clientX,
+			deltaY = modif.clientY - clientY,
+			deltaT = deltaX / this.getTimeScale(),
+			deltaV = -deltaY / this.getValueScale()
+
+		let
+			newKeyframe = sequence.keyframes[keyframeRef.index],
+			c = keyframe[controlPointKey],
+			newC = newKeyframe[controlPointKey]
+
+		newC.t = Math.round(c.t + deltaT)
+		newC.t = Math.max(newC.t, minT)
+		newC.t = Math.min(newC.t, maxT)
+		newC.v = c.v + deltaV
+
+		this.props.onBasicSequenceChange(sequence, model.getBasicSequenceParent(this.props.sequences, sequence.id), scheduler.save)
+		scheduler.timeoutID = NaN
+		scheduler.lastModification = new Date().getTime()
+	}
+
 	handleShowHandleMouseDown(e, keyframeRef) {
 		e.stopPropagation()
 
@@ -461,7 +588,7 @@ export default class GraphTimeline extends React.Component {
 			c1d = Math.sqrt((c1x - px) ** 2 + (c1y - py) ** 2),
 			c2d = Math.sqrt((c2x - px) ** 2 + (c2y - py) ** 2)
 
-		if (c1d >= MIN_HANDLE_DISTANCE && c2d >= MIN_HANDLE_DISTANCE) {
+		if ((c1d >= MIN_HANDLE_DISTANCE || keyframeRef.index === 0) && (c2d >= MIN_HANDLE_DISTANCE || keyframeRef.index === sequence.keyframes.length - 1)) {
 			let
 				t = keyframe.p.t,
 				v = keyframe.p.v

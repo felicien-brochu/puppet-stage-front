@@ -48,16 +48,27 @@
 		fill: none;
 	}
 
-	.control-handle-circle,
-	.control-handle-line,
-	.graph-point.selected {
-		fill: $yellow;
+	.control-handle-line {
 		stroke: $yellow;
 	}
 
 	.control-handle-circle,
-	.graph-point:not(.selected) {
+	.graph-point.selected {
+		pointer-events: all;
+		fill: $yellow;
+		stroke: none;
+		stroke-width: 6px;
+	}
+
+	.control-handle-circle,
+	.graph-point {
 		cursor: pointer;
+	}
+
+	.graph-point {
+		pointer-events: all;
+		stroke-width: 6px;
+		stroke: none;
 	}
 
 	.show-handle-button {
