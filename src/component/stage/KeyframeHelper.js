@@ -194,6 +194,7 @@ export default class KeyframeHelper {
 				}
 				KeyframeHelper.sortKeyframes(keyframes)
 				KeyframeHelper.removeDoubleKeyframes(keyframes)
+				KeyframeHelper.correctControlPoints(keyframes.keyframes)
 
 				let sequence = model.getBasicSequence(stage.sequences, sequenceID)
 				sequence.keyframes = keyframes.keyframes
@@ -297,12 +298,13 @@ export default class KeyframeHelper {
 	static translateKeyframesTime(keyframes, deltaT) {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
-				keyframes.keyframes[i].p.t += deltaT
-				keyframes.keyframes[i].p.t = Math.round(Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME)
-				keyframes.keyframes[i].c1.t += deltaT
-				keyframes.keyframes[i].c1.t = Math.round(Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME)
-				keyframes.keyframes[i].c2.t += deltaT
-				keyframes.keyframes[i].c2.t = Math.round(Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME)
+				let keyframe = keyframes.keyframes[i]
+				keyframe.p.t += deltaT
+				keyframe.p.t = Math.round(Math.round(keyframe.p.t / units.FRAME_TIME) * units.FRAME_TIME)
+				keyframe.c1.t += deltaT
+				keyframe.c1.t = Math.round(Math.round(keyframe.c1.t / units.FRAME_TIME) * units.FRAME_TIME)
+				keyframe.c2.t += deltaT
+				keyframe.c2.t = Math.round(Math.round(keyframe.c2.t / units.FRAME_TIME) * units.FRAME_TIME)
 			}
 		}
 	}
@@ -310,9 +312,10 @@ export default class KeyframeHelper {
 	static translateKeyframesValue(keyframes, deltaV) {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
-				keyframes.keyframes[i].p.v += deltaV
-				keyframes.keyframes[i].c1.v += deltaV
-				keyframes.keyframes[i].c2.v += deltaV
+				let keyframe = keyframes.keyframes[i]
+				keyframe.p.v += deltaV
+				keyframe.c1.v += deltaV
+				keyframe.c2.v += deltaV
 			}
 		}
 	}
@@ -320,12 +323,13 @@ export default class KeyframeHelper {
 	static scaleKeyframesTime(keyframes, scaleFactor, refTime) {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
-				keyframes.keyframes[i].p.t = refTime + scaleFactor * (keyframes.keyframes[i].p.t - refTime)
-				keyframes.keyframes[i].p.t = Math.round(Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME)
-				keyframes.keyframes[i].c1.t = refTime + scaleFactor * (keyframes.keyframes[i].c1.t - refTime)
-				keyframes.keyframes[i].c1.t = Math.round(keyframes.keyframes[i].c1.t)
-				keyframes.keyframes[i].c2.t = refTime + scaleFactor * (keyframes.keyframes[i].c2.t - refTime)
-				keyframes.keyframes[i].c2.t = Math.round(keyframes.keyframes[i].c2.t)
+				let keyframe = keyframes.keyframes[i]
+				keyframe.p.t = refTime + scaleFactor * (keyframe.p.t - refTime)
+				keyframe.p.t = Math.round(Math.round(keyframe.p.t / units.FRAME_TIME) * units.FRAME_TIME)
+				keyframe.c1.t = refTime + scaleFactor * (keyframe.c1.t - refTime)
+				keyframe.c1.t = Math.round(keyframe.c1.t)
+				keyframe.c2.t = refTime + scaleFactor * (keyframe.c2.t - refTime)
+				keyframe.c2.t = Math.round(keyframe.c2.t)
 			}
 		}
 	}
@@ -333,9 +337,10 @@ export default class KeyframeHelper {
 	static scaleKeyframesValue(keyframes, scaleFactor, refValue) {
 		for (let i = 0; i < keyframes.selected.length; i++) {
 			if (keyframes.selected[i]) {
-				keyframes.keyframes[i].p.v = refValue + scaleFactor * (keyframes.keyframes[i].p.v - refValue)
-				keyframes.keyframes[i].c1.v = refValue + scaleFactor * (keyframes.keyframes[i].c1.v - refValue)
-				keyframes.keyframes[i].c2.v = refValue + scaleFactor * (keyframes.keyframes[i].c2.v - refValue)
+				let keyframe = keyframes.keyframes[i]
+				keyframe.p.v = refValue + scaleFactor * (keyframe.p.v - refValue)
+				keyframe.c1.v = refValue + scaleFactor * (keyframe.c1.v - refValue)
+				keyframe.c2.v = refValue + scaleFactor * (keyframe.c2.v - refValue)
 			}
 		}
 	}
@@ -366,6 +371,40 @@ export default class KeyframeHelper {
 				} else {
 					keyframes.keyframes.splice(i, 1)
 					keyframes.selected.splice(i, 1)
+				}
+			}
+		}
+	}
+
+	static correctControlPoints(keyframes) {
+		for (let i = 0; i < keyframes.length; i++) {
+			let keyframe = keyframes[i]
+
+			if (i > 0) {
+				let prevKeyframe = keyframes[i - 1]
+				if (keyframe.c1.t < prevKeyframe.p.t) {
+					let
+						deltaT = keyframe.c1.t - keyframe.p.t,
+						deltaV = keyframe.c1.v - keyframe.p.v,
+						modifT = prevKeyframe.p.t - keyframe.p.t,
+						modifRatio = modifT / deltaT
+
+					keyframe.c1.t = prevKeyframe.p.t
+					keyframe.c1.v = keyframe.p.v + modifRatio * deltaV
+				}
+			}
+
+			if (i < keyframes.length - 1) {
+				let nextKeyframe = keyframes[i + 1]
+				if (keyframe.c2.t > nextKeyframe.p.t) {
+					let
+						deltaT = keyframe.c2.t - keyframe.p.t,
+						deltaV = keyframe.c2.v - keyframe.p.v,
+						modifT = nextKeyframe.p.t - keyframe.p.t,
+						modifRatio = modifT / deltaT
+
+					keyframe.c2.t = nextKeyframe.p.t
+					keyframe.c2.v = keyframe.p.v + modifRatio * deltaV
 				}
 			}
 		}
