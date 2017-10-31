@@ -323,9 +323,9 @@ export default class KeyframeHelper {
 				keyframes.keyframes[i].p.t = refTime + scaleFactor * (keyframes.keyframes[i].p.t - refTime)
 				keyframes.keyframes[i].p.t = Math.round(Math.round(keyframes.keyframes[i].p.t / units.FRAME_TIME) * units.FRAME_TIME)
 				keyframes.keyframes[i].c1.t = refTime + scaleFactor * (keyframes.keyframes[i].c1.t - refTime)
-				keyframes.keyframes[i].c1.t = Math.round(Math.round(keyframes.keyframes[i].c1.t / units.FRAME_TIME) * units.FRAME_TIME)
+				keyframes.keyframes[i].c1.t = Math.round(keyframes.keyframes[i].c1.t)
 				keyframes.keyframes[i].c2.t = refTime + scaleFactor * (keyframes.keyframes[i].c2.t - refTime)
-				keyframes.keyframes[i].c2.t = Math.round(Math.round(keyframes.keyframes[i].c2.t / units.FRAME_TIME) * units.FRAME_TIME)
+				keyframes.keyframes[i].c2.t = Math.round(keyframes.keyframes[i].c2.t)
 			}
 		}
 	}

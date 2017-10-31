@@ -460,8 +460,7 @@ export default class GraphTimeline extends React.Component {
 			c2x = this.timeToX(keyframe.c2.t),
 			c2y = this.valueToY(keyframe.c2.v),
 			c1d = Math.sqrt((c1x - px) ** 2 + (c1y - py) ** 2),
-			c2d = Math.sqrt((c2x - px) ** 2 + (c2y - py) ** 2),
-			deltaT = MIN_HANDLE_DISTANCE / this.getTimeScale()
+			c2d = Math.sqrt((c2x - px) ** 2 + (c2y - py) ** 2)
 
 		if (c1d < MIN_HANDLE_DISTANCE && keyframeRef.index > 0) {
 			let

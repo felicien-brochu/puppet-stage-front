@@ -55,6 +55,11 @@
 		stroke: $yellow;
 	}
 
+	.control-handle-circle,
+	.graph-point:not(.selected) {
+		cursor: pointer;
+	}
+
 	.show-handle-button {
 		pointer-events: all;
 		fill: none;
