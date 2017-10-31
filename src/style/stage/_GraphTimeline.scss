@@ -55,6 +55,18 @@
 		stroke: $yellow;
 	}
 
+	.show-handle-button {
+		pointer-events: all;
+		fill: none;
+		stroke: $primary-color;
+		opacity: 0.5;
+
+		&:hover {
+			fill: $primary-color;
+			opacity: 1;
+		}
+	}
+
 	.graph-basic-sequence {
 		&.red {
 			stroke: $red;

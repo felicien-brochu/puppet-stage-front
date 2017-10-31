@@ -114,6 +114,7 @@ export default class SequenceEditor extends React.Component {
 					onSelectKeyframes={this.handleSelectKeyframes}
 					onSingleKeyframeMouseDown={this.handleSingleKeyframeMouseDown}
 					onBasicSequenceTimeChange={this.handleBasicSequenceTimeChange}
+					onBasicSequenceChange={this.handleBasicSequenceChange}
 				/>
 			</div>
 		)

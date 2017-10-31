@@ -32,6 +32,7 @@ export default class Timeline extends React.Component {
 		onUnselectKeyframes: PropTypes.func.isRequired,
 		onSingleKeyframeMouseDown: PropTypes.func.isRequired,
 		onBasicSequenceTimeChange: PropTypes.func.isRequired,
+		onBasicSequenceChange: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -104,6 +105,7 @@ export default class Timeline extends React.Component {
 					onSelectKeyframes={this.props.onSelectKeyframes}
 					onUnselectKeyframes={this.props.onUnselectKeyframes}
 					onSingleKeyframeMouseDown={this.props.onSingleKeyframeMouseDown}
+					onBasicSequenceChange={this.props.onBasicSequenceChange}
 				/>
 			)
 		} else {

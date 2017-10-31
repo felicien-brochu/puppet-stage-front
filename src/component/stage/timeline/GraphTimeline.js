@@ -1,8 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import colorClasses from '../colorclasses'
 import units from '../../../util/units'
+import model from '../../../util/model'
+import colorClasses from '../colorclasses'
 import KeyframeHelper from '../KeyframeHelper'
 import SelectionOverlay from './SelectionOverlay'
 
@@ -10,6 +11,9 @@ const PADDING_TOP = 30
 const PADDING_BOTTOM = 30
 const POINT_WIDTH = 6
 const HANDLE_RADIUS = 2.5
+const MIN_HANDLE_DISTANCE = POINT_WIDTH / 2 + 10
+const SHOW_HANDLE_BUTTON_DISTANCE = 15
+const SHOW_HANDLE_BUTTON_RADIUS = 3.5
 
 export default class GraphTimeline extends React.Component {
 	static propTypes = {
@@ -166,7 +170,6 @@ export default class GraphTimeline extends React.Component {
 			maxValue
 		} = this.state
 		let verticalUnit = units.choosePercentUnit(innerHeight, minValue, maxValue)
-		let valueScale = this.getValueScale()
 
 		for (let i = Math.floor(minValue / verticalUnit.interval); i <= Math.ceil(maxValue / verticalUnit.interval); i++) {
 			let value = i * verticalUnit.interval
@@ -337,13 +340,13 @@ export default class GraphTimeline extends React.Component {
 				} = keyframes[i]
 				let
 					px = this.timeToX(p.t),
-					py = this.valueToY(p.v)
+					py = this.valueToY(p.v),
+					c1x = this.timeToX(c1.t),
+					c1y = this.valueToY(c1.v),
+					c2x = this.timeToX(c2.t),
+					c2y = this.valueToY(c2.v)
 
 				if (showC1 && (c1.t !== p.t || c1.v !== p.v)) {
-					let
-						c1x = this.timeToX(c1.t),
-						c1y = this.valueToY(c1.v)
-
 					elements.push(
 						<line
 							key={`handleLineC1:${i}`}
@@ -363,11 +366,8 @@ export default class GraphTimeline extends React.Component {
 							r={HANDLE_RADIUS}/>
 					)
 				}
-				if (showC2 && (c2.t !== p.t || c2.v !== p.v)) {
-					let
-						c2x = this.timeToX(c2.t),
-						c2y = this.valueToY(c2.v)
 
+				if (showC2 && (c2.t !== p.t || c2.v !== p.v)) {
 					elements.push(
 						<line
 							key={`handleLineC2:${i}`}
@@ -388,6 +388,34 @@ export default class GraphTimeline extends React.Component {
 					)
 				}
 
+				if ((showC1 && Math.sqrt((c1x - px) ** 2 + (c1y - py) ** 2) < MIN_HANDLE_DISTANCE) ||
+					(showC2 && Math.sqrt((c2x - px) ** 2 + (c2y - py) ** 2) < MIN_HANDLE_DISTANCE)) {
+					let
+						ax = i === 0 ? 0 : this.timeToX(keyframes[i - 1].p.t),
+						ay = i === 0 ? 0 : this.valueToY(keyframes[i - 1].p.v),
+						bx = i === keyframes.length - 1 ? 0 : this.timeToX(keyframes[i + 1].p.t),
+						by = i === keyframes.length - 1 ? 0 : this.valueToY(keyframes[i + 1].p.v),
+						dx = ax - px + bx - px,
+						dy = ay - py + by - py,
+						d = Math.sqrt(dx ** 2 + dy ** 2),
+						k = -SHOW_HANDLE_BUTTON_DISTANCE / d,
+						cx = px + k * dx,
+						cy = py + k * dy
+
+
+					elements.push(
+						<circle
+							className="show-handle-button"
+							key={`showHandleButton${i}`}
+							cx={cx}
+							cy={cy}
+							r={SHOW_HANDLE_BUTTON_RADIUS}
+							onMouseDown={(e) => this.handleShowHandleMouseDown(e, {
+								sequenceID: sequence.id,
+								index: i,
+							})}/>
+					)
+				}
 
 				elements.push(
 					<rect
@@ -413,6 +441,74 @@ export default class GraphTimeline extends React.Component {
 
 			</g>
 		)
+	}
+
+	handleShowHandleMouseDown(e, keyframeRef) {
+		e.stopPropagation()
+
+		let sequence = model.getBasicSequence(this.props.sequences, keyframeRef.sequenceID)
+		sequence = JSON.parse(JSON.stringify(sequence))
+
+		let
+			keyframe = sequence.keyframes[keyframeRef.index],
+			timeScale = this.getTimeScale(),
+			valueScale = this.getValueScale(),
+			px = this.timeToX(keyframe.p.t),
+			py = this.valueToY(keyframe.p.v),
+			c1x = this.timeToX(keyframe.c1.t),
+			c1y = this.valueToY(keyframe.c1.v),
+			c2x = this.timeToX(keyframe.c2.t),
+			c2y = this.valueToY(keyframe.c2.v),
+			c1d = Math.sqrt((c1x - px) ** 2 + (c1y - py) ** 2),
+			c2d = Math.sqrt((c2x - px) ** 2 + (c2y - py) ** 2),
+			deltaT = MIN_HANDLE_DISTANCE / this.getTimeScale()
+
+		if (c1d < MIN_HANDLE_DISTANCE && keyframeRef.index > 0) {
+			let
+				k1 = sequence.keyframes[keyframeRef.index - 1],
+				refP
+			if (c1d === 0) {
+				refP = k1.p
+			} else {
+				refP = keyframe.c1
+			}
+			let
+				dx = timeScale * (refP.t - keyframe.p.t),
+				dy = valueScale * (refP.v - keyframe.p.v),
+				k = (MIN_HANDLE_DISTANCE + 1) / Math.sqrt(dx ** 2 + dy ** 2),
+				t = keyframe.p.t + (k * dx / timeScale),
+				v = keyframe.p.v + (k * dy / valueScale),
+				minT = k1.p.t,
+				minV = units.MIN_VALUE,
+				maxV = units.MAX_VALUE
+
+			keyframe.c1.t = Math.round(Math.max(t, minT))
+			keyframe.c1.v = Math.min(Math.max(v, minV), maxV)
+		}
+		if (c2d < MIN_HANDLE_DISTANCE && keyframeRef.index < sequence.keyframes.length - 1) {
+			let
+				k1 = sequence.keyframes[keyframeRef.index + 1],
+				refP
+			if (c2d === 0) {
+				refP = k1.p
+			} else {
+				refP = keyframe.c2
+			}
+			let
+				dx = timeScale * (refP.t - keyframe.p.t),
+				dy = valueScale * (refP.v - keyframe.p.v),
+				k = (MIN_HANDLE_DISTANCE + 1) / Math.sqrt(dx ** 2 + dy ** 2),
+				t = keyframe.p.t + (k * dx / timeScale),
+				v = keyframe.p.v + (k * dy / valueScale),
+				maxT = k1.p.t,
+				minV = units.MIN_VALUE,
+				maxV = units.MAX_VALUE
+
+			keyframe.c2.t = Math.round(Math.min(t, maxT))
+			keyframe.c2.v = Math.min(Math.max(v, minV), maxV)
+		}
+
+		this.props.onBasicSequenceChange(sequence, model.getBasicSequenceParent(this.props.sequences, sequence.id), true)
 	}
 
 
