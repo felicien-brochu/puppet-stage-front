@@ -388,8 +388,7 @@ export default class GraphTimeline extends React.Component {
 					)
 				}
 
-				if ((showC1 && Math.sqrt((c1x - px) ** 2 + (c1y - py) ** 2) < MIN_HANDLE_DISTANCE) ||
-					(showC2 && Math.sqrt((c2x - px) ** 2 + (c2y - py) ** 2) < MIN_HANDLE_DISTANCE)) {
+				if (showC1 || showC2) {
 					let
 						ax = i === 0 ? 0 : this.timeToX(keyframes[i - 1].p.t),
 						ay = i === 0 ? 0 : this.valueToY(keyframes[i - 1].p.v),
@@ -462,49 +461,60 @@ export default class GraphTimeline extends React.Component {
 			c1d = Math.sqrt((c1x - px) ** 2 + (c1y - py) ** 2),
 			c2d = Math.sqrt((c2x - px) ** 2 + (c2y - py) ** 2)
 
-		if (c1d < MIN_HANDLE_DISTANCE && keyframeRef.index > 0) {
+		if (c1d >= MIN_HANDLE_DISTANCE && c2d >= MIN_HANDLE_DISTANCE) {
 			let
-				k1 = sequence.keyframes[keyframeRef.index - 1],
-				refP
-			if (c1d === 0) {
-				refP = k1.p
-			} else {
-				refP = keyframe.c1
-			}
-			let
-				dx = timeScale * (refP.t - keyframe.p.t),
-				dy = valueScale * (refP.v - keyframe.p.v),
-				k = (MIN_HANDLE_DISTANCE + 1) / Math.sqrt(dx ** 2 + dy ** 2),
-				t = keyframe.p.t + (k * dx / timeScale),
-				v = keyframe.p.v + (k * dy / valueScale),
-				minT = k1.p.t,
-				minV = units.MIN_VALUE,
-				maxV = units.MAX_VALUE
+				t = keyframe.p.t,
+				v = keyframe.p.v
 
-			keyframe.c1.t = Math.round(Math.max(t, minT))
-			keyframe.c1.v = Math.min(Math.max(v, minV), maxV)
-		}
-		if (c2d < MIN_HANDLE_DISTANCE && keyframeRef.index < sequence.keyframes.length - 1) {
-			let
-				k1 = sequence.keyframes[keyframeRef.index + 1],
-				refP
-			if (c2d === 0) {
-				refP = k1.p
-			} else {
-				refP = keyframe.c2
-			}
-			let
-				dx = timeScale * (refP.t - keyframe.p.t),
-				dy = valueScale * (refP.v - keyframe.p.v),
-				k = (MIN_HANDLE_DISTANCE + 1) / Math.sqrt(dx ** 2 + dy ** 2),
-				t = keyframe.p.t + (k * dx / timeScale),
-				v = keyframe.p.v + (k * dy / valueScale),
-				maxT = k1.p.t,
-				minV = units.MIN_VALUE,
-				maxV = units.MAX_VALUE
+			keyframe.c1.t = t
+			keyframe.c1.v = v
+			keyframe.c2.t = t
+			keyframe.c2.v = v
+		} else {
+			if (c1d < MIN_HANDLE_DISTANCE && keyframeRef.index > 0) {
+				let
+					k1 = sequence.keyframes[keyframeRef.index - 1],
+					refP
+				if (c1d === 0) {
+					refP = k1.p
+				} else {
+					refP = keyframe.c1
+				}
+				let
+					dx = timeScale * (refP.t - keyframe.p.t),
+					dy = valueScale * (refP.v - keyframe.p.v),
+					k = (MIN_HANDLE_DISTANCE + 1) / Math.sqrt(dx ** 2 + dy ** 2),
+					t = keyframe.p.t + (k * dx / timeScale),
+					v = keyframe.p.v + (k * dy / valueScale),
+					minT = k1.p.t,
+					minV = units.MIN_VALUE,
+					maxV = units.MAX_VALUE
 
-			keyframe.c2.t = Math.round(Math.min(t, maxT))
-			keyframe.c2.v = Math.min(Math.max(v, minV), maxV)
+				keyframe.c1.t = Math.round(Math.max(t, minT))
+				keyframe.c1.v = Math.min(Math.max(v, minV), maxV)
+			}
+			if (c2d < MIN_HANDLE_DISTANCE && keyframeRef.index < sequence.keyframes.length - 1) {
+				let
+					k1 = sequence.keyframes[keyframeRef.index + 1],
+					refP
+				if (c2d === 0) {
+					refP = k1.p
+				} else {
+					refP = keyframe.c2
+				}
+				let
+					dx = timeScale * (refP.t - keyframe.p.t),
+					dy = valueScale * (refP.v - keyframe.p.v),
+					k = (MIN_HANDLE_DISTANCE + 1) / Math.sqrt(dx ** 2 + dy ** 2),
+					t = keyframe.p.t + (k * dx / timeScale),
+					v = keyframe.p.v + (k * dy / valueScale),
+					maxT = k1.p.t,
+					minV = units.MIN_VALUE,
+					maxV = units.MAX_VALUE
+
+				keyframe.c2.t = Math.round(Math.min(t, maxT))
+				keyframe.c2.v = Math.min(Math.max(v, minV), maxV)
+			}
 		}
 
 		this.props.onBasicSequenceChange(sequence, model.getBasicSequenceParent(this.props.sequences, sequence.id), true)
