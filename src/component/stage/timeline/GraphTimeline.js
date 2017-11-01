@@ -408,13 +408,20 @@ export default class GraphTimeline extends React.Component {
 						ay = i === 0 ? 0 : this.valueToY(keyframes[i - 1].p.v),
 						bx = i === keyframes.length - 1 ? 0 : this.timeToX(keyframes[i + 1].p.t),
 						by = i === keyframes.length - 1 ? 0 : this.valueToY(keyframes[i + 1].p.v),
-						dx = ax - px + bx - px,
-						dy = ay - py + by - py,
+						m = Math.sqrt(((bx - px) ** 2 + (by - py) ** 2) / ((ax - px) ** 2 + (ay - py) ** 2)),
+						dx = m * (ax - px) + bx - px,
+						dy = m * (ay - py) + by - py,
 						d = Math.sqrt(dx ** 2 + dy ** 2),
 						k = -SHOW_HANDLE_BUTTON_DISTANCE / d,
 						cx = px + k * dx,
 						cy = py + k * dy
 
+					if (d === 0) {
+						d = Math.sqrt((ax - px) ** 2 + (ay - py) ** 2)
+						k = -SHOW_HANDLE_BUTTON_DISTANCE / d
+						cx = px + k * (ay - py)
+						cy = py - k * (ax - px)
+					}
 
 					elements.push(
 						<circle
