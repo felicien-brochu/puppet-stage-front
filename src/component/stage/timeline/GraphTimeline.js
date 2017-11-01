@@ -7,8 +7,6 @@ import colorClasses from '../colorclasses'
 import KeyframeHelper from '../KeyframeHelper'
 import SelectionOverlay from './SelectionOverlay'
 
-const PADDING_TOP = 30
-const PADDING_BOTTOM = 30
 const POINT_WIDTH = 7
 const HANDLE_RADIUS = 3
 const MIN_HANDLE_DISTANCE = POINT_WIDTH / 2 + 10
@@ -27,6 +25,13 @@ export default class GraphTimeline extends React.Component {
 			end: PropTypes.number.isRequired,
 			width: PropTypes.number.isRequired,
 		}).isRequired,
+		paddingTop: PropTypes.number.isRequired,
+		paddingBottom: PropTypes.number.isRequired,
+
+		minValue: PropTypes.number.isRequired,
+		maxValue: PropTypes.number.isRequired,
+		startValue: PropTypes.number.isRequired,
+		endValue: PropTypes.number.isRequired,
 
 		onValueScaleChange: PropTypes.func.isRequired,
 		onSelectKeyframes: PropTypes.func.isRequired,
@@ -38,8 +43,6 @@ export default class GraphTimeline extends React.Component {
 		super(props)
 
 		this.state = {
-			minValue: 0,
-			maxValue: units.MAX_VALUE,
 			selection: {
 				selecting: false,
 				selectingKeyframes: [],
@@ -167,14 +170,14 @@ export default class GraphTimeline extends React.Component {
 
 
 		// Horizontal graduation
-		let innerHeight = height - PADDING_TOP - PADDING_BOTTOM
+		let innerHeight = height - this.props.paddingTop - this.props.paddingBottom
 		let {
-			minValue,
-			maxValue
-		} = this.state
-		let verticalUnit = units.choosePercentUnit(innerHeight, minValue, maxValue)
+			startValue,
+			endValue
+		} = this.props
+		let verticalUnit = units.choosePercentUnit(innerHeight, startValue, endValue)
 
-		for (let i = Math.floor(minValue / verticalUnit.interval); i <= Math.ceil(maxValue / verticalUnit.interval); i++) {
+		for (let i = Math.floor(startValue / verticalUnit.interval); i <= Math.ceil(endValue / verticalUnit.interval); i++) {
 			let value = i * verticalUnit.interval
 			let y = Math.round(this.valueToY(value) + 0.5) - 0.5
 
@@ -787,18 +790,18 @@ export default class GraphTimeline extends React.Component {
 	}
 
 	valueToY(value) {
-		return this.props.timeline.height - PADDING_BOTTOM - (value - this.state.minValue) * this.getValueScale()
+		return this.props.timeline.height - this.props.paddingBottom - (value - this.props.startValue) * this.getValueScale()
 	}
 
 	timeToX(t) {
 		return this.props.timeline.paddingLeft + (t - this.props.timeline.start) * this.getTimeScale()
 	}
 	getValueScale() {
-		return (this.props.timeline.height - PADDING_TOP - PADDING_BOTTOM) / (this.state.maxValue - this.state.minValue)
+		return (this.props.timeline.height - this.props.paddingTop - this.props.paddingBottom) / (this.props.endValue - this.props.startValue)
 	}
 
 	getTimeScale() {
-		return this.props.timeline.getScale()
+		return this.props.timeline.getTimeScale()
 	}
 
 	checkValueScaleChange() {

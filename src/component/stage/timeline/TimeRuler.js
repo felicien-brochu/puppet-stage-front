@@ -56,7 +56,7 @@ export default class TimeRuler extends React.Component {
 			}
 			let unit = units.chooseTimeUnit(width, timeline.start, timeline.end)
 
-			let scale = timeline.getScale()
+			let scale = timeline.getTimeScale()
 			let unitWidth = unit.interval * scale
 
 			// Out of stage time markers
@@ -166,7 +166,7 @@ export default class TimeRuler extends React.Component {
 		let scheduler = this.scheduler
 		let timeline = this.props.timeline
 		let x = scheduler.clientX - this.refs.container.getBoundingClientRect().x
-		let t = (x - timeline.paddingLeft) / timeline.getScale() + timeline.start
+		let t = (x - timeline.paddingLeft) / timeline.getTimeScale() + timeline.start
 		t = Math.max(t, 0)
 		t = Math.min(t, timeline.duration)
 

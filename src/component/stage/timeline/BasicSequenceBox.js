@@ -66,7 +66,7 @@ export default class BasicSequenceBox extends React.Component {
 			timeline,
 		} = this.props
 
-		let scale = timeline.getScale()
+		let scale = timeline.getTimeScale()
 		let x = timeline.paddingLeft + ((sequence.start - timeline.start) * scale)
 		let width = sequence.duration * scale
 
@@ -129,7 +129,7 @@ export default class BasicSequenceBox extends React.Component {
 			sequence,
 		} = this.props
 
-		let scale = timeline.getScale()
+		let scale = timeline.getTimeScale()
 		let x = timeline.paddingLeft + ((sequence.start - timeline.start) * scale)
 		let width = sequence.duration * scale
 
@@ -161,7 +161,7 @@ export default class BasicSequenceBox extends React.Component {
 
 	renderKeyframe(t, i, selected, href) {
 		let timeline = this.props.timeline
-		let x = timeline.paddingLeft + ((t - timeline.start) * timeline.getScale())
+		let x = timeline.paddingLeft + ((t - timeline.start) * timeline.getTimeScale())
 		let className = classNames("keyframe-diamond", {
 			selected: selected,
 		})
@@ -286,7 +286,7 @@ export default class BasicSequenceBox extends React.Component {
 
 		let sequenceTime
 		if (handle === 'left') {
-			let deltaT = Math.round(Math.round((clientX - startX) / this.props.timeline.getScale() / units.FRAME_TIME) * units.FRAME_TIME)
+			let deltaT = Math.round(Math.round((clientX - startX) / this.props.timeline.getTimeScale() / units.FRAME_TIME) * units.FRAME_TIME)
 			deltaT = Math.max(deltaT, -startT)
 			deltaT = Math.min(deltaT, Math.round(duration - units.FRAME_TIME))
 			sequenceTime = {
@@ -294,7 +294,7 @@ export default class BasicSequenceBox extends React.Component {
 				duration: duration - deltaT,
 			}
 		} else if (handle === 'right') {
-			let deltaT = Math.round(Math.round((clientX - startX) / this.props.timeline.getScale() / units.FRAME_TIME) * units.FRAME_TIME)
+			let deltaT = Math.round(Math.round((clientX - startX) / this.props.timeline.getTimeScale() / units.FRAME_TIME) * units.FRAME_TIME)
 			deltaT = Math.max(deltaT, -Math.round(duration - units.FRAME_TIME))
 			deltaT = Math.min(deltaT, this.props.timeline.duration - startT - duration)
 			sequenceTime = {

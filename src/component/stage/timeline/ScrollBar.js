@@ -3,13 +3,17 @@ import PropTypes from 'prop-types'
 import classNames from 'classnames'
 
 const NUB_MIN_SIZE = 2
+const SMOOTHING_DELAY = 20
 
 export default class ScrollBar extends React.Component {
 	static propTypes = {
 		orientation: PropTypes.oneOf(['horizontal', 'vertical']).isRequired,
 		contentSize: PropTypes.number.isRequired,
-		viewStart: PropTypes.number.isRequired,
-		viewEnd: PropTypes.number.isRequired,
+		contentMin: PropTypes.number.isRequired,
+		contentMax: PropTypes.number.isRequired,
+		contentStart: PropTypes.number.isRequired,
+		contentEnd: PropTypes.number.isRequired,
+
 		onScroll: PropTypes.func,
 	}
 
@@ -21,32 +25,46 @@ export default class ScrollBar extends React.Component {
 		this.handleMouseDown = this.handleMouseDown.bind(this)
 		this.handleMouseMove = this.handleMouseMove.bind(this)
 		this.handleMouseUpWindow = this.handleMouseUpWindow.bind(this)
+
+		this.scheduler = {
+			timeoutID: NaN,
+			lastModification: 0,
+			scroll: 0,
+		}
 	}
 
 	render() {
-		let viewSize = this.props.viewEnd - this.props.viewStart
+		let {
+			contentSize,
+			contentMin,
+			contentStart,
+			contentEnd,
+			orientation,
+		} = this.props
+
+		let viewSize = contentEnd - contentStart
 		let disabled = false
-		if (viewSize >= this.props.contentSize) {
+		if (viewSize >= contentSize) {
 			disabled = true
 		}
 
 		let nubSize = 100
 		let nubOffset = 0
-		if (this.props.contentSize > 0) {
-			nubSize = Math.max(viewSize / this.props.contentSize * 100, NUB_MIN_SIZE)
+		if (contentSize > 0) {
+			nubSize = Math.max(viewSize / contentSize * 100, NUB_MIN_SIZE)
 			nubSize = Math.min(nubSize, 100)
-			nubOffset = this.props.viewStart / this.props.contentSize * 100
+			nubOffset = (contentStart - contentMin) / contentSize * 100
 		}
 		nubSize = `${nubSize}%`
 		nubOffset = `${nubOffset}%`
 
 		let nubStyle = {}
-		if (this.props.orientation === 'horizontal') {
+		if (orientation === 'horizontal') {
 			nubStyle = {
 				width: nubSize,
 				left: nubOffset,
 			}
-		} else if (this.props.orientation === 'vertical') {
+		} else if (orientation === 'vertical') {
 			nubStyle = {
 				height: nubSize,
 				top: nubOffset,
@@ -57,8 +75,8 @@ export default class ScrollBar extends React.Component {
 			<div
 				ref="container"
 				className={classNames('scroll-bar', {
-					horizontal: this.props.orientation === 'horizontal',
-					vertical: this.props.orientation === 'vertical',
+					horizontal: orientation === 'horizontal',
+					vertical: orientation === 'vertical',
 				})}
 				onClick={this.handleBackgroundClick}
 				disabled={disabled}
@@ -76,33 +94,41 @@ export default class ScrollBar extends React.Component {
 	}
 
 	handleBackgroundClick(e) {
+		let {
+			contentMin,
+			contentMax,
+			contentStart,
+			contentEnd,
+			orientation,
+		} = this.props
 		let nubRect = this.refs.nub.getBoundingClientRect()
 		let scroll = 0
-		let viewSize = this.props.viewEnd - this.props.viewStart
+		let viewSize = contentEnd - contentStart
 
 		let nubStart = 0
 		let clickPosition = 0
 		let nubSize = 0
 
-		if (this.props.orientation === 'horizontal') {
+		if (orientation === 'horizontal') {
 			nubStart = nubRect.x
 			clickPosition = e.clientX
 			nubSize = nubRect.width
-		} else if (this.props.orientation === 'vertical') {
+		} else if (orientation === 'vertical') {
 			nubStart = nubRect.y
 			clickPosition = e.clientY
 			nubSize = nubRect.height
 		}
 
 		if (clickPosition < nubStart) {
-			scroll = this.props.viewStart - viewSize
+			scroll = contentStart - viewSize
 		} else if (clickPosition > nubStart + nubSize) {
-			scroll = this.props.viewStart + viewSize
+			scroll = contentStart + viewSize
 		}
 
-		if (scroll !== 0) {
-			this.fireScroll(scroll)
-		}
+		scroll = Math.max(scroll, contentMin)
+		scroll = Math.min(scroll, contentMax - viewSize)
+
+		this.fireScroll(scroll)
 	}
 
 	handleNubClick(e) {
@@ -126,8 +152,22 @@ export default class ScrollBar extends React.Component {
 	handleMouseMove(e) {
 		if (this.dragging) {
 			let rate = this.getDraggingRate(e)
-			this.fireScroll(rate * this.props.contentSize)
+			let scheduler = this.scheduler
+			scheduler.scroll = rate * this.props.contentSize + this.props.contentMin
+
+			if (isNaN(scheduler.timeoutID)) {
+				let now = new Date().getTime()
+				let delay = Math.max(SMOOTHING_DELAY - now + scheduler.lastModification, 0)
+				scheduler.timeoutID = window.setTimeout(this.fireScrollAsync.bind(this), delay)
+			}
 		}
+	}
+
+	fireScrollAsync() {
+		let scheduler = this.scheduler
+		this.fireScroll(scheduler.scroll)
+		scheduler.timeoutID = NaN
+		scheduler.lastModification = new Date().getTime()
 	}
 
 	fireScroll(scroll) {
@@ -166,7 +206,7 @@ export default class ScrollBar extends React.Component {
 		let start = offset - this.dragOffset
 		let rate = start / size
 
-		let viewRate = Math.min((this.props.viewEnd - this.props.viewStart) / this.props.contentSize, 1)
+		let viewRate = Math.min((this.props.contentEnd - this.props.contentStart) / this.props.contentSize, 1)
 		if (rate + viewRate > 1) {
 			rate = 1 - viewRate
 		}

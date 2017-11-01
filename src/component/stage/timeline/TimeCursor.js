@@ -11,9 +11,9 @@ export default class TimeCursor extends React.Component {
 			paddingLeft,
 			start,
 			height,
-			getScale
+			getTimeScale
 		} = this.props.timeline
-		let x = paddingLeft + (this.props.currentTime - start) * getScale()
+		let x = paddingLeft + (this.props.currentTime - start) * getTimeScale()
 
 		return (
 			<svg className="time-cursor">

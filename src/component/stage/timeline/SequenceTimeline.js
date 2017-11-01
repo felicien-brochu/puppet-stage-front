@@ -14,6 +14,7 @@ export default class SequenceTimeline extends React.Component {
 			end: PropTypes.number.isRequired,
 			width: PropTypes.number.isRequired,
 		}).isRequired,
+		scrollY: PropTypes.number.isRequired,
 
 		onSelectKeyframes: PropTypes.func.isRequired,
 		onUnselectKeyframes: PropTypes.func.isRequired,
@@ -45,6 +46,10 @@ export default class SequenceTimeline extends React.Component {
 		this.handleMouseMoveWindow = this.handleMouseMoveWindow.bind(this)
 	}
 
+	getContentHeight() {
+		return this.sequenceList.getBoundingClientRect().height
+	}
+
 	render() {
 		let driverSequences = []
 		for (let i = 0; i < this.props.sequences.length; i++) {
@@ -72,7 +77,10 @@ export default class SequenceTimeline extends React.Component {
 				<SelectionOverlay selection={this.state.selection}/>
 				<ul
 					className="sequence-timeline"
-				ref="sequenceList">
+					ref={sequenceList => this.sequenceList = sequenceList}
+					style={{
+						top: -this.props.scrollY,
+					}}>
 					{driverSequences}
 				</ul>
 			</div>
@@ -179,5 +187,9 @@ export default class SequenceTimeline extends React.Component {
 			keyframes = keyframes.concat(sequence.getSelectingKeyframes(selectionRect))
 		}
 		return keyframes
+	}
+
+	getTimeScale() {
+		return this.props.timeline.getTimeScale()
 	}
 }

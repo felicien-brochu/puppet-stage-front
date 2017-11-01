@@ -22,7 +22,7 @@ export default class DriverSequenceBox extends React.Component {
 		let seqStart = this.computeStart()
 		let seqDuration = this.computeEnd() - seqStart
 
-		let scale = timeline.getScale()
+		let scale = timeline.getTimeScale()
 		let x = timeline.paddingLeft + ((seqStart - timeline.start) * scale)
 		let width = seqDuration * scale
 
