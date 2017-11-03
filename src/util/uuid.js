@@ -9,7 +9,7 @@ fetchUUIDs(200)
 
 function fetchUUIDs(number, errorMessage = "Error retrieving uuids: ") {
 	if (!fetchingPromise) {
-		let path = host + `/uuids/?n=${number}`
+		let path = `http://${host}/uuids/?n=${number}`
 		errorMessage += "(" + path + ") "
 		fetchingPromise = new Promise((resolve, reject) => {
 			fetch(path, {

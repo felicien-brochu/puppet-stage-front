@@ -4,12 +4,13 @@ import Alert from 'react-s-alert'
 import {
 	Loader
 } from 'react-loaders'
-import SequenceEditor from './SequenceEditor'
-import StageHistory from './StageHistory'
 import fetchAPI from '../../util/api'
 import {
 	entries
 } from '../../util/utils'
+import StageHistory from './StageHistory'
+import Player from './Player'
+import SequenceEditor from './SequenceEditor'
 
 export default class StageEditor extends React.Component {
 
@@ -19,21 +20,31 @@ export default class StageEditor extends React.Component {
 		this.state = {
 			puppet: null,
 			stage: null,
+			currentTime: 0,
+			playing: false,
 		}
 
 		this.handleStageChange = this.handleStageChange.bind(this)
+		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
+		this.handleCurrentPlayTimeChange = this.handleCurrentPlayTimeChange.bind(this)
+		this.handlePlayStart = this.handlePlayStart.bind(this)
+		this.handlePlayStop = this.handlePlayStop.bind(this)
 		this.handleSaveStateChange = this.handleSaveStateChange.bind(this)
 		this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this)
 		this.handleGlobalWheel = this.handleGlobalWheel.bind(this)
+		this.handleStartStopPlayer = this.handleStartStopPlayer.bind(this)
 
 		this.stageID = props.match.params.id
 		this.history = new StageHistory(this.stageID, this.handleSaveStateChange)
 		this.keyBindings = {
+			none: {
+				' ': this.handleStartStopPlayer,
+			},
 			ctrl: {
 				z: this.handleHistoryPrevious,
 				y: this.handleHistoryNext,
 				s: this.handleSave,
-			}
+			},
 		}
 	}
 
@@ -65,8 +76,13 @@ export default class StageEditor extends React.Component {
 					<SequenceEditor
 						stage={this.state.stage}
 						puppet={this.state.puppet}
+						currentTime={this.state.currentTime}
+						playing={this.state.playing}
 						saveState={this.state.saveState}
 						onStageChange={this.handleStageChange}
+						onCurrentTimeChange={this.handleCurrentTimeChange}
+						onStartPlaying={this.handleStartStopPlayer}
+						onStopPlaying={this.handleStartStopPlayer}
 					/>
 					{/* </SplitPane> */}
 
@@ -95,9 +111,32 @@ export default class StageEditor extends React.Component {
 			this.history.push(stage)
 		}
 
+		if (this.player) {
+			this.player.preview(stage, this.state.currentTime)
+		}
+
 		this.setState({
 			stage: stage,
 			saveState: this.history.getSaveState(),
+		})
+	}
+
+	handleCurrentTimeChange(currentTime) {
+		if (this.player) {
+			if (this.state.playing) {
+				this.player.stop()
+			}
+			this.player.preview(this.state.stage, currentTime)
+		}
+
+		this.setState({
+			currentTime: currentTime,
+		})
+	}
+
+	handleCurrentPlayTimeChange(time) {
+		this.setState({
+			currentTime: time,
 		})
 	}
 
@@ -112,6 +151,8 @@ export default class StageEditor extends React.Component {
 	}
 
 	handlePuppetRetrieved(puppet) {
+		this.player = new Player(puppet.id, this.handleCurrentPlayTimeChange, this.handlePlayStart, this.handlePlayStop)
+
 		this.setState({
 			puppet: puppet,
 		})
@@ -133,7 +174,16 @@ export default class StageEditor extends React.Component {
 
 	handleKeyBindings(e) {
 		if (e.ctrlKey) {
-			for (let [key, handler] of entries()(this.keyBindings.ctrl))
+			for (let [key, handler] of entries()(this.keyBindings.ctrl)) {
+				if (e.key === key) {
+					handler.bind(this)(e)
+					e.stopPropagation()
+					e.preventDefault()
+					break
+				}
+			}
+		} else {
+			for (let [key, handler] of entries()(this.keyBindings.none))
 				if (e.key === key) {
 					handler.bind(this)(e)
 					e.stopPropagation()
@@ -169,6 +219,32 @@ export default class StageEditor extends React.Component {
 		if (saveState !== this.state.saveState) {
 			this.setState({
 				saveState: saveState,
+			})
+		}
+	}
+
+	handleStartStopPlayer() {
+		if (this.player) {
+			if (!this.player.started) {
+				this.player.play(this.state.stage, this.state.currentTime)
+			} else {
+				this.player.stop()
+			}
+		}
+	}
+
+	handlePlayStop() {
+		if (this.state.playing) {
+			this.setState({
+				playing: false,
+			})
+		}
+	}
+
+	handlePlayStart() {
+		if (!this.state.playing) {
+			this.setState({
+				playing: true,
 			})
 		}
 	}

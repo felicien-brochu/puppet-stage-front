@@ -30,7 +30,6 @@ export default class PuppetEditor extends React.Component {
 		this.handlePuppetRetrieved = this.handlePuppetRetrieved.bind(this)
 		this.handleCreateBoardSuccess = this.handleCreateBoardSuccess.bind(this)
 		this.handleConnectBoardClick = this.handleConnectBoardClick.bind(this)
-		this.handleConnectBoardSuccess = this.handleConnectBoardSuccess.bind(this)
 		this.handleSaveClick = this.handleSaveClick.bind(this)
 		this.handleBoardSelect = this.handleBoardSelect.bind(this)
 		this.handleServoSelect = this.handleServoSelect.bind(this)
@@ -195,17 +194,6 @@ export default class PuppetEditor extends React.Component {
 	}
 
 	handleConnectBoardClick() {
-		fetchAPI(
-			"/puppet/" + this.state.puppet.id + "/board/" + this.state.selectedBoard.id + "/start", {
-				method: 'POST'
-			},
-			this.handleConnectBoardSuccess,
-			null,
-			"Connect board error: "
-		)
-	}
-
-	handleConnectBoardSuccess() {
 		let boardWebsocket = new WebSocket("ws://localhost:8080/puppet/" + this.state.puppet.id + "/board/" + this.state.selectedBoard.id + "/websocket")
 		this.setState({
 			boardWebsocket: boardWebsocket

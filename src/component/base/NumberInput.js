@@ -130,7 +130,7 @@ export default class NumberInput extends React.Component {
 		this.startValue = parseFloat(this.state.value)
 		this.setState({
 			editing: 'text',
-			value: this.state.value.trim(),
+			value: `${this.state.value}`.trim(),
 		})
 		this.input.select()
 	}

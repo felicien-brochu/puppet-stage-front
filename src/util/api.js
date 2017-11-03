@@ -1,10 +1,10 @@
 import alert from './alert'
 
-let host = "http://localhost:8080"
+let host = "localhost:8080"
 
 function fetchAPI(path, conf, onSuccess, onError, errorMessage = "Error: ") {
 	conf.mode = 'cors'
-	let completePath = host + path
+	let completePath = 'http://' + host + path
 	let method = conf.method ? conf.method : "GET"
 	errorMessage += ` ${method}(${completePath})`
 	fetch(completePath, conf)

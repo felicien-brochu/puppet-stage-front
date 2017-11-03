@@ -25,6 +25,7 @@ export default class SequenceList extends React.Component {
 	static propTypes = {
 		puppet: PropTypes.object.isRequired,
 		stage: PropTypes.object.isRequired,
+		playing: PropTypes.bool.isRequired,
 		scrollY: PropTypes.number.isRequired,
 		currentTime: PropTypes.number.isRequired,
 		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
@@ -36,6 +37,8 @@ export default class SequenceList extends React.Component {
 		onBasicSequenceChange: PropTypes.func.isRequired,
 		onGoToTime: PropTypes.func.isRequired,
 		onShowGraphChange: PropTypes.func.isRequired,
+		onStartPlaying: PropTypes.func.isRequired,
+		onStopPlaying: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -76,6 +79,15 @@ export default class SequenceList extends React.Component {
 			>
 				<SequenceListActionBar
 					saveState={this.props.saveState}
+					
+					currentTime={this.props.currentTime}
+					stageDuration={this.props.stage.duration}
+					playing={this.props.playing}
+					onStartPlaying={this.props.onStartPlaying}
+					onStopPlaying={this.props.onStopPlaying}
+
+					onGoToTime={this.props.onGoToTime}
+
 					showGraph={this.props.showGraph}
 					onShowGraphChange={this.props.onShowGraphChange}/>
 

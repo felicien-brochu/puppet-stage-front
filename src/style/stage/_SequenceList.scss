@@ -320,7 +320,6 @@
 	svg.button-icon {
 		width: 16px;
 		height: 16px;
-		// background-color: $selected-background-color;
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -328,5 +327,41 @@
 		bottom: 0;
 		stroke-width: 0;
 		visibility: hidden;
+	}
+}
+
+.player-control {
+	height: 24px;
+	align-self: center;
+
+	.player-button {
+		width: 23px;
+		height: 24px;
+		margin: 0;
+		padding: 0;
+		border: none;
+		background-color: $active-background-color;
+		border-radius: 1px;
+		padding: 0 3px;
+
+		&:disabled {
+			svg.button-icon {
+				fill: $inactive-color;
+			}
+
+			&:active {
+				background-color: $active-background-color;
+			}
+		}
+
+		&:active {
+			background-color: $background-color;
+		}
+
+		svg.button-icon {
+			width: 100%;
+			height: 100%;
+			fill: $primary-color;
+		}
 	}
 }

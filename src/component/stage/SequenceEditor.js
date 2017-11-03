@@ -4,6 +4,7 @@ import model from '../../util/model'
 import {
 	entries
 } from '../../util/utils'
+import units from '../../util/units'
 import KeyframeHelper from './KeyframeHelper'
 import SequenceList from './sequence-list/SequenceList'
 import Timeline from './timeline/Timeline'
@@ -13,8 +14,13 @@ export default class SequenceEditor extends React.Component {
 	static propTypes = {
 		stage: PropTypes.object.isRequired,
 		puppet: PropTypes.object.isRequired,
+		currentTime: PropTypes.number.isRequired,
+		playing: PropTypes.bool.isRequired,
 		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
 		onStageChange: PropTypes.func.isRequired,
+		onCurrentTimeChange: PropTypes.func.isRequired,
+		onStartPlaying: PropTypes.func.isRequired,
+		onStopPlaying: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -23,10 +29,9 @@ export default class SequenceEditor extends React.Component {
 		this.state = {
 			scrollY: 0,
 			selectedKeyframes: [],
-			currentTime: 0,
 			startTime: 0,
 			endTime: props.stage.duration,
-			showGraph: true,
+			showGraph: false,
 		}
 
 		this.handleScrollY = this.handleScrollY.bind(this)
@@ -48,6 +53,10 @@ export default class SequenceEditor extends React.Component {
 		this.handleDeleteSelectedKeyframes = this.handleDeleteSelectedKeyframes.bind(this)
 		this.handleKeyBindings = this.handleKeyBindings.bind(this)
 		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
+		this.handleGoToStart = this.handleGoToStart.bind(this)
+		this.handleGoToEnd = this.handleGoToEnd.bind(this)
+		this.handleGoToPrevFrame = this.handleGoToPrevFrame.bind(this)
+		this.handleGoToNextFrame = this.handleGoToNextFrame.bind(this)
 
 
 		this.translation = {}
@@ -56,6 +65,10 @@ export default class SequenceEditor extends React.Component {
 		this.keyBindings = {
 			Delete: this.handleDeleteSelectedKeyframes,
 			Tab: this.handleToggleGraph,
+			Home: this.handleGoToStart,
+			End: this.handleGoToEnd,
+			ArrowRight: this.handleGoToNextFrame,
+			ArrowLeft: this.handleGoToPrevFrame,
 		}
 	}
 
@@ -83,11 +96,14 @@ export default class SequenceEditor extends React.Component {
 				<SequenceList
 					stage={this.props.stage}
 					puppet={this.props.puppet}
+					playing={this.props.playing}
 					saveState={this.props.saveState}
-					currentTime={this.state.currentTime}
+					currentTime={this.props.currentTime}
 					scrollY={this.state.scrollY}
 					showGraph={this.state.showGraph}
 
+					onStartPlaying={this.props.onStartPlaying}
+					onStopPlaying={this.props.onStopPlaying}
 					onScrollY={this.handleScrollY}
 					onNewDriverSequence={this.handleNewDriverSequence}
 					onDriverSequenceChange={this.handleDriverSequenceChange}
@@ -100,7 +116,7 @@ export default class SequenceEditor extends React.Component {
 					stage={this.props.stage}
 					scrollY={this.state.scrollY}
 					selectedKeyframes={this.state.selectedKeyframes}
-					currentTime={this.state.currentTime}
+					currentTime={this.props.currentTime}
 					startTime={this.state.startTime}
 					endTime={this.state.endTime}
 					showGraph={this.state.showGraph}
@@ -186,8 +202,11 @@ export default class SequenceEditor extends React.Component {
 					<polygon id="keyframe-button-shape" points="50,20 80,50 50,80 20,50"/>
 
 
-					<path id="eye-shape" d="M9,50c22.8,29.3,59.2,29.3,82,0C72.8,20.7,27.2,20.7,9,50z M50,65c-8.3,0-15-6.7-15-15s6.7-15,15-15
-					s15,6.7,15,15S58.3,65,50,65z"/>
+					<path id="eye-shape"
+						d="M50,24.6c-18.1,0-33.9,10.2-41.9,25.1c8,15,23.7,25.1,41.9,25.1s33.9-10.2,41.9-25.1
+						C83.9,34.8,68.1,24.6,50,24.6z M50,63c-7.4,0-13.3-6-13.3-13.3c0-7.4,6-13.3,13.3-13.3
+						s13.3,6,13.3,13.3C63.3,57.1,57.4,63,50,63z"
+					/>
 
 					<circle id="point-shape" cx="50" cy="50" r="25"/>
 
@@ -207,6 +226,33 @@ export default class SequenceEditor extends React.Component {
 						<line x1="56" y1="30" x2="56" y2="20"/>
 						<line x1="40" y1="30" x2="40" y2="16"/>
 						<line x1="74" y1="30" x2="74" y2="16"/>
+					</g>
+
+
+
+					<polygon id="play-button-shape" points="18,10 18,65 23,65 82,37.5 23,10 "/>
+
+					<rect id="stop-button-shape" x="22.5" y="10" width="55" height="55"/>
+
+					<g id="prev-frame-button-shape" transform="translate(92, 75) rotate(-180)">
+						<polygon points="27.5 65 86.5 37.5 27.5 10 27.5 65"/>
+						<rect x="0" y="12" width="14" height="51"/>
+					</g>
+
+
+					<g id="next-frame-button-shape" transform="translate(8, 0)">
+						<polygon points="27.5 65 86.5 37.5 27.5 10 27.5 65"/>
+						<rect x="0" y="12" width="14" height="51"/>
+					</g>
+
+					<g id="first-frame-button-shape" transform="translate(100 75) rotate(-180)">
+						<polygon points="16 65 75 37.5 16 10 16 65"/>
+						<rect x="75" y="10" width="12" height="55"/>
+					</g>
+
+					<g id="last-frame-button-shape">
+						<polygon points="16 65 75 37.5 16 10 16 65"/>
+						<rect x="75" y="10" width="12" height="55"/>
 					</g>
 				</defs>
 			</svg>
@@ -272,9 +318,7 @@ export default class SequenceEditor extends React.Component {
 	}
 
 	handleCurrentTimeChange(time) {
-		this.setState({
-			currentTime: time,
-		})
+		this.props.onCurrentTimeChange(time)
 	}
 
 	handleTimeWindowChange(startTime, endTime) {
@@ -406,13 +450,9 @@ export default class SequenceEditor extends React.Component {
 			this.setState({
 				startTime: startTime,
 				endTime: endTime,
-				currentTime: t,
-			})
-		} else {
-			this.setState({
-				currentTime: t,
 			})
 		}
+		this.props.onCurrentTimeChange(t)
 	}
 
 	handleBasicSequenceTimeChange(basicSequenceID, start, duration, confirmed) {
@@ -433,5 +473,33 @@ export default class SequenceEditor extends React.Component {
 		this.setState({
 			showGraph: !this.state.showGraph,
 		})
+	}
+
+
+	handleGoToStart(e) {
+		if (this.props.currentTime > 0) {
+			this.handleGoToTime(0)
+		}
+	}
+
+	handleGoToEnd(e) {
+		if (this.props.currentTime < this.props.stage.duration) {
+			this.handleGoToTime(this.props.stage.duration)
+		}
+	}
+
+	handleGoToPrevFrame(e) {
+		if (this.props.currentTime > 0) {
+			let t = Math.round((Math.round(this.props.currentTime / units.FRAME_TIME) - 1) * units.FRAME_TIME)
+
+			this.handleGoToTime(t)
+		}
+	}
+
+	handleGoToNextFrame(e) {
+		if (this.props.currentTime < this.props.stage.duration) {
+			let t = Math.round((Math.round(this.props.currentTime / units.FRAME_TIME) + 1) * units.FRAME_TIME)
+			this.handleGoToTime(t)
+		}
 	}
 }
