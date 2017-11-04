@@ -10,6 +10,7 @@ import {
 } from 'react-contextmenu'
 import DriverSequenceModal from './modal/DriverSequenceModal'
 import BasicSequenceModal from './modal/BasicSequenceModal'
+import ConfirmModal from './modal/ConfirmModal'
 import DriverSequenceItem from './DriverSequenceItem'
 import SequenceListActionBar from './SequenceListActionBar'
 
@@ -17,8 +18,10 @@ import SequenceListActionBar from './SequenceListActionBar'
 const
 	NEW_DRIVER_SEQUENCE = "NEW_DRIVER_SEQUENCE",
 	EDIT_DRIVER_SEQUENCE = "EDIT_DRIVER_SEQUENCE",
+	REMOVE_DRIVER_SEQUENCE = "REMOVE_DRIVER_SEQUENCE",
 	ADD_BASIC_SEQUENCE = "ADD_BASIC_SEQUENCE",
-	EDIT_BASIC_SEQUENCE = "EDIT_BASIC_SEQUENCE"
+	EDIT_BASIC_SEQUENCE = "EDIT_BASIC_SEQUENCE",
+	REMOVE_BASIC_SEQUENCE = "REMOVE_BASIC_SEQUENCE"
 
 export default class SequenceList extends React.Component {
 
@@ -33,6 +36,7 @@ export default class SequenceList extends React.Component {
 
 		onNewDriverSequence: PropTypes.func.isRequired,
 		onDriverSequenceChange: PropTypes.func.isRequired,
+		onRemoveDriverSequence: PropTypes.func.isRequired,
 		onNewBasicSequence: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
 		onGoToTime: PropTypes.func.isRequired,
@@ -55,6 +59,14 @@ export default class SequenceList extends React.Component {
 				driverSequence: null,
 				sequence: null,
 			},
+
+			confirmModal: {
+				show: false,
+				target: null,
+				title: "Confirmation",
+				message: "Are you sure?",
+				onConfirm: null,
+			}
 		}
 
 		this.handleContextMenuClick = this.handleContextMenuClick.bind(this)
@@ -64,8 +76,11 @@ export default class SequenceList extends React.Component {
 		this.handleCreateDriverSequence = this.handleCreateDriverSequence.bind(this)
 		this.handleCreateUpdateDriverSequence = this.handleCreateUpdateDriverSequence.bind(this)
 		this.handleCancelDriverSequenceModal = this.handleCancelDriverSequenceModal.bind(this)
+		this.handleRemoveDriverSequenceConfirm = this.handleRemoveDriverSequenceConfirm.bind(this)
 		this.handleCreateUpdateBasicSequence = this.handleCreateUpdateBasicSequence.bind(this)
 		this.handleCancelBasicSequenceModal = this.handleCancelBasicSequenceModal.bind(this)
+		this.handleRemoveBasicSequenceConfirm = this.handleRemoveBasicSequenceConfirm.bind(this)
+		this.handleConfirmModalCancel = this.handleConfirmModalCancel.bind(this)
 	}
 
 	render() {
@@ -79,7 +94,7 @@ export default class SequenceList extends React.Component {
 			>
 				<SequenceListActionBar
 					saveState={this.props.saveState}
-					
+
 					currentTime={this.props.currentTime}
 					stageDuration={this.props.stage.duration}
 					playing={this.props.playing}
@@ -110,7 +125,13 @@ export default class SequenceList extends React.Component {
 						data={{action: EDIT_DRIVER_SEQUENCE}}
 						onClick={this.handleContextMenuClick}
 					>
-						Edit Driver Sequence
+						Edit
+					</MenuItem>
+					<MenuItem
+						data={{action: REMOVE_DRIVER_SEQUENCE}}
+						onClick={this.handleContextMenuClick}
+					>
+						Remove
 					</MenuItem>
 					<MenuItem
 						data={{action: ADD_BASIC_SEQUENCE}}
@@ -125,7 +146,13 @@ export default class SequenceList extends React.Component {
 						data={{action: EDIT_BASIC_SEQUENCE}}
 						onClick={this.handleContextMenuClick}
 					>
-						Edit Basic Sequence
+						Edit
+					</MenuItem>
+					<MenuItem
+						data={{action: REMOVE_BASIC_SEQUENCE}}
+						onClick={this.handleContextMenuClick}
+					>
+						Remove
 					</MenuItem>
 				</ContextMenu>
 
@@ -192,6 +219,19 @@ export default class SequenceList extends React.Component {
 				/>
 			)
 		}
+		if (this.state.confirmModal.show) {
+			modals.push(
+				<ConfirmModal
+				key="ConfirmModal"
+				isOpen={this.state.confirmModal.show}
+				target={this.state.confirmModal.target}
+				title={this.state.confirmModal.title}
+				message={this.state.confirmModal.message}
+				onConfirm={this.state.confirmModal.onConfirm}
+				onCancel={this.handleConfirmModalCancel}
+			/>
+			)
+		}
 		return (
 			<div>
 
@@ -209,11 +249,17 @@ export default class SequenceList extends React.Component {
 			case EDIT_DRIVER_SEQUENCE:
 				this.handleEditDriverSequence(data.sequence)
 				break
+			case REMOVE_DRIVER_SEQUENCE:
+				this.handleRemoveDriverSequence(data.sequence)
+				break
 			case ADD_BASIC_SEQUENCE:
 				this.handleAddBasicSequence(data.sequence)
 				break
 			case EDIT_BASIC_SEQUENCE:
 				this.handleEditBasicSequence(data.sequence)
+				break
+			case REMOVE_BASIC_SEQUENCE:
+				this.handleRemoveBasicSequence(data.sequence)
 				break
 			default:
 				console.warn(`ContextMenu: action ${data.action} not supported`)
@@ -285,13 +331,30 @@ export default class SequenceList extends React.Component {
 		})
 	}
 
+	handleRemoveDriverSequence(sequence) {
+		this.setState({
+			confirmModal: {
+				show: true,
+				target: sequence,
+				title: "Remove Driver Sequence",
+				message: "Are you sure you want to remove this driver sequence?",
+				onConfirm: this.handleRemoveDriverSequenceConfirm,
+			},
+		})
+	}
+
+	handleRemoveDriverSequenceConfirm(sequence) {
+		this.props.onRemoveDriverSequence(sequence)
+		this.hideConfirmModal()
+	}
+
 	handleAddBasicSequence(driverSequence) {
 		this.setState({
 			basicSequenceModal: {
 				show: true,
 				driverSequence: driverSequence,
 				sequence: null,
-			}
+			},
 		})
 	}
 
@@ -300,7 +363,7 @@ export default class SequenceList extends React.Component {
 			driverSequenceModal: {
 				show: false,
 				sequence: null,
-			}
+			},
 		})
 	}
 
@@ -311,7 +374,7 @@ export default class SequenceList extends React.Component {
 				show: true,
 				driverSequence: driverSequence,
 				sequence: sequence,
-			}
+			},
 		})
 	}
 
@@ -343,8 +406,8 @@ export default class SequenceList extends React.Component {
 				previewEnabled: false,
 				showGraph: false,
 				keyframes: [],
-
 			}
+
 			if (typeof this.props.onNewBasicSequence === 'function') {
 				this.props.onNewBasicSequence(sequence, driverSequence)
 			}
@@ -354,7 +417,7 @@ export default class SequenceList extends React.Component {
 					show: false,
 					sequence: null,
 					driverSequence: null,
-				}
+				},
 			})
 		}).catch((error) => {
 			console.error(error)
@@ -371,8 +434,33 @@ export default class SequenceList extends React.Component {
 				show: false,
 				sequence: null,
 				driverSequence: null,
-			}
+			},
 		})
+	}
+
+	handleRemoveBasicSequence(sequence) {
+		this.setState({
+			confirmModal: {
+				show: true,
+				target: sequence,
+				title: "Remove Basic Sequence",
+				message: "Are you sure you want to remove this basic sequence?",
+				onConfirm: this.handleRemoveBasicSequenceConfirm,
+			},
+		})
+	}
+
+	handleRemoveBasicSequenceConfirm(sequence) {
+		let driverSequence = model.getBasicSequenceParent(this.props.stage.sequences, sequence.id)
+		driverSequence = JSON.parse(JSON.stringify(driverSequence))
+		for (let i = 0; i < driverSequence.sequences.length; i++) {
+			if (driverSequence.sequences[i].id === sequence.id) {
+				driverSequence.sequences.splice(i, 1)
+				break
+			}
+		}
+		this.props.onDriverSequenceChange(driverSequence)
+		this.hideConfirmModal()
 	}
 
 	handleCancelBasicSequenceModal() {
@@ -381,7 +469,23 @@ export default class SequenceList extends React.Component {
 				show: false,
 				sequence: null,
 				driverSequence: null,
-			}
+			},
+		})
+	}
+
+	handleConfirmModalCancel() {
+		this.hideConfirmModal()
+	}
+
+	hideConfirmModal() {
+		this.setState({
+			confirmModal: {
+				show: false,
+				target: null,
+				title: "Confirmation",
+				message: "Are you sure?",
+				onConfirm: null,
+			},
 		})
 	}
 

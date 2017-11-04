@@ -37,6 +37,7 @@ export default class SequenceEditor extends React.Component {
 		this.handleScrollY = this.handleScrollY.bind(this)
 		this.handleNewDriverSequence = this.handleNewDriverSequence.bind(this)
 		this.handleDriverSequenceChange = this.handleDriverSequenceChange.bind(this)
+		this.handleRemoveDriverSequence = this.handleRemoveDriverSequence.bind(this)
 		this.handleNewBasicSequence = this.handleNewBasicSequence.bind(this)
 		this.handleBasicSequenceChange = this.handleBasicSequenceChange.bind(this)
 		this.handleTimeScaleChange = this.handleTimeScaleChange.bind(this)
@@ -46,19 +47,21 @@ export default class SequenceEditor extends React.Component {
 		this.handleSingleKeyframeMouseDown = this.handleSingleKeyframeMouseDown.bind(this)
 		this.handleTranslateKeyframesStop = this.handleTranslateKeyframesStop.bind(this)
 		this.handleTranslateKeyframes = this.handleTranslateKeyframes.bind(this)
-		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
 		this.handleTimeWindowChange = this.handleTimeWindowChange.bind(this)
-		this.handleGoToTime = this.handleGoToTime.bind(this)
 		this.handleBasicSequenceTimeChange = this.handleBasicSequenceTimeChange.bind(this)
 		this.handleDeleteSelectedKeyframes = this.handleDeleteSelectedKeyframes.bind(this)
-		this.handleKeyBindings = this.handleKeyBindings.bind(this)
 		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
+
+		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
+		this.handleGoToTime = this.handleGoToTime.bind(this)
 		this.handleGoToStart = this.handleGoToStart.bind(this)
 		this.handleGoToEnd = this.handleGoToEnd.bind(this)
 		this.handleGoToPrevFrame = this.handleGoToPrevFrame.bind(this)
 		this.handleGoToNextFrame = this.handleGoToNextFrame.bind(this)
 		this.handleGoToPrevSecond = this.handleGoToPrevSecond.bind(this)
 		this.handleGoToNextSecond = this.handleGoToNextSecond.bind(this)
+
+		this.handleKeyBindings = this.handleKeyBindings.bind(this)
 
 
 		this.translation = {}
@@ -115,6 +118,7 @@ export default class SequenceEditor extends React.Component {
 					onScrollY={this.handleScrollY}
 					onNewDriverSequence={this.handleNewDriverSequence}
 					onDriverSequenceChange={this.handleDriverSequenceChange}
+					onRemoveDriverSequence={this.handleRemoveDriverSequence}
 					onNewBasicSequence={this.handleNewBasicSequence}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
 					onGoToTime={this.handleGoToTime}
@@ -280,6 +284,14 @@ export default class SequenceEditor extends React.Component {
 		stage.sequences[index] = sequence
 
 		this.fireStageChange(stage, save)
+	}
+
+	handleRemoveDriverSequence(sequence) {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let index = model.indexOfID(this.props.stage.sequences, sequence.id)
+		stage.sequences.splice(index, 1)
+
+		this.fireStageChange(stage, true)
 	}
 
 	handleNewBasicSequence(sequence, selectedDriverSequence) {
