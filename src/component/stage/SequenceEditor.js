@@ -57,18 +57,26 @@ export default class SequenceEditor extends React.Component {
 		this.handleGoToEnd = this.handleGoToEnd.bind(this)
 		this.handleGoToPrevFrame = this.handleGoToPrevFrame.bind(this)
 		this.handleGoToNextFrame = this.handleGoToNextFrame.bind(this)
+		this.handleGoToPrevSecond = this.handleGoToPrevSecond.bind(this)
+		this.handleGoToNextSecond = this.handleGoToNextSecond.bind(this)
 
 
 		this.translation = {}
 		this.timeScale = 1
 		this.valueScale = 1
 		this.keyBindings = {
-			Delete: this.handleDeleteSelectedKeyframes,
-			Tab: this.handleToggleGraph,
-			Home: this.handleGoToStart,
-			End: this.handleGoToEnd,
-			ArrowRight: this.handleGoToNextFrame,
-			ArrowLeft: this.handleGoToPrevFrame,
+			ctrl: {
+				ArrowLeft: this.handleGoToPrevSecond,
+				ArrowRight: this.handleGoToNextSecond,
+			},
+			none: {
+				Delete: this.handleDeleteSelectedKeyframes,
+				Tab: this.handleToggleGraph,
+				Home: this.handleGoToStart,
+				End: this.handleGoToEnd,
+				ArrowLeft: this.handleGoToPrevFrame,
+				ArrowRight: this.handleGoToNextFrame,
+			},
 		}
 	}
 
@@ -299,12 +307,23 @@ export default class SequenceEditor extends React.Component {
 
 	handleKeyBindings(e) {
 		if (e.target.tagName === 'BODY') {
-			for (let [key, handler] of entries()(this.keyBindings)) {
-				if (e.key === key) {
-					handler.bind(this)(e)
-					e.stopPropagation()
-					e.preventDefault()
-					break
+			if (e.ctrlKey) {
+				for (let [key, handler] of entries()(this.keyBindings.ctrl)) {
+					if (e.key === key) {
+						handler.bind(this)(e)
+						e.stopPropagation()
+						e.preventDefault()
+						break
+					}
+				}
+			} else {
+				for (let [key, handler] of entries()(this.keyBindings.none)) {
+					if (e.key === key) {
+						handler.bind(this)(e)
+						e.stopPropagation()
+						e.preventDefault()
+						break
+					}
 				}
 			}
 		}
@@ -491,7 +510,6 @@ export default class SequenceEditor extends React.Component {
 	handleGoToPrevFrame(e) {
 		if (this.props.currentTime > 0) {
 			let t = Math.round((Math.round(this.props.currentTime / units.FRAME_TIME) - 1) * units.FRAME_TIME)
-
 			this.handleGoToTime(t)
 		}
 	}
@@ -499,6 +517,22 @@ export default class SequenceEditor extends React.Component {
 	handleGoToNextFrame(e) {
 		if (this.props.currentTime < this.props.stage.duration) {
 			let t = Math.round((Math.round(this.props.currentTime / units.FRAME_TIME) + 1) * units.FRAME_TIME)
+			this.handleGoToTime(t)
+		}
+	}
+
+	handleGoToPrevSecond(e) {
+		if (this.props.currentTime > 0) {
+			let t = Math.round(Math.round((this.props.currentTime - 1e9) / units.FRAME_TIME) * units.FRAME_TIME)
+			t = Math.max(t, 0)
+			this.handleGoToTime(t)
+		}
+	}
+
+	handleGoToNextSecond(e) {
+		if (this.props.currentTime < this.props.stage.duration) {
+			let t = Math.round(Math.round((this.props.currentTime + 1e9) / units.FRAME_TIME) * units.FRAME_TIME)
+			t = Math.min(t, this.props.stage.duration)
 			this.handleGoToTime(t)
 		}
 	}
