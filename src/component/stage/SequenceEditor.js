@@ -725,13 +725,24 @@ export default class SequenceEditor extends React.Component {
 
 	pasteKeyframes() {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let selectedKeyframes = []
 		KeyframeHelper.pasteKeyframes(
 			stage.sequences,
 			this.state.selection.basicSequences,
 			this.clipboard.data,
 			this.props.currentTime,
-			this.props.stage.duration
+			this.props.stage.duration,
+			selectedKeyframes
 		)
+
+		let selection = {
+			...this.state.selection,
+			keyframes: selectedKeyframes,
+		}
+		this.setState({
+			selection: selection,
+		})
+
 		this.props.onStageChange(stage, true)
 	}
 

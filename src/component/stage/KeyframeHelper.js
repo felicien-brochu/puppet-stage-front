@@ -464,7 +464,7 @@ export default class KeyframeHelper {
 		return sequenceRefs
 	}
 
-	static pasteKeyframes(sequences, selectedSequences, keyframes, t, stageDuration) {
+	static pasteKeyframes(sequences, selectedSequences, keyframes, t, stageDuration, selectedKeyframes) {
 		if (selectedSequences.length === 0) {
 			return
 		}
@@ -512,7 +512,7 @@ export default class KeyframeHelper {
 			let keyframesCopy = JSON.parse(JSON.stringify(keyframes[i].keyframes))
 			let pastedSequence = {
 				keyframes: [],
-				selected: [],
+				selected: Array(sequence.keyframes.length).fill(false),
 			}
 			for (let j = 0; j < keyframesCopy.length; j++) {
 				let keyframe = keyframesCopy[j]
@@ -524,13 +524,23 @@ export default class KeyframeHelper {
 					j--
 					continue
 				}
-				pastedSequence.selected.push(sequence.keyframes.length + j)
+				pastedSequence.selected.push(true)
 			}
 			pastedSequence.keyframes = sequence.keyframes.concat(keyframesCopy)
 
 			KeyframeHelper.sortKeyframes(pastedSequence)
 			KeyframeHelper.removeDoubleKeyframes(pastedSequence)
 			KeyframeHelper.correctControlPoints(pastedSequence.keyframes)
+
+			// Update selected keyframes
+			pastedSequence.selected.forEach((selected, index) => {
+				if (selected) {
+					selectedKeyframes.push({
+						sequenceID: sequence.id,
+						index: index,
+					})
+				}
+			})
 
 			sequence.keyframes = pastedSequence.keyframes
 		}
