@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import classNames from 'classnames'
 import {
 	ContextMenuTrigger
 } from 'react-contextmenu'
@@ -14,9 +15,11 @@ export default class BasicSequenceItem extends React.Component {
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
 		currentTime: PropTypes.number.isRequired,
+		selected: PropTypes.bool.isRequired,
 
 		onGoToKeyframe: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
+		onSelect: PropTypes.func.isRequired,
 	}
 	constructor(props) {
 		super(props)
@@ -34,6 +37,7 @@ export default class BasicSequenceItem extends React.Component {
 		this.handlePreviewEnabledChange = this.handlePreviewEnabledChange.bind(this)
 		this.handlePlayEnabledChange = this.handlePlayEnabledChange.bind(this)
 		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
+		this.handleClick = this.handleClick.bind(this)
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -48,7 +52,10 @@ export default class BasicSequenceItem extends React.Component {
 		return (
 			<ContextMenuTrigger
 				attributes={{
-					className: "basic-sequence-list-item"
+					className: classNames("basic-sequence-list-item", {
+						selected: this.props.selected,
+					}),
+					onClick: this.handleClick,
 				}}
 				id="basic-sequence-context-menu"
 				collect={() => {
@@ -57,6 +64,7 @@ export default class BasicSequenceItem extends React.Component {
 					}
 				}}
 				renderTag="li"
+				holdToDisplay={1e9}
 			>
 
 				<ToggleButton
@@ -73,7 +81,7 @@ export default class BasicSequenceItem extends React.Component {
 					shape="#graph-shape"
 					checked={this.props.sequence.showGraph}
 					onChange={this.handleShowGraphChange}/>
-
+				
 
 				<span className="sequence-label">
 					{this.props.sequence.name}
@@ -170,5 +178,10 @@ export default class BasicSequenceItem extends React.Component {
 		let keyframe = KeyframeHelper.newBasicSequenceKeyframeAt(this.props.sequence, this.props.currentTime)
 		sequence.keyframes.splice(index, 0, keyframe)
 		this.props.onBasicSequenceChange(sequence, true)
+	}
+
+	handleClick(e) {
+		this.props.onSelect(this.props.sequence.id, e.ctrlKey || e.shiftKey)
+		e.stopPropagation()
 	}
 }

@@ -23,9 +23,11 @@ export default class ExpandButton extends React.Component {
 
 	render() {
 		return (
-			<label className={classNames("expand-button", {
-				"disabled": this.props.disabled,
-			})}>
+			<label
+				className={classNames("expand-button", {
+					"disabled": this.props.disabled,
+				})}
+				onClick={(e) => e.stopPropagation()}>
 				<input
 					type="checkbox"
 					checked={this.props.expanded}

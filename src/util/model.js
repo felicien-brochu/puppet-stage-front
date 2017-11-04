@@ -1,4 +1,5 @@
 import * as util from './utils'
+import UUID from './uuid'
 
 export default class Model {
 	static getServos(boards) {
@@ -58,5 +59,59 @@ export default class Model {
 			}
 		}
 		return null
+	}
+
+	static getFlatBasicSequences(sequences) {
+		let flatSequences = []
+
+		for (let driverSequence of sequences) {
+			for (let sequence of driverSequence.sequences) {
+				flatSequences.push(sequence)
+			}
+		}
+
+		return flatSequences
+	}
+
+	static cloneBasicSequence(basicSequence) {
+		return UUID.getUUID()
+			.then(uuid => {
+				let sequence = JSON.parse(JSON.stringify(basicSequence))
+				sequence.id = uuid
+				return sequence
+			})
+	}
+
+	static cloneDriverSequence(driverSequence) {
+		return new Promise((resolve, reject) => {
+			let sequence = JSON.parse(JSON.stringify(driverSequence))
+			let promises = []
+			for (let basicSequence of sequence.sequences) {
+				promises.push(
+					UUID.getUUID()
+					.then(uuid => {
+						basicSequence.id = uuid
+					})
+					.catch(error => reject(error))
+				)
+			}
+			promises.push(
+				UUID.getUUID()
+				.then(
+					uuid => {
+						sequence.id = uuid
+					},
+					error => {
+						reject(error)
+					}
+				)
+			)
+
+			Promise.all(promises)
+				.then(
+					() => resolve(sequence),
+					error => reject(error)
+				)
+		})
 	}
 }

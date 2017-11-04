@@ -18,7 +18,9 @@ export default class ToggleButton extends React.Component {
 
 	render() {
 		return (
-			<label className="toggle-button">
+			<label
+				className="toggle-button"
+				onClick={(e) => e.stopPropagation()}>
 				<input
 					type="checkbox"
 					checked={this.props.checked}

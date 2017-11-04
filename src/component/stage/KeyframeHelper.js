@@ -426,6 +426,116 @@ export default class KeyframeHelper {
 		return keyframes
 	}
 
+	static collectKeyframes(sequences, keyframeRefs) {
+		let sequenceRefs = []
+		for (let keyframeRef of keyframeRefs) {
+			let sequence = model.getBasicSequence(sequences, keyframeRef.sequenceID)
+			let i = 0
+			for (; i < sequenceRefs.length; i++) {
+				if (sequenceRefs[i].sequenceID === sequence.id) {
+					break
+				}
+			}
+			if (i >= sequenceRefs.length) {
+				sequenceRefs.push({
+					sequenceID: sequence.id,
+					keyframes: [],
+				})
+			}
+
+			sequenceRefs[i].keyframes.push(sequence.keyframes[keyframeRef.index])
+		}
+
+		let flatSequences = model.getFlatBasicSequences(sequences)
+		sequenceRefs.sort((a, b) => {
+			let aIndex = 0,
+				bIndex = 0
+			for (var i = 0; i < flatSequences.length; i++) {
+				if (flatSequences[i].id === a.sequenceID) {
+					aIndex = i
+				} else if (flatSequences[i].id === b.sequenceID) {
+					bIndex = i
+				}
+			}
+
+			return aIndex - bIndex
+		})
+
+		return sequenceRefs
+	}
+
+	static pasteKeyframes(sequences, selectedSequences, keyframes, t, stageDuration) {
+		if (selectedSequences.length === 0) {
+			return
+		}
+
+		let flatSequences = model.getFlatBasicSequences(sequences)
+		let sequenceIndices = []
+		let min = Number.POSITIVE_INFINITY
+		let max = Number.NEGATIVE_INFINITY
+
+		for (let i = 0; i < keyframes.length; i++) {
+			let index
+			for (let j = 0; j < flatSequences.length; j++) {
+				if (flatSequences[j].id === keyframes[i].sequenceID) {
+					max = Math.max(max, j)
+					min = Math.min(min, j)
+					index = j
+					break
+				}
+			}
+
+			sequenceIndices.push(index)
+		}
+
+		let pasteSequenceIndex
+		for (let i = 0; i < flatSequences.length; i++) {
+			if (selectedSequences[0] === flatSequences[i].id) {
+				pasteSequenceIndex = i
+				break
+			}
+		}
+
+		for (let i = 0; i < sequenceIndices.length; i++) {
+			sequenceIndices[i] += pasteSequenceIndex - min
+		}
+
+		let minT = Number.POSITIVE_INFINITY
+		for (let sequence of keyframes) {
+			for (let keyframe of sequence.keyframes) {
+				minT = Math.min(minT, keyframe.p.t)
+			}
+		}
+
+		for (let i = 0; i < keyframes.length; i++) {
+			let sequence = flatSequences[sequenceIndices[i]]
+			let keyframesCopy = JSON.parse(JSON.stringify(keyframes[i].keyframes))
+			let pastedSequence = {
+				keyframes: [],
+				selected: [],
+			}
+			for (let j = 0; j < keyframesCopy.length; j++) {
+				let keyframe = keyframesCopy[j]
+				keyframe.p.t += -minT + t
+				keyframe.c1.t += -minT + t
+				keyframe.c2.t += -minT + t
+				if (keyframe.p.t > stageDuration) {
+					keyframesCopy.splice(j, 1)
+					j--
+					continue
+				}
+				pastedSequence.selected.push(sequence.keyframes.length + j)
+			}
+			pastedSequence.keyframes = sequence.keyframes.concat(keyframesCopy)
+
+			KeyframeHelper.sortKeyframes(pastedSequence)
+			KeyframeHelper.removeDoubleKeyframes(pastedSequence)
+			KeyframeHelper.correctControlPoints(pastedSequence.keyframes)
+
+			sequence.keyframes = pastedSequence.keyframes
+		}
+	}
+
 	static getCurrentTimeKeyframe(currentTime, sequence) {
 		for (let i = 0; i < sequence.keyframes.length; i++) {
 			if (sequence.keyframes[i].p.t === currentTime) {
@@ -472,6 +582,16 @@ export default class KeyframeHelper {
 			}
 		}
 		return keyframes
+	}
+
+	static getKeyframesSequenceIDs(keyframeRefs) {
+		let ids = []
+		for (let keyframeRef of keyframeRefs) {
+			if (!ids.includes(keyframeRef.sequenceID)) {
+				ids.push(keyframeRef.sequenceID)
+			}
+		}
+		return ids
 	}
 
 	static newBasicSequenceKeyframeAt(basicSequence, t) {

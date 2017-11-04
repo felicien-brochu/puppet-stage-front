@@ -54,6 +54,7 @@
 
 	.main-list-container {
 		width: 100%;
+		height: 100%;
 		position: relative;
 
 		.sequence-main-list {
@@ -72,6 +73,7 @@
 				overflow: hidden;
 				text-overflow: ellipsis;
 				margin-top: 1px;
+				padding: 0 2px;
 			}
 
 			.driver-sequence-list-item {
@@ -98,6 +100,10 @@
 					.sequence-label {
 						margin-left: 4px;
 					}
+
+					&.selected {
+						background-color: $selected-background-color;
+					}
 				}
 
 				.basic-sequence-list {
@@ -105,8 +111,12 @@
 					margin: 0;
 					padding: 0;
 
+					.basic-sequence-list-item.selected .sequence-label {
+						background-color: $selected-background-color;
+					}
+
 					.sequence-label {
-						margin-left: 35px;
+						margin-left: 43px;
 						font-weight: bold;
 					}
 
@@ -209,7 +219,7 @@
 	display: inline-block;
 	width: 14px;
 	height: 14px;
-	margin: 0 0 0 20px;
+	margin: 0 0 0 28px;
 	transform: rotate(-90deg);
 
 	&.disabled {

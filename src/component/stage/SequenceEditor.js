@@ -28,10 +28,16 @@ export default class SequenceEditor extends React.Component {
 
 		this.state = {
 			scrollY: 0,
-			selectedKeyframes: [],
 			startTime: 0,
 			endTime: props.stage.duration,
 			showGraph: false,
+
+			selection: {
+				active: 'none',
+				keyframes: [],
+				driverSequences: [],
+				basicSequences: [],
+			},
 		}
 
 		this.handleScrollY = this.handleScrollY.bind(this)
@@ -49,8 +55,10 @@ export default class SequenceEditor extends React.Component {
 		this.handleTranslateKeyframes = this.handleTranslateKeyframes.bind(this)
 		this.handleTimeWindowChange = this.handleTimeWindowChange.bind(this)
 		this.handleBasicSequenceTimeChange = this.handleBasicSequenceTimeChange.bind(this)
-		this.handleDeleteSelectedKeyframes = this.handleDeleteSelectedKeyframes.bind(this)
 		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
+		this.handleSelectDriverSequence = this.handleSelectDriverSequence.bind(this)
+		this.handleSelectBasicSequence = this.handleSelectBasicSequence.bind(this)
+		this.handleUnselectAll = this.handleUnselectAll.bind(this)
 
 		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
 		this.handleGoToTime = this.handleGoToTime.bind(this)
@@ -60,6 +68,10 @@ export default class SequenceEditor extends React.Component {
 		this.handleGoToNextFrame = this.handleGoToNextFrame.bind(this)
 		this.handleGoToPrevSecond = this.handleGoToPrevSecond.bind(this)
 		this.handleGoToNextSecond = this.handleGoToNextSecond.bind(this)
+
+		this.handleCopy = this.handleCopy.bind(this)
+		this.handlePaste = this.handlePaste.bind(this)
+		this.handleDelete = this.handleDelete.bind(this)
 
 		this.handleKeyBindings = this.handleKeyBindings.bind(this)
 
@@ -71,15 +83,22 @@ export default class SequenceEditor extends React.Component {
 			ctrl: {
 				ArrowLeft: this.handleGoToPrevSecond,
 				ArrowRight: this.handleGoToNextSecond,
+				c: this.handleCopy,
+				v: this.handlePaste,
 			},
 			none: {
-				Delete: this.handleDeleteSelectedKeyframes,
+				Delete: this.handleDelete,
 				Tab: this.handleToggleGraph,
 				Home: this.handleGoToStart,
 				End: this.handleGoToEnd,
 				ArrowLeft: this.handleGoToPrevFrame,
 				ArrowRight: this.handleGoToNextFrame,
 			},
+		}
+
+		this.clipboard = {
+			type: 'none',
+			data: {},
 		}
 	}
 
@@ -112,6 +131,8 @@ export default class SequenceEditor extends React.Component {
 					currentTime={this.props.currentTime}
 					scrollY={this.state.scrollY}
 					showGraph={this.state.showGraph}
+					selectedDriverSequences={this.state.selection.driverSequences}
+					selectedBasicSequences={this.state.selection.basicSequences}
 
 					onStartPlaying={this.props.onStartPlaying}
 					onStopPlaying={this.props.onStopPlaying}
@@ -123,11 +144,14 @@ export default class SequenceEditor extends React.Component {
 					onBasicSequenceChange={this.handleBasicSequenceChange}
 					onGoToTime={this.handleGoToTime}
 					onShowGraphChange={this.handleShowGraphChange}
+					onSelectDriverSequence={this.handleSelectDriverSequence}
+					onSelectBasicSequence={this.handleSelectBasicSequence}
+					onUnselectAll={this.handleUnselectAll}
 				/>
 				<Timeline
 					stage={this.props.stage}
 					scrollY={this.state.scrollY}
-					selectedKeyframes={this.state.selectedKeyframes}
+					selectedKeyframes={this.state.selection.keyframes}
 					currentTime={this.props.currentTime}
 					startTime={this.state.startTime}
 					endTime={this.state.endTime}
@@ -368,54 +392,43 @@ export default class SequenceEditor extends React.Component {
 	}
 
 	handleUnselectKeyframes() {
+		let selection = { ...this.state.selection,
+			active: 'none',
+			keyframes: [],
+			basicSequences: [],
+			driverSequences: [],
+		}
 		this.setState({
-			selectedKeyframes: [],
+			selection: selection,
 		})
 	}
 
 	handleSelectKeyframes(keyframes) {
-		let selectedKeyframes = KeyframeHelper.mergeSelectedKeyframes(this.state.selectedKeyframes, keyframes)
-
-		this.setState({
-			selectedKeyframes: selectedKeyframes,
-		})
-	}
-
-	handleDeleteSelectedKeyframes() {
-		let stage = JSON.parse(JSON.stringify(this.props.stage))
-		let indexesMap = new Map()
-		for (let keyframe of this.state.selectedKeyframes) {
-			let sequenceID = keyframe.sequenceID
-			if (!indexesMap.has(sequenceID)) {
-				indexesMap.set(sequenceID, [])
+		if (keyframes.length === 0) {
+			this.handleUnselectKeyframes()
+		} else {
+			let selectedKeyframes = KeyframeHelper.mergeSelectedKeyframes(this.state.selection.keyframes, keyframes)
+			let basicSequences = KeyframeHelper.getKeyframesSequenceIDs(selectedKeyframes)
+			let selection = { ...this.state.selection,
+				active: 'keyframes',
+				keyframes: selectedKeyframes,
+				basicSequences: basicSequences,
+				driverSequences: [],
 			}
-			indexesMap.get(sequenceID).push(keyframe.index)
+			this.setState({
+				selection: selection,
+			})
 		}
-
-		for (let [sequenceID, indexes] of indexesMap) {
-			let basicSequence = model.getBasicSequence(stage.sequences, sequenceID)
-			indexes.sort()
-			let deletedCount = 0
-			for (let index of indexes) {
-				basicSequence.keyframes.splice(index - deletedCount, 1)
-				deletedCount++
-			}
-		}
-
-		this.setState({
-			selectedKeyframes: [],
-		})
-		this.fireStageChange(stage)
 	}
 
 	handleSingleKeyframeMouseDown(e, newKeyframe) {
-		let selectedKeyframes = JSON.parse(JSON.stringify(this.state.selectedKeyframes))
+		let selectedKeyframes = JSON.parse(JSON.stringify(this.state.selection.keyframes))
 		let translateCallback
 
 		if (e.shiftKey || e.ctrlKey) {
-			selectedKeyframes = KeyframeHelper.mergeSelectedKeyframes(this.state.selectedKeyframes, [newKeyframe])
+			selectedKeyframes = KeyframeHelper.mergeSelectedKeyframes(this.state.selection.keyframes, [newKeyframe])
 		} else {
-			if (!KeyframeHelper.containsKeyframe(this.state.selectedKeyframes, newKeyframe)) {
+			if (!KeyframeHelper.containsKeyframe(this.state.selection.keyframes, newKeyframe)) {
 				selectedKeyframes = [newKeyframe]
 			}
 
@@ -425,14 +438,21 @@ export default class SequenceEditor extends React.Component {
 			}
 		}
 
+		let basicSequences = KeyframeHelper.getKeyframesSequenceIDs(selectedKeyframes)
+		let selection = { ...this.state.selection,
+			active: 'keyframes',
+			keyframes: selectedKeyframes,
+			basicSequences: basicSequences,
+			driverSequences: [],
+		}
 		this.setState({
-			selectedKeyframes: selectedKeyframes,
+			selection: selection,
 		}, translateCallback)
 	}
 
 	handleTranslateKeyframesStart(targetKeyframe, e) {
-		if (this.state.selectedKeyframes.length > 0) {
-			this.translation = KeyframeHelper.constructTranslationObject(this.props.stage, this.state.selectedKeyframes, targetKeyframe, e.altKey, e.clientX, e.clientY, this.state.showGraph)
+		if (this.state.selection.keyframes.length > 0) {
+			this.translation = KeyframeHelper.constructTranslationObject(this.props.stage, this.state.selection.keyframes, targetKeyframe, e.altKey, e.clientX, e.clientY, this.state.showGraph)
 
 			window.addEventListener('mouseup', this.handleTranslateKeyframesStop)
 			window.addEventListener('mousemove', this.handleTranslateKeyframes)
@@ -452,8 +472,12 @@ export default class SequenceEditor extends React.Component {
 		KeyframeHelper.applySmoothTranslation(stage, selectedKeyframes, this.translation, e.clientX, e.clientY, this.timeScale, this.valueScale)
 			.then((result) => {
 				if (result.hasChanged) {
+
+					let selection = { ...this.state.selection,
+						keyframes: result.selectedKeyframes,
+					}
 					this.setState({
-						selectedKeyframes: result.selectedKeyframes,
+						selection: selection,
 					})
 
 					this.fireStageChange(result.stage, false)
@@ -547,5 +571,336 @@ export default class SequenceEditor extends React.Component {
 			t = Math.min(t, this.props.stage.duration)
 			this.handleGoToTime(t)
 		}
+	}
+
+	handleSelectDriverSequence(sequenceID, add) {
+		let driverSequences = this.state.selection.driverSequences
+
+		if (add && !driverSequences.includes(sequenceID)) {
+			driverSequences.push(sequenceID)
+		} else {
+			driverSequences = [sequenceID]
+		}
+
+		let selection = { ...this.state.selection,
+			active: 'driverSequences',
+			keyframes: [],
+			basicSequences: [],
+			driverSequences: driverSequences,
+		}
+
+		this.setState({
+			selection: selection,
+		})
+	}
+
+	handleSelectBasicSequence(sequenceID, add) {
+		let basicSequences = this.state.selection.basicSequences
+
+		if (add && !basicSequences.includes(sequenceID)) {
+			basicSequences.push(sequenceID)
+		} else {
+			basicSequences = [sequenceID]
+		}
+
+		let keyframes = []
+
+		for (let driverSequence of this.props.stage.sequences) {
+			for (let basicSequence of driverSequence.sequences) {
+				if (basicSequences.includes(basicSequence.id)) {
+					for (let i = 0; i < basicSequence.keyframes.length; i++) {
+						keyframes.push({
+							sequenceID: basicSequence.id,
+							index: i,
+						})
+					}
+				}
+			}
+		}
+
+		let selection = { ...this.state.selection,
+			active: 'basicSequences',
+			keyframes: keyframes,
+			basicSequences: basicSequences,
+			driverSequences: [],
+		}
+
+		this.setState({
+			selection: selection,
+		})
+	}
+
+	handleUnselectAll() {
+		let selection = { ...this.state.selection,
+			active: 'none',
+			keyframes: [],
+			basicSequences: [],
+			driverSequences: [],
+		}
+
+		this.setState({
+			selection: selection,
+		})
+	}
+
+	handleCopy() {
+		switch (this.state.selection.active) {
+			case 'keyframes':
+				this.copyKeyframes()
+				break
+			case 'driverSequences':
+				this.copyDriverSequences()
+				break
+			case 'basicSequences':
+				this.copyBasicSequences()
+				break
+			default:
+		}
+	}
+
+	handlePaste() {
+		switch (this.clipboard.type) {
+			case 'keyframes':
+				this.pasteKeyframes()
+				break
+			case 'driverSequences':
+				this.pasteDriverSequences()
+				break
+			case 'basicSequences':
+				this.pasteBasicSequences()
+				break
+			default:
+		}
+	}
+
+	handleDelete() {
+		switch (this.state.selection.active) {
+			case 'keyframes':
+				this.deleteKeyframes()
+				break
+			case 'driverSequences':
+				this.deleteDriverSequences()
+				break
+			case 'basicSequences':
+				this.deleteBasicSequences()
+				break
+			default:
+		}
+	}
+
+	copyKeyframes() {
+		this.clipboard = {
+			type: 'keyframes',
+			data: KeyframeHelper.collectKeyframes(this.props.stage.sequences, this.state.selection.keyframes)
+		}
+	}
+
+	copyDriverSequences() {
+		let driverSequences = []
+		for (let sequence of this.props.stage.sequences) {
+			if (this.state.selection.driverSequences.includes(sequence.id)) {
+				driverSequences.push(JSON.parse(JSON.stringify(sequence)))
+			}
+		}
+		this.clipboard = {
+			type: 'driverSequences',
+			data: driverSequences,
+		}
+	}
+
+	copyBasicSequences() {
+		let basicSequences = []
+		for (let driverSequence of this.props.stage.sequences) {
+			for (let sequence of driverSequence.sequences) {
+				if (this.state.selection.basicSequences.includes(sequence.id)) {
+					basicSequences.push(JSON.parse(JSON.stringify(sequence)))
+				}
+			}
+		}
+		this.clipboard = {
+			type: 'basicSequences',
+			data: basicSequences,
+		}
+	}
+
+	pasteKeyframes() {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		KeyframeHelper.pasteKeyframes(
+			stage.sequences,
+			this.state.selection.basicSequences,
+			this.clipboard.data,
+			this.props.currentTime,
+			this.props.stage.duration
+		)
+		this.props.onStageChange(stage, true)
+	}
+
+	pasteDriverSequences() {
+		let clonePromises = []
+		for (let driverSequence of this.clipboard.data) {
+			clonePromises.push(model.cloneDriverSequence(driverSequence))
+		}
+
+		Promise.all(clonePromises)
+			.then(sequences => {
+				let stage = JSON.parse(JSON.stringify(this.props.stage))
+
+				let max = -1
+				stage.sequences.forEach((sequence, i) => {
+					if (this.state.selection.driverSequences.includes(sequence.id)) {
+						max = i
+					}
+				})
+				let pasteIndex = stage.sequences.length
+				if (max >= 0) {
+					pasteIndex = max + 1
+				}
+
+				stage.sequences.splice(pasteIndex, 0, ...sequences)
+
+				let selectedSequences = sequences.map(sequence => sequence.id)
+
+				let selection = { ...this.state.selection,
+					active: 'driverSequences',
+					keyframes: [],
+					basicSequences: [],
+					driverSequences: selectedSequences,
+				}
+
+				this.setState({
+					selection: selection,
+				})
+
+				this.props.onStageChange(stage, true)
+			})
+	}
+
+	pasteBasicSequences() {
+		let clonePromises = []
+		for (let basicSequence of this.clipboard.data) {
+			clonePromises.push(model.cloneBasicSequence(basicSequence))
+		}
+
+		Promise.all(clonePromises)
+			.then(sequences => {
+				let stage = JSON.parse(JSON.stringify(this.props.stage))
+
+				let driverSequence, pasteIndex
+				if (this.state.selection.active === 'driverSequences') {
+					pasteIndex = 0
+					for (let sequence of stage.sequences) {
+						if (this.state.selection.driverSequences.includes(sequence.id)) {
+							driverSequence = sequence
+							break
+						}
+					}
+				} else if (this.state.selection.active === 'basicSequences') {
+					for (let driverSeq of stage.sequences) {
+
+						for (let i = driverSeq.sequences.length - 1; i >= 0; i--) {
+							if (this.state.selection.basicSequences.includes(driverSeq.sequences[i].id)) {
+								driverSequence = driverSeq
+								pasteIndex = i + 1
+								break
+							}
+						}
+					}
+				} else {
+					return
+				}
+
+				driverSequence.sequences.splice(pasteIndex, 0, ...sequences)
+
+				let selectedSequences = sequences.map(sequence => sequence.id)
+
+				let selection = { ...this.state.selection,
+					active: 'basicSequences',
+					keyframes: [],
+					basicSequences: selectedSequences,
+					driverSequences: [],
+				}
+
+				this.setState({
+					selection: selection,
+				})
+
+				this.props.onStageChange(stage, true)
+			})
+	}
+
+	deleteKeyframes() {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let indexesMap = new Map()
+		for (let keyframe of this.state.selection.keyframes) {
+			let sequenceID = keyframe.sequenceID
+			if (!indexesMap.has(sequenceID)) {
+				indexesMap.set(sequenceID, [])
+			}
+			indexesMap.get(sequenceID).push(keyframe.index)
+		}
+
+		for (let [sequenceID, indexes] of indexesMap) {
+			let basicSequence = model.getBasicSequence(stage.sequences, sequenceID)
+			indexes.sort()
+			let deletedCount = 0
+			for (let index of indexes) {
+				basicSequence.keyframes.splice(index - deletedCount, 1)
+				deletedCount++
+			}
+		}
+		let selection = { ...this.state.selection,
+			active: 'none',
+			keyframes: [],
+			basicSequences: [],
+			driverSequences: [],
+		}
+		this.setState({
+			selection: selection,
+		})
+		this.fireStageChange(stage)
+	}
+
+	deleteDriverSequences() {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		for (let i = 0; i < stage.sequences.length; i++) {
+			if (this.state.selection.driverSequences.includes(stage.sequences[i].id)) {
+				stage.sequences.splice(i, 1)
+				i--
+			}
+		}
+
+		let selection = { ...this.state.selection,
+			active: 'none',
+			keyframes: [],
+			basicSequences: [],
+			driverSequences: [],
+		}
+		this.setState({
+			selection: selection,
+		})
+		this.fireStageChange(stage, true)
+	}
+
+	deleteBasicSequences() {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		for (let sequence of stage.sequences) {
+			for (let i = 0; i < sequence.sequences.length; i++) {
+				if (this.state.selection.basicSequences.includes(sequence.sequences[i].id)) {
+					sequence.sequences.splice(i, 1)
+					i--
+				}
+			}
+		}
+
+		let selection = { ...this.state.selection,
+			active: 'none',
+			keyframes: [],
+			basicSequences: [],
+			driverSequences: [],
+		}
+		this.setState({
+			selection: selection,
+		})
+		this.fireStageChange(stage, true)
 	}
 }

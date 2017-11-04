@@ -26,10 +26,6 @@ export default class ConfirmModal extends React.Component {
 	}
 
 	render() {
-		let defaultName = ""
-		if (this.props.sequence) {
-			defaultName = this.props.sequence.name
-		}
 		return (
 			<Modal
 				isOpen={this.props.isOpen}

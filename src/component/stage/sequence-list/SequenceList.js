@@ -33,6 +33,8 @@ export default class SequenceList extends React.Component {
 		currentTime: PropTypes.number.isRequired,
 		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
 		showGraph: PropTypes.bool.isRequired,
+		selectedDriverSequences: PropTypes.array.isRequired,
+		selectedBasicSequences: PropTypes.array.isRequired,
 
 		onNewDriverSequence: PropTypes.func.isRequired,
 		onDriverSequenceChange: PropTypes.func.isRequired,
@@ -43,6 +45,9 @@ export default class SequenceList extends React.Component {
 		onShowGraphChange: PropTypes.func.isRequired,
 		onStartPlaying: PropTypes.func.isRequired,
 		onStopPlaying: PropTypes.func.isRequired,
+		onSelectDriverSequence: PropTypes.func.isRequired,
+		onSelectBasicSequence: PropTypes.func.isRequired,
+		onUnselectAll: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -91,6 +96,7 @@ export default class SequenceList extends React.Component {
 				}}
 				id="sequence-list-context-menu"
 				renderTag="div"
+				holdToDisplay={1e9}
 			>
 				<SequenceListActionBar
 					saveState={this.props.saveState}
@@ -106,7 +112,9 @@ export default class SequenceList extends React.Component {
 					showGraph={this.props.showGraph}
 					onShowGraphChange={this.props.onShowGraphChange}/>
 
-				<div className="main-list-container">
+				<div
+					className="main-list-container"
+					onClick={this.props.onUnselectAll}>
 					{this.renderList()}
 				</div>
 
@@ -176,10 +184,14 @@ export default class SequenceList extends React.Component {
 					key={sequence.id}
 					sequence={sequence}
 					currentTime={this.props.currentTime}
+					selected={this.props.selectedDriverSequences.includes(sequence.id)}
+					selectedBasicSequences={this.props.selectedBasicSequences}
 					onExpand={this.handleDriverSequenceExpand}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
 					onDriverSequenceChange={this.props.onDriverSequenceChange}
-					onGoToKeyframe={this.handleGoToKeyframe}/>
+					onGoToKeyframe={this.handleGoToKeyframe}
+					onSelectDriverSequence={this.props.onSelectDriverSequence}
+					onSelectBasicSequence={this.props.onSelectBasicSequence}/>
 			)
 		}
 		return (

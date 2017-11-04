@@ -196,18 +196,14 @@ export default class StageEditor extends React.Component {
 	handleHistoryPrevious() {
 		let stage = this.history.previous()
 		if (stage) {
-			this.setState({
-				stage: stage,
-			})
+			this.handleStageChange(stage, false)
 		}
 	}
 
 	handleHistoryNext() {
 		let stage = this.history.next()
 		if (stage) {
-			this.setState({
-				stage: stage,
-			})
+			this.handleStageChange(stage, false)
 		}
 	}
 

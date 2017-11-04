@@ -15,11 +15,15 @@ export default class DriverSequenceItem extends React.Component {
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
 		currentTime: PropTypes.number.isRequired,
+		selected: PropTypes.bool.isRequired,
+		selectedBasicSequences: PropTypes.array.isRequired,
 
 		onExpand: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
 		onDriverSequenceChange: PropTypes.func.isRequired,
 		onGoToKeyframe: PropTypes.func.isRequired,
+		onSelectDriverSequence: PropTypes.func.isRequired,
+		onSelectBasicSequence: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -28,6 +32,7 @@ export default class DriverSequenceItem extends React.Component {
 		this.handleExpand = this.handleExpand.bind(this)
 		this.handlePreviewEnabledChange = this.handlePreviewEnabledChange.bind(this)
 		this.handlePlayEnabledChange = this.handlePlayEnabledChange.bind(this)
+		this.handleDriverSequenceTitleClick = this.handleDriverSequenceTitleClick.bind(this)
 	}
 
 	render() {
@@ -42,7 +47,7 @@ export default class DriverSequenceItem extends React.Component {
 		return (
 			<ContextMenuTrigger
 				attributes={{
-					className: "driver-sequence-list-item"
+					className: "driver-sequence-list-item",
 				}}
 				id="driver-sequence-context-menu"
 				collect={() => {
@@ -51,8 +56,13 @@ export default class DriverSequenceItem extends React.Component {
 					}
 				}}
 				renderTag="li"
+				holdToDisplay={1e9}
 			>
-				<div className="driver-sequence-title">
+				<div
+					className={classNames("driver-sequence-title", {
+						selected: this.props.selected
+					})}
+					onClick={this.handleDriverSequenceTitleClick}>
 
 					<ToggleButton
 						shape="#eye-shape"
@@ -97,8 +107,10 @@ export default class DriverSequenceItem extends React.Component {
 				key={basicSequence.id}
 				sequence={basicSequence}
 				currentTime={this.props.currentTime}
+				selected={this.props.selectedBasicSequences.includes(basicSequence.id)}
 				onBasicSequenceChange={(basicSequence, save) => {this.props.onBasicSequenceChange(basicSequence, this.props.sequence, save)}}
-				onGoToKeyframe={this.props.onGoToKeyframe}/>
+				onGoToKeyframe={this.props.onGoToKeyframe}
+				onSelect={this.props.onSelectBasicSequence}/>
 		)
 	}
 
@@ -121,5 +133,10 @@ export default class DriverSequenceItem extends React.Component {
 		let sequence = JSON.parse(JSON.stringify(this.props.sequence))
 		sequence.playEnabled = enabled
 		this.props.onDriverSequenceChange(sequence)
+	}
+
+	handleDriverSequenceTitleClick(e) {
+		this.props.onSelectDriverSequence(this.props.sequence.id, e.ctrlKey || e.shiftKey)
+		e.stopPropagation()
 	}
 }
