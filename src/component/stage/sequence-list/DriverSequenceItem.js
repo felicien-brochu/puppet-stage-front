@@ -20,7 +20,9 @@ export default class DriverSequenceItem extends React.Component {
 
 		onExpand: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
+		onBasicSequenceMove: PropTypes.func.isRequired,
 		onDriverSequenceChange: PropTypes.func.isRequired,
+		onDriverSequenceMove: PropTypes.func.isRequired,
 		onGoToKeyframe: PropTypes.func.isRequired,
 		onSelectDriverSequence: PropTypes.func.isRequired,
 		onSelectBasicSequence: PropTypes.func.isRequired,
@@ -33,6 +35,14 @@ export default class DriverSequenceItem extends React.Component {
 		this.handlePreviewEnabledChange = this.handlePreviewEnabledChange.bind(this)
 		this.handlePlayEnabledChange = this.handlePlayEnabledChange.bind(this)
 		this.handleDriverSequenceTitleClick = this.handleDriverSequenceTitleClick.bind(this)
+		this.handleDragStart = this.handleDragStart.bind(this)
+		this.handleDragExit = this.handleDragExit.bind(this)
+		this.handleDragOver = this.handleDragOver.bind(this)
+		this.handleDrop = this.handleDrop.bind(this)
+
+		this.state = {
+			dragOver: 'none',
+		}
 	}
 
 	render() {
@@ -47,7 +57,13 @@ export default class DriverSequenceItem extends React.Component {
 		return (
 			<ContextMenuTrigger
 				attributes={{
-					className: "driver-sequence-list-item",
+					className: classNames("driver-sequence-list-item", {
+						'drag-over-top': this.state.dragOver === 'top',
+						'drag-over-bottom': this.state.dragOver === 'bottom',
+					}),
+					onDragExit: this.handleDragExit,
+					onDragOver: this.handleDragOver,
+					onDrop: this.handleDrop,
 				}}
 				id="driver-sequence-context-menu"
 				collect={() => {
@@ -57,12 +73,15 @@ export default class DriverSequenceItem extends React.Component {
 				}}
 				renderTag="li"
 				holdToDisplay={1e9}
+				ref={container => this.container = container}
 			>
 				<div
 					className={classNames("driver-sequence-title", {
 						selected: this.props.selected
 					})}
-					onClick={this.handleDriverSequenceTitleClick}>
+					onClick={this.handleDriverSequenceTitleClick}
+					draggable={true}
+					onDragStart={this.handleDragStart}>
 
 					<ToggleButton
 						shape="#eye-shape"
@@ -109,6 +128,7 @@ export default class DriverSequenceItem extends React.Component {
 				currentTime={this.props.currentTime}
 				selected={this.props.selectedBasicSequences.includes(basicSequence.id)}
 				onBasicSequenceChange={(basicSequence, save) => {this.props.onBasicSequenceChange(basicSequence, this.props.sequence, save)}}
+				onBasicSequenceMove={this.props.onBasicSequenceMove}
 				onGoToKeyframe={this.props.onGoToKeyframe}
 				onSelect={this.props.onSelectBasicSequence}/>
 		)
@@ -138,5 +158,61 @@ export default class DriverSequenceItem extends React.Component {
 	handleDriverSequenceTitleClick(e) {
 		this.props.onSelectDriverSequence(this.props.sequence.id, e.ctrlKey || e.shiftKey)
 		e.stopPropagation()
+	}
+
+	handleDragStart(e) {
+		e.dataTransfer.setData("application/json", JSON.stringify({
+			type: 'driverSequence',
+			sequenceID: this.props.sequence.id,
+		}))
+		e.dataTransfer.dropEffect = 'move'
+	}
+
+	handleDragExit(e) {
+		this.setState({
+			dragOver: 'none',
+		})
+	}
+
+	handleDragOver(e) {
+		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		if (data.type === 'driverSequence' && data.sequenceID !== this.props.sequence.id) {
+			e.preventDefault()
+			e.dataTransfer.dropEffect = 'move'
+
+			let container = this.container.elem.getBoundingClientRect()
+			if (e.clientY < container.y + (container.height / 2)) {
+				if (this.state.dragOver !== 'top') {
+					this.setState({
+						dragOver: 'top',
+					})
+				}
+			} else {
+				if (this.state.dragOver !== 'bottom') {
+					this.setState({
+						dragOver: 'bottom',
+					})
+				}
+			}
+		}
+	}
+
+	handleDrop(e) {
+		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+
+		if (data.type === 'driverSequence' && data.sequenceID !== this.props.sequence.id) {
+			let relativeIndex
+			let container = this.container.elem.getBoundingClientRect()
+			if (e.clientY < container.y + (container.height / 2)) {
+				relativeIndex = 0
+			} else {
+				relativeIndex = 1
+			}
+
+			this.props.onDriverSequenceMove(data.sequenceID, this.props.sequence.id, relativeIndex)
+		}
+		this.setState({
+			dragOver: 'none',
+		})
 	}
 }

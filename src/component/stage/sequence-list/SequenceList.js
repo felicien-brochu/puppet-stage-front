@@ -38,6 +38,8 @@ export default class SequenceList extends React.Component {
 
 		onNewDriverSequence: PropTypes.func.isRequired,
 		onDriverSequenceChange: PropTypes.func.isRequired,
+		onDriverSequenceMove: PropTypes.func.isRequired,
+		onBasicSequenceMove: PropTypes.func.isRequired,
 		onRemoveDriverSequence: PropTypes.func.isRequired,
 		onNewBasicSequence: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
@@ -90,14 +92,7 @@ export default class SequenceList extends React.Component {
 
 	render() {
 		return (
-			<ContextMenuTrigger
-				attributes={{
-					className: "sequence-list"
-				}}
-				id="sequence-list-context-menu"
-				renderTag="div"
-				holdToDisplay={1e9}
-			>
+			<div className="sequence-list">
 				<SequenceListActionBar
 					saveState={this.props.saveState}
 
@@ -112,11 +107,17 @@ export default class SequenceList extends React.Component {
 					showGraph={this.props.showGraph}
 					onShowGraphChange={this.props.onShowGraphChange}/>
 
-				<div
-					className="main-list-container"
-					onClick={this.props.onUnselectAll}>
+				<ContextMenuTrigger
+					attributes={{
+							className: "main-list-container",
+						onClick: this.props.onUnselectAll,
+					}}
+					id="sequence-list-context-menu"
+					renderTag="div"
+					holdToDisplay={1e9}
+				>
 					{this.renderList()}
-				</div>
+				</ContextMenuTrigger>
 
 				<ContextMenu id="sequence-list-context-menu">
 					<MenuItem
@@ -167,7 +168,7 @@ export default class SequenceList extends React.Component {
 
 				{this.renderModals()}
 
-				</ContextMenuTrigger>
+			</div>
 		)
 	}
 
@@ -189,6 +190,8 @@ export default class SequenceList extends React.Component {
 					onExpand={this.handleDriverSequenceExpand}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
 					onDriverSequenceChange={this.props.onDriverSequenceChange}
+					onDriverSequenceMove={this.props.onDriverSequenceMove}
+					onBasicSequenceMove={this.props.onBasicSequenceMove}
 					onGoToKeyframe={this.handleGoToKeyframe}
 					onSelectDriverSequence={this.props.onSelectDriverSequence}
 					onSelectBasicSequence={this.props.onSelectBasicSequence}/>

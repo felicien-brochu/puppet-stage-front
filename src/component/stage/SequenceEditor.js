@@ -43,9 +43,11 @@ export default class SequenceEditor extends React.Component {
 		this.handleScrollY = this.handleScrollY.bind(this)
 		this.handleNewDriverSequence = this.handleNewDriverSequence.bind(this)
 		this.handleDriverSequenceChange = this.handleDriverSequenceChange.bind(this)
+		this.handleDriverSequenceMove = this.handleDriverSequenceMove.bind(this)
 		this.handleRemoveDriverSequence = this.handleRemoveDriverSequence.bind(this)
 		this.handleNewBasicSequence = this.handleNewBasicSequence.bind(this)
 		this.handleBasicSequenceChange = this.handleBasicSequenceChange.bind(this)
+		this.handleBasicSequenceMove = this.handleBasicSequenceMove.bind(this)
 		this.handleTimeScaleChange = this.handleTimeScaleChange.bind(this)
 		this.handleValueScaleChange = this.handleValueScaleChange.bind(this)
 		this.handleUnselectKeyframes = this.handleUnselectKeyframes.bind(this)
@@ -139,9 +141,11 @@ export default class SequenceEditor extends React.Component {
 					onScrollY={this.handleScrollY}
 					onNewDriverSequence={this.handleNewDriverSequence}
 					onDriverSequenceChange={this.handleDriverSequenceChange}
+					onDriverSequenceMove={this.handleDriverSequenceMove}
 					onRemoveDriverSequence={this.handleRemoveDriverSequence}
 					onNewBasicSequence={this.handleNewBasicSequence}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
+					onBasicSequenceMove={this.handleBasicSequenceMove}
 					onGoToTime={this.handleGoToTime}
 					onShowGraphChange={this.handleShowGraphChange}
 					onSelectDriverSequence={this.handleSelectDriverSequence}
@@ -310,6 +314,27 @@ export default class SequenceEditor extends React.Component {
 		this.fireStageChange(stage, save)
 	}
 
+	handleDriverSequenceMove(movedSequenceID, onSequenceID, relativeIndex) {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let movedSequence
+		for (let i = 0; i < stage.sequences.length; i++) {
+			if (stage.sequences[i].id === movedSequenceID) {
+				movedSequence = stage.sequences[i]
+				stage.sequences.splice(i, 1)
+				break
+			}
+		}
+
+		for (let i = 0; i < stage.sequences.length; i++) {
+			if (stage.sequences[i].id === onSequenceID) {
+				stage.sequences.splice(i + relativeIndex, 0, movedSequence)
+				break
+			}
+		}
+
+		this.props.onStageChange(stage, true)
+	}
+
 	handleRemoveDriverSequence(sequence) {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let index = model.indexOfID(this.props.stage.sequences, sequence.id)
@@ -339,6 +364,31 @@ export default class SequenceEditor extends React.Component {
 		if (typeof this.props.onStageChange === 'function') {
 			this.props.onStageChange(stage, save)
 		}
+	}
+
+	handleBasicSequenceMove(movedSequenceID, onSequenceID, relativeIndex) {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		let movedSequence
+		for (let driverSequence of stage.sequences) {
+			for (let i = 0; i < driverSequence.sequences.length; i++) {
+				if (driverSequence.sequences[i].id === movedSequenceID) {
+					movedSequence = driverSequence.sequences[i]
+					driverSequence.sequences.splice(i, 1)
+					break
+				}
+			}
+		}
+
+		for (let driverSequence of stage.sequences) {
+			for (let i = 0; i < driverSequence.sequences.length; i++) {
+				if (driverSequence.sequences[i].id === onSequenceID) {
+					driverSequence.sequences.splice(i + relativeIndex, 0, movedSequence)
+					break
+				}
+			}
+		}
+
+		this.props.onStageChange(stage, true)
 	}
 
 	handleKeyBindings(e) {

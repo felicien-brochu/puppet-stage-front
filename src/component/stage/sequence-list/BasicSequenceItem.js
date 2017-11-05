@@ -19,6 +19,7 @@ export default class BasicSequenceItem extends React.Component {
 
 		onGoToKeyframe: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
+		onBasicSequenceMove: PropTypes.func.isRequired,
 		onSelect: PropTypes.func.isRequired,
 	}
 	constructor(props) {
@@ -37,7 +38,15 @@ export default class BasicSequenceItem extends React.Component {
 		this.handlePreviewEnabledChange = this.handlePreviewEnabledChange.bind(this)
 		this.handlePlayEnabledChange = this.handlePlayEnabledChange.bind(this)
 		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
+		this.handleDragStart = this.handleDragStart.bind(this)
+		this.handleDragExit = this.handleDragExit.bind(this)
+		this.handleDragOver = this.handleDragOver.bind(this)
+		this.handleDrop = this.handleDrop.bind(this)
 		this.handleClick = this.handleClick.bind(this)
+
+		this.state = {
+			dragOver: 'none',
+		}
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -53,8 +62,15 @@ export default class BasicSequenceItem extends React.Component {
 			<ContextMenuTrigger
 				attributes={{
 					className: classNames("basic-sequence-list-item", {
-						selected: this.props.selected,
+							'selected': this.props.selected,
+							'drag-over-top': this.state.dragOver === 'top',
+							'drag-over-bottom': this.state.dragOver === 'bottom',
 					}),
+					draggable: true,
+					onDragStart: this.handleDragStart,
+					onDragExit: this.handleDragExit,
+					onDragOver: this.handleDragOver,
+					onDrop: this.handleDrop,
 					onClick: this.handleClick,
 				}}
 				id="basic-sequence-context-menu"
@@ -63,6 +79,7 @@ export default class BasicSequenceItem extends React.Component {
 						sequence: this.props.sequence
 					}
 				}}
+				ref={container => this.container = container}
 				renderTag="li"
 				holdToDisplay={1e9}
 			>
@@ -81,7 +98,7 @@ export default class BasicSequenceItem extends React.Component {
 					shape="#graph-shape"
 					checked={this.props.sequence.showGraph}
 					onChange={this.handleShowGraphChange}/>
-				
+
 
 				<span className="sequence-label">
 					{this.props.sequence.name}
@@ -183,5 +200,62 @@ export default class BasicSequenceItem extends React.Component {
 	handleClick(e) {
 		this.props.onSelect(this.props.sequence.id, e.ctrlKey || e.shiftKey)
 		e.stopPropagation()
+	}
+
+
+	handleDragStart(e) {
+		e.dataTransfer.setData("application/json", JSON.stringify({
+			type: 'basicSequence',
+			sequenceID: this.props.sequence.id,
+		}))
+		e.dataTransfer.dropEffect = 'move'
+	}
+
+	handleDragExit(e) {
+		this.setState({
+			dragOver: 'none',
+		})
+	}
+
+	handleDragOver(e) {
+		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		if (data.type === 'basicSequence' && data.sequenceID !== this.props.sequence.id) {
+			e.preventDefault()
+			e.dataTransfer.dropEffect = 'move'
+
+			let container = this.container.elem.getBoundingClientRect()
+			if (e.clientY < container.y + (container.height / 2)) {
+				if (this.state.dragOver !== 'top') {
+					this.setState({
+						dragOver: 'top',
+					})
+				}
+			} else {
+				if (this.state.dragOver !== 'bottom') {
+					this.setState({
+						dragOver: 'bottom',
+					})
+				}
+			}
+		}
+	}
+
+	handleDrop(e) {
+		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+
+		if (data.type === 'basicSequence' && data.sequenceID !== this.props.sequence.id) {
+			let relativeIndex
+			let container = this.container.elem.getBoundingClientRect()
+			if (e.clientY < container.y + (container.height / 2)) {
+				relativeIndex = 0
+			} else {
+				relativeIndex = 1
+			}
+
+			this.props.onBasicSequenceMove(data.sequenceID, this.props.sequence.id, relativeIndex)
+		}
+		this.setState({
+			dragOver: 'none',
+		})
 	}
 }
