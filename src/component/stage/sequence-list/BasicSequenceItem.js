@@ -71,7 +71,6 @@ export default class BasicSequenceItem extends React.Component {
 					onDragExit: this.handleDragExit,
 					onDragOver: this.handleDragOver,
 					onDrop: this.handleDrop,
-					onClick: this.handleClick,
 				}}
 				id="basic-sequence-context-menu"
 				collect={() => {
@@ -100,7 +99,9 @@ export default class BasicSequenceItem extends React.Component {
 					onChange={this.handleShowGraphChange}/>
 
 
-				<span className="sequence-label">
+				<span
+					className="sequence-label"
+					onClick={this.handleClick}>
 					{this.props.sequence.name}
 				</span>
 
