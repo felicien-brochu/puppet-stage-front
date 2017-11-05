@@ -3,11 +3,18 @@ import {
 } from '../../util/api'
 import units from '../../util/units'
 
+const SMOOTHING_DELAY = 40
+
 export default class Player {
 	constructor(puppetID, onCurrentTimeChange, onPlayStart, onPlayStop) {
 		this.puppetID = puppetID
 		this.started = false
 		this.stopping = false
+		this.scheduler = {
+			timeoutID: NaN,
+			lastExecution: 0,
+			t: 0,
+		}
 
 		this.onCurrentTimeChange = onCurrentTimeChange
 		this.onPlayStart = onPlayStart
@@ -79,8 +86,25 @@ export default class Player {
 			}
 		} else if (!this.stopping && !isNaN(e.data - parseFloat(e.data))) {
 			let t = Math.round(Math.round(e.data / units.FRAME_TIME) * units.FRAME_TIME)
-			this.onCurrentTimeChange(t)
+			this.pushTime(t)
 		}
+	}
+
+	pushTime(t) {
+		let scheduler = this.scheduler
+		scheduler.t = t
+		if (isNaN(scheduler.timeoutID)) {
+			let now = new Date().getTime()
+			let delay = Math.max(SMOOTHING_DELAY - now + scheduler.lastExecution, 0)
+			scheduler.timeoutID = window.setTimeout(this.handleAsyncTimeMove.bind(this), delay)
+		}
+	}
+
+	handleAsyncTimeMove() {
+		let scheduler = this.scheduler
+		this.onCurrentTimeChange(scheduler.t)
+		scheduler.timeoutID = NaN
+		scheduler.lastExecution = new Date().getTime()
 	}
 
 	handleOpen(e) {}
