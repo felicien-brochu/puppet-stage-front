@@ -37,11 +37,15 @@ export default class DriverSequenceItem extends React.Component {
 		this.handleDriverSequenceTitleClick = this.handleDriverSequenceTitleClick.bind(this)
 		this.handleDragStart = this.handleDragStart.bind(this)
 		this.handleDragExit = this.handleDragExit.bind(this)
+		this.handleTitleDragExit = this.handleTitleDragExit.bind(this)
 		this.handleDragOver = this.handleDragOver.bind(this)
+		this.handleTitleDragOver = this.handleTitleDragOver.bind(this)
 		this.handleDrop = this.handleDrop.bind(this)
+		this.handleTitleDrop = this.handleTitleDrop.bind(this)
 
 		this.state = {
-			dragOver: 'none',
+			driverSequenceDragOver: 'none',
+			basicSequenceDragOver: false,
 		}
 	}
 
@@ -58,8 +62,8 @@ export default class DriverSequenceItem extends React.Component {
 			<ContextMenuTrigger
 				attributes={{
 					className: classNames("driver-sequence-list-item", {
-						'drag-over-top': this.state.dragOver === 'top',
-						'drag-over-bottom': this.state.dragOver === 'bottom',
+						'drag-over-top': this.state.driverSequenceDragOver === 'top',
+						'drag-over-bottom': this.state.driverSequenceDragOver === 'bottom',
 					}),
 					onDragExit: this.handleDragExit,
 					onDragOver: this.handleDragOver,
@@ -77,11 +81,16 @@ export default class DriverSequenceItem extends React.Component {
 			>
 				<div
 					className={classNames("driver-sequence-title", {
-						selected: this.props.selected
+						'selected': this.props.selected,
+							'drag-over': this.state.basicSequenceDragOver,
 					})}
 					onClick={this.handleDriverSequenceTitleClick}
 					draggable={true}
-					onDragStart={this.handleDragStart}>
+					onDragStart={this.handleDragStart}
+
+					onDragExit={this.handleTitleDragExit}
+					onDragOver={this.handleTitleDragOver}
+					onDrop={this.handleTitleDrop}>
 
 					<ToggleButton
 						shape="#eye-shape"
@@ -128,7 +137,7 @@ export default class DriverSequenceItem extends React.Component {
 				currentTime={this.props.currentTime}
 				selected={this.props.selectedBasicSequences.includes(basicSequence.id)}
 				onBasicSequenceChange={(basicSequence, save) => {this.props.onBasicSequenceChange(basicSequence, this.props.sequence, save)}}
-				onBasicSequenceMove={this.props.onBasicSequenceMove}
+				onBasicSequenceMove={(movedSequenceID, onSequenceID, relativeIndex) => this.props.onBasicSequenceMove(this.props.sequence.id, movedSequenceID, onSequenceID, relativeIndex)}
 				onGoToKeyframe={this.props.onGoToKeyframe}
 				onSelect={this.props.onSelectBasicSequence}/>
 		)
@@ -170,8 +179,16 @@ export default class DriverSequenceItem extends React.Component {
 
 	handleDragExit(e) {
 		this.setState({
-			dragOver: 'none',
+			driverSequenceDragOver: 'none',
 		})
+	}
+
+	handleTitleDragExit(e) {
+		if (this.state.basicSequenceDragOver) {
+			this.setState({
+				basicSequenceDragOver: false,
+			})
+		}
 	}
 
 	handleDragOver(e) {
@@ -182,17 +199,31 @@ export default class DriverSequenceItem extends React.Component {
 
 			let container = this.container.elem.getBoundingClientRect()
 			if (e.clientY < container.y + (container.height / 2)) {
-				if (this.state.dragOver !== 'top') {
+				if (this.state.driverSequenceDragOver !== 'top') {
 					this.setState({
-						dragOver: 'top',
+						driverSequenceDragOver: 'top',
 					})
 				}
 			} else {
-				if (this.state.dragOver !== 'bottom') {
+				if (this.state.driverSequenceDragOver !== 'bottom') {
 					this.setState({
-						dragOver: 'bottom',
+						driverSequenceDragOver: 'bottom',
 					})
 				}
+			}
+		}
+	}
+
+	handleTitleDragOver(e) {
+		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		if (data.type === 'basicSequence') {
+			e.preventDefault()
+			e.dataTransfer.dropEffect = 'move'
+
+			if (!this.state.basicSequenceDragOver) {
+				this.setState({
+					basicSequenceDragOver: true,
+				})
 			}
 		}
 	}
@@ -211,8 +242,23 @@ export default class DriverSequenceItem extends React.Component {
 
 			this.props.onDriverSequenceMove(data.sequenceID, this.props.sequence.id, relativeIndex)
 		}
+
 		this.setState({
-			dragOver: 'none',
+			driverSequenceDragOver: 'none',
+			basicSequenceDragOver: false,
+		})
+	}
+
+	handleTitleDrop(e) {
+		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+
+		if (data.type === 'basicSequence') {
+			this.props.onBasicSequenceMove(this.props.sequence.id, data.sequenceID, null, 0)
+		}
+
+		this.setState({
+			driverSequenceDragOver: 'none',
+			basicSequenceDragOver: false,
 		})
 	}
 }

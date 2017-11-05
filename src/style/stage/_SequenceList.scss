@@ -99,6 +99,10 @@
 					justify-content: left;
 					align-items: center;
 
+					&.drag-over {
+						border-bottom: solid 2px $accent-color;
+					}
+
 					.toggle-button input:not(:checked) + .button-icon {
 						visibility: visible;
 						fill: $inactive-color;

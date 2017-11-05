@@ -11,7 +11,6 @@ const BASIC_SEQUENCE_BOX_HEIGHT = 21
 export default class TimelineDriverSequence extends React.Component {
 	static propTypes = {
 		sequence: PropTypes.object.isRequired,
-		color: PropTypes.number.isRequired,
 		timeline: PropTypes.shape({
 			paddingLeft: PropTypes.number.isRequired,
 			paddingRight: PropTypes.number.isRequired,
@@ -37,12 +36,12 @@ export default class TimelineDriverSequence extends React.Component {
 	render() {
 		return (
 			<li
-				className={classNames("timeline-driver-sequence", colorClasses[this.props.color])}
+				className={classNames("timeline-driver-sequence", colorClasses[this.props.sequence.color])}
 				key={this.props.sequence.id}
 			>
 				<DriverSequenceBox
 					sequence={this.props.sequence}
-					
+
 					timeline={this.props.timeline}
 					height={DRIVER_SEQUENCE_BOX_HEIGHT}
 				/>
@@ -64,7 +63,7 @@ export default class TimelineDriverSequence extends React.Component {
 						sequence={basicSequence}
 						selectedKeyframes={this.props.selectedKeyframes}
 						selectingKeyframes={this.props.selectingKeyframes}
-
+						
 						timeline={this.props.timeline}
 						height={BASIC_SEQUENCE_BOX_HEIGHT}
 

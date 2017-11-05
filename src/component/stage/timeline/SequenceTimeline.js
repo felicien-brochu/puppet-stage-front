@@ -59,7 +59,6 @@ export default class SequenceTimeline extends React.Component {
 					ref={sequence => this.sequenceViews[i] = sequence}
 					key={driverSequence.id}
 					sequence={driverSequence}
-					color={i}
 					timeline={this.props.timeline}
 					selectedKeyframes={this.props.selectedKeyframes}
 					selectingKeyframes={this.state.selection.selectingKeyframes}

@@ -316,21 +316,35 @@ export default class SequenceEditor extends React.Component {
 
 	handleDriverSequenceMove(movedSequenceID, onSequenceID, relativeIndex) {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
-		let movedSequence
+		let
+			movedSequence,
+			movedIndex,
+			insertIndex
+
 		for (let i = 0; i < stage.sequences.length; i++) {
 			if (stage.sequences[i].id === movedSequenceID) {
 				movedSequence = stage.sequences[i]
-				stage.sequences.splice(i, 1)
+				movedIndex = i
 				break
 			}
 		}
 
 		for (let i = 0; i < stage.sequences.length; i++) {
 			if (stage.sequences[i].id === onSequenceID) {
-				stage.sequences.splice(i + relativeIndex, 0, movedSequence)
+				insertIndex = i + relativeIndex
+				if (insertIndex > movedIndex) {
+					insertIndex -= 1
+				}
 				break
 			}
 		}
+
+		if (insertIndex === movedIndex) {
+			return
+		}
+
+		stage.sequences.splice(movedIndex, 1)
+		stage.sequences.splice(insertIndex, 0, movedSequence)
 
 		this.props.onStageChange(stage, true)
 	}
@@ -366,28 +380,46 @@ export default class SequenceEditor extends React.Component {
 		}
 	}
 
-	handleBasicSequenceMove(movedSequenceID, onSequenceID, relativeIndex) {
+	handleBasicSequenceMove(driverSequenceID, movedSequenceID, onSequenceID, relativeIndex) {
 		let stage = JSON.parse(JSON.stringify(this.props.stage))
 		let movedSequence
+		let fromDriverSequence
+		let movedIndex
 		for (let driverSequence of stage.sequences) {
 			for (let i = 0; i < driverSequence.sequences.length; i++) {
 				if (driverSequence.sequences[i].id === movedSequenceID) {
+					fromDriverSequence = driverSequence
 					movedSequence = driverSequence.sequences[i]
-					driverSequence.sequences.splice(i, 1)
+					movedIndex = i
 					break
 				}
 			}
 		}
 
-		for (let driverSequence of stage.sequences) {
+		let driverSequence = model.itemOfID(stage.sequences, driverSequenceID)
+		let insertIndex
+		if (!onSequenceID) {
+			insertIndex = 0
+		} else {
 			for (let i = 0; i < driverSequence.sequences.length; i++) {
 				if (driverSequence.sequences[i].id === onSequenceID) {
-					driverSequence.sequences.splice(i + relativeIndex, 0, movedSequence)
+					insertIndex = i + relativeIndex
 					break
 				}
 			}
 		}
 
+		if (fromDriverSequence.id === driverSequence.id) {
+			if (insertIndex > movedIndex) {
+				insertIndex -= 1
+			}
+			if (insertIndex === movedIndex) {
+				return
+			}
+		}
+
+		fromDriverSequence.sequences.splice(movedIndex, 1)
+		driverSequence.sequences.splice(insertIndex, 0, movedSequence)
 		this.props.onStageChange(stage, true)
 	}
 
