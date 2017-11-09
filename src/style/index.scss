@@ -9,7 +9,7 @@
 @import 'home/Browser';
 @import 'puppet/PuppetEditor';
 @import 'stage/StageEditor';
-@import url( 'https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Inconsolata');
+@import url('https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Inconsolata');
 
 body {
 	font-family: 'Droid Sans Mono', 'Inconsolata', 'Courier', monospace;
@@ -17,7 +17,6 @@ body {
 	color: $primary-color;
 	background-color: $deep-background-color;
 	margin: 0;
-	overflow: hidden;
 
 	:not(input)::selection {
 		background: none;

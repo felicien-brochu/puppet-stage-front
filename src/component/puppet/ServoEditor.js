@@ -21,6 +21,7 @@ export default class ServoEditor extends React.Component {
 		this.handleMinConfirmed = this.handleMinConfirmed.bind(this)
 		this.handleMaxChange = this.handleMaxChange.bind(this)
 		this.handleMaxConfirmed = this.handleMaxConfirmed.bind(this)
+		this.handleInvertedChange = this.handleInvertedChange.bind(this)
 	}
 
 	render() {
@@ -78,6 +79,13 @@ export default class ServoEditor extends React.Component {
 							onValueConfirmed={this.handleMaxConfirmed}
 						/>
 					</div>
+					<div className="row">
+						inverted
+						<input
+							type="checkbox"
+							checked={this.props.servo.inverted}
+							onChange={this.handleInvertedChange}/>
+					</div>
 				</div>
 			</div>
 		)
@@ -124,6 +132,14 @@ export default class ServoEditor extends React.Component {
 			...this.props.servo
 		}
 		servo.max = max
+		this.props.onChange(servo)
+	}
+
+	handleInvertedChange(e) {
+		let servo = {
+			...this.props.servo
+		}
+		servo.inverted = e.target.checked
 		this.props.onChange(servo)
 	}
 
