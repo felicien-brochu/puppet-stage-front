@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import UUID from '../../../util/uuid'
 import model from '../../../util/model'
 import colorClasses from '../colorclasses'
+import LipSync from '../LipSync'
 import {
 	ContextMenuTrigger,
 	ContextMenu,
@@ -10,6 +11,7 @@ import {
 } from 'react-contextmenu'
 import DriverSequenceModal from './modal/DriverSequenceModal'
 import BasicSequenceModal from './modal/BasicSequenceModal'
+import LipSyncModal from './modal/LipSyncModal'
 import ConfirmModal from './modal/ConfirmModal'
 import DriverSequenceItem from './DriverSequenceItem'
 import SequenceListActionBar from './SequenceListActionBar'
@@ -20,6 +22,7 @@ const
 	EDIT_DRIVER_SEQUENCE = "EDIT_DRIVER_SEQUENCE",
 	REMOVE_DRIVER_SEQUENCE = "REMOVE_DRIVER_SEQUENCE",
 	ADD_BASIC_SEQUENCE = "ADD_BASIC_SEQUENCE",
+	LIP_SYNC_SEQUENCE = "LIP_SYNC_SEQUENCE",
 	EDIT_BASIC_SEQUENCE = "EDIT_BASIC_SEQUENCE",
 	REMOVE_BASIC_SEQUENCE = "REMOVE_BASIC_SEQUENCE"
 
@@ -67,13 +70,18 @@ export default class SequenceList extends React.Component {
 				sequence: null,
 			},
 
+			lipSyncModal: {
+				show: false,
+				driverSequence: null,
+			},
+
 			confirmModal: {
 				show: false,
 				target: null,
 				title: "Confirmation",
 				message: "Are you sure?",
 				onConfirm: null,
-			}
+			},
 		}
 
 		this.handleContextMenuClick = this.handleContextMenuClick.bind(this)
@@ -84,6 +92,9 @@ export default class SequenceList extends React.Component {
 		this.handleCreateUpdateDriverSequence = this.handleCreateUpdateDriverSequence.bind(this)
 		this.handleCancelDriverSequenceModal = this.handleCancelDriverSequenceModal.bind(this)
 		this.handleRemoveDriverSequenceConfirm = this.handleRemoveDriverSequenceConfirm.bind(this)
+		this.handleNewLipSyncSequence = this.handleNewLipSyncSequence.bind(this)
+		this.handleCancelLipSyncModal = this.handleCancelLipSyncModal.bind(this)
+		this.handleCreateLipSyncSequence = this.handleCreateLipSyncSequence.bind(this)
 		this.handleCreateUpdateBasicSequence = this.handleCreateUpdateBasicSequence.bind(this)
 		this.handleCancelBasicSequenceModal = this.handleCancelBasicSequenceModal.bind(this)
 		this.handleRemoveBasicSequenceConfirm = this.handleRemoveBasicSequenceConfirm.bind(this)
@@ -147,6 +158,12 @@ export default class SequenceList extends React.Component {
 						onClick={this.handleContextMenuClick}
 					>
 						Add Basic Sequence
+					</MenuItem>
+					<MenuItem
+						data={{action: LIP_SYNC_SEQUENCE}}
+						onClick={this.handleContextMenuClick}
+					>
+						New Lip Sync Sequence
 					</MenuItem>
 				</ContextMenu>
 
@@ -234,6 +251,19 @@ export default class SequenceList extends React.Component {
 				/>
 			)
 		}
+
+		if (this.state.lipSyncModal.driverSequence) {
+			modals.push(
+				<LipSyncModal
+					key="LipSyncModal"
+					isOpen={this.state.lipSyncModal.show}
+					driverSequence={this.state.lipSyncModal.driverSequence}
+					onConfirm={this.handleCreateLipSyncSequence}
+					onCancel={this.handleCancelLipSyncModal}
+				/>
+			)
+		}
+
 		if (this.state.confirmModal.show) {
 			modals.push(
 				<ConfirmModal
@@ -269,6 +299,9 @@ export default class SequenceList extends React.Component {
 				break
 			case ADD_BASIC_SEQUENCE:
 				this.handleAddBasicSequence(data.sequence)
+				break
+			case LIP_SYNC_SEQUENCE:
+				this.handleNewLipSyncSequence(data.sequence)
 				break
 			case EDIT_BASIC_SEQUENCE:
 				this.handleEditBasicSequence(data.sequence)
@@ -378,6 +411,61 @@ export default class SequenceList extends React.Component {
 			driverSequenceModal: {
 				show: false,
 				sequence: null,
+			},
+		})
+	}
+
+	handleNewLipSyncSequence(driverSequence) {
+		this.setState({
+			lipSyncModal: {
+				show: true,
+				driverSequence: driverSequence,
+			},
+		})
+	}
+
+	handleCreateLipSyncSequence(driverSequence, text) {
+		let keyframes = LipSync.generateKeyframes(text)
+
+		if (keyframes.length > 0) {
+			UUID.getUUID().then((uuid) => {
+				let servo = model.getServo(this.props.puppet.boards, driverSequence.servoID)
+
+				let defaultValue = (servo.defaultPosition - servo.min) / (servo.max - servo.min) * 100,
+					sequence = {
+						id: uuid,
+						name: 'Lip Sync',
+						defaultValue: defaultValue,
+						start: 0,
+						duration: this.props.stage.duration, // 10 s = 1e10 ns
+						slave: false,
+						playEnabled: true,
+						previewEnabled: false,
+						showGraph: false,
+						keyframes: keyframes,
+					}
+
+				if (typeof this.props.onNewBasicSequence === 'function') {
+					this.props.onNewBasicSequence(sequence, driverSequence)
+				}
+			}).catch((error) => {
+				console.error(error)
+			})
+		}
+
+		this.setState({
+			lipSyncModal: {
+				show: false,
+				driverSequence: null,
+			},
+		})
+	}
+
+	handleCancelLipSyncModal() {
+		this.setState({
+			lipSyncModal: {
+				show: false,
+				driverSequence: null,
 			},
 		})
 	}

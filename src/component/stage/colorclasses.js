@@ -5,7 +5,6 @@ const colorClasses = [
 	'peach',
 	'red',
 	'aqua',
-	'yellow',
 	'blue',
 	'darkgreen',
 	'pink',
