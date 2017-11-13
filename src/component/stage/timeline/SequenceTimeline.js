@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import TimelineAudioSequence from './TimelineAudioSequence'
 import TimelineDriverSequence from './TimelineDriverSequence'
 import SelectionOverlay from './SelectionOverlay'
 
@@ -15,6 +16,7 @@ export default class SequenceTimeline extends React.Component {
 			width: PropTypes.number.isRequired,
 		}).isRequired,
 		scrollY: PropTypes.number.isRequired,
+		audioBuffer: PropTypes.object,
 
 		onSelectKeyframes: PropTypes.func.isRequired,
 		onUnselectKeyframes: PropTypes.func.isRequired,
@@ -51,17 +53,30 @@ export default class SequenceTimeline extends React.Component {
 	}
 
 	render() {
-		let driverSequences = []
+		let sequences = []
+
+		if (this.props.audioBuffer) {
+			sequences.push(
+				<TimelineAudioSequence
+					key="TimelineAudioSequence"
+
+					audioBuffer={this.props.audioBuffer}
+					timeline={this.props.timeline}/>
+			)
+		}
+
 		for (let i = 0; i < this.props.sequences.length; i++) {
 			let driverSequence = this.props.sequences[i]
-			driverSequences.push(
+			sequences.push(
 				<TimelineDriverSequence
 					ref={sequence => this.sequenceViews[i] = sequence}
 					key={driverSequence.id}
+
 					sequence={driverSequence}
 					timeline={this.props.timeline}
 					selectedKeyframes={this.props.selectedKeyframes}
 					selectingKeyframes={this.state.selection.selectingKeyframes}
+
 					onKeyframeMouseDown={this.props.onSingleKeyframeMouseDown}
 					onBasicSequenceTimeChange={this.props.onBasicSequenceTimeChange}
 				/>
@@ -80,7 +95,7 @@ export default class SequenceTimeline extends React.Component {
 					style={{
 						top: -this.props.scrollY,
 					}}>
-					{driverSequences}
+					{sequences}
 				</ul>
 			</div>
 		)

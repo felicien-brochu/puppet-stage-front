@@ -1,11 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import model from '../../util/model'
+import fetchAPI from '../../util/api'
 import {
 	entries
 } from '../../util/utils'
 import units from '../../util/units'
 import KeyframeHelper from './KeyframeHelper'
+import StageSettingsModal from './StageSettingsModal'
 import SequenceList from './sequence-list/SequenceList'
 import Timeline from './timeline/Timeline'
 
@@ -17,6 +19,8 @@ export default class SequenceEditor extends React.Component {
 		currentTime: PropTypes.number.isRequired,
 		playing: PropTypes.bool.isRequired,
 		saveState: PropTypes.oneOf(['saved', 'saving', 'modified', 'traveled']).isRequired,
+		audioBuffer: PropTypes.object,
+
 		onStageChange: PropTypes.func.isRequired,
 		onCurrentTimeChange: PropTypes.func.isRequired,
 		onStartPlaying: PropTypes.func.isRequired,
@@ -38,6 +42,8 @@ export default class SequenceEditor extends React.Component {
 				driverSequences: [],
 				basicSequences: [],
 			},
+
+			showStageSettingsModal: false,
 		}
 
 		this.handleScrollY = this.handleScrollY.bind(this)
@@ -57,10 +63,14 @@ export default class SequenceEditor extends React.Component {
 		this.handleTranslateKeyframes = this.handleTranslateKeyframes.bind(this)
 		this.handleTimeWindowChange = this.handleTimeWindowChange.bind(this)
 		this.handleBasicSequenceTimeChange = this.handleBasicSequenceTimeChange.bind(this)
+		this.handleOpenStageSettings = this.handleOpenStageSettings.bind(this)
+		this.handleUpdateStageSettings = this.handleUpdateStageSettings.bind(this)
+		this.handleCancelStageSettingsModal = this.handleCancelStageSettingsModal.bind(this)
 		this.handleShowGraphChange = this.handleShowGraphChange.bind(this)
 		this.handleSelectDriverSequence = this.handleSelectDriverSequence.bind(this)
 		this.handleSelectBasicSequence = this.handleSelectBasicSequence.bind(this)
 		this.handleUnselectAll = this.handleUnselectAll.bind(this)
+		this.handleMuteChange = this.handleMuteChange.bind(this)
 
 		this.handleCurrentTimeChange = this.handleCurrentTimeChange.bind(this)
 		this.handleGoToTime = this.handleGoToTime.bind(this)
@@ -136,6 +146,7 @@ export default class SequenceEditor extends React.Component {
 					selectedDriverSequences={this.state.selection.driverSequences}
 					selectedBasicSequences={this.state.selection.basicSequences}
 
+					onOpenStageSettings={this.handleOpenStageSettings}
 					onStartPlaying={this.props.onStartPlaying}
 					onStopPlaying={this.props.onStopPlaying}
 					onScrollY={this.handleScrollY}
@@ -151,6 +162,7 @@ export default class SequenceEditor extends React.Component {
 					onSelectDriverSequence={this.handleSelectDriverSequence}
 					onSelectBasicSequence={this.handleSelectBasicSequence}
 					onUnselectAll={this.handleUnselectAll}
+					onMuteChange={this.handleMuteChange}
 				/>
 				<Timeline
 					stage={this.props.stage}
@@ -160,6 +172,7 @@ export default class SequenceEditor extends React.Component {
 					startTime={this.state.startTime}
 					endTime={this.state.endTime}
 					showGraph={this.state.showGraph}
+					audioBuffer={this.props.audioBuffer}
 
 					onScrollY={this.handleScrollY}
 					onCurrentTimeChange={this.handleCurrentTimeChange}
@@ -172,8 +185,25 @@ export default class SequenceEditor extends React.Component {
 					onBasicSequenceTimeChange={this.handleBasicSequenceTimeChange}
 					onBasicSequenceChange={this.handleBasicSequenceChange}
 				/>
+
+				{this.renderModals()}
 			</div>
 		)
+	}
+
+	renderModals() {
+		let modals = []
+
+		modals.push(
+			<StageSettingsModal
+				key="StageSettingsModal"
+				stage={this.props.stage}
+				isOpen={this.state.showStageSettingsModal}
+				onConfirm={this.handleUpdateStageSettings}
+				onCancel={this.handleCancelStageSettingsModal}/>
+		)
+
+		return modals
 	}
 
 	renderSVGDefs() {
@@ -254,6 +284,12 @@ export default class SequenceEditor extends React.Component {
 							strokeWidth: "10px",
 							fill: "none",
 					}}/>
+
+					<g id="sound-shape">
+						<polygon points="9.95 38.15 9.95 64.74 32.11 64.74 51.31 82.47 51.31 18.95 32.11 38.15 9.95 38.15"/>
+						<path d="M59.17,33.41V66.53a18.32,18.32,0,0,0,0-33.12Z"/>
+						<path d="M59.17,73.4v8.87a33.24,33.24,0,0,0,0-64.6v8.87a24.71,24.71,0,0,1,0,46.87Z"/>
+					</g>
 
 
 					<g id="graph-button-shape" className="stroke-only">
@@ -994,6 +1030,56 @@ export default class SequenceEditor extends React.Component {
 		this.setState({
 			selection: selection,
 		})
+		this.fireStageChange(stage, true)
+	}
+
+	handleOpenStageSettings() {
+		this.setState({
+			showStageSettingsModal: true,
+		})
+	}
+
+	handleUpdateStageSettings(stage, audioFile) {
+		new Promise((resolve, reject) => {
+				if (audioFile) {
+					const fileName = `${stage.id}-${audioFile.name}`
+					const reader = new FileReader();
+					reader.addEventListener("loadend", () => {
+						fetchAPI(
+							`/audio/${fileName}`, {
+								method: 'PUT',
+								body: reader.result,
+							},
+							resolve,
+							reject,
+							`Error uploading audio file "${audioFile.name}"`)
+					})
+					reader.readAsDataURL(audioFile);
+					stage.audio.file = fileName
+
+				} else {
+					resolve()
+				}
+			})
+			.then(() => {
+				this.fireStageChange(stage, true)
+			})
+			.catch((error) => console.error(error))
+
+		this.setState({
+			showStageSettingsModal: false,
+		})
+	}
+
+	handleCancelStageSettingsModal() {
+		this.setState({
+			showStageSettingsModal: false,
+		})
+	}
+
+	handleMuteChange(mute) {
+		let stage = JSON.parse(JSON.stringify(this.props.stage))
+		stage.audio.mute = mute
 		this.fireStageChange(stage, true)
 	}
 }

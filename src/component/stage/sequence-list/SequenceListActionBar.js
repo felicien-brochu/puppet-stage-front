@@ -13,6 +13,7 @@ export default class SequenceListActionBar extends React.Component {
 		stageDuration: PropTypes.number.isRequired,
 		playing: PropTypes.bool.isRequired,
 
+		onOpenStageSettings: PropTypes.func.isRequired,
 		onStartPlaying: PropTypes.func.isRequired,
 		onStopPlaying: PropTypes.func.isRequired,
 		onGoToTime: PropTypes.func.isRequired,
@@ -22,7 +23,13 @@ export default class SequenceListActionBar extends React.Component {
 	render() {
 		return (
 			<div className="sequence-list-action-bar">
-				<SaveIndicator saveState={this.props.saveState}/>
+				<div className="left-block">
+					<SaveIndicator saveState={this.props.saveState}/>
+
+					<button className="settings-link" href="#" onClick={this.props.onOpenStageSettings}>
+						Settings…
+					</button>
+				</div>
 
 				<PlayerControl
 					playing={this.props.playing}

@@ -13,6 +13,7 @@ import DriverSequenceModal from './modal/DriverSequenceModal'
 import BasicSequenceModal from './modal/BasicSequenceModal'
 import LipSyncModal from './modal/LipSyncModal'
 import ConfirmModal from './modal/ConfirmModal'
+import AudioSequenceItem from './AudioSequenceItem'
 import DriverSequenceItem from './DriverSequenceItem'
 import SequenceListActionBar from './SequenceListActionBar'
 
@@ -47,12 +48,14 @@ export default class SequenceList extends React.Component {
 		onNewBasicSequence: PropTypes.func.isRequired,
 		onBasicSequenceChange: PropTypes.func.isRequired,
 		onGoToTime: PropTypes.func.isRequired,
+		onOpenStageSettings: PropTypes.func.isRequired,
 		onShowGraphChange: PropTypes.func.isRequired,
 		onStartPlaying: PropTypes.func.isRequired,
 		onStopPlaying: PropTypes.func.isRequired,
 		onSelectDriverSequence: PropTypes.func.isRequired,
 		onSelectBasicSequence: PropTypes.func.isRequired,
 		onUnselectAll: PropTypes.func.isRequired,
+		onMuteChange: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -110,6 +113,8 @@ export default class SequenceList extends React.Component {
 					currentTime={this.props.currentTime}
 					stageDuration={this.props.stage.duration}
 					playing={this.props.playing}
+
+					onOpenStageSettings={this.props.onOpenStageSettings}
 					onStartPlaying={this.props.onStartPlaying}
 					onStopPlaying={this.props.onStopPlaying}
 
@@ -190,11 +195,18 @@ export default class SequenceList extends React.Component {
 	}
 
 	renderList() {
-		if (this.props.stage.sequences.length === 0) {
-			return null
+		let sequenceItems = []
+
+		if (this.props.stage.audio.file) {
+			sequenceItems.push(
+				<AudioSequenceItem
+					key="AudioSequenceItem"
+					fileName={this.props.stage.audio.file}
+					mute={this.props.stage.audio.mute}
+					onMuteChange={this.props.onMuteChange}/>
+			)
 		}
 
-		let sequenceItems = []
 		for (let i = 0; i < this.props.stage.sequences.length; i++) {
 			let sequence = this.props.stage.sequences[i]
 			sequenceItems.push(

@@ -19,6 +19,35 @@
 		background-color: $active-background-color;
 		box-shadow: 0 1px 3px $deep-background-color;
 
+		.left-block {
+			display: flex;
+			align-items: center;
+
+			.save-indicator {
+				display: inline-block;
+			}
+
+			.settings-link {
+				display: inline;
+				color: $accent-color;
+				border: 0;
+				background-color: transparent;
+				cursor: pointer;
+				font-size: 11px;
+				text-decoration: none;
+				flex-grow: 0;
+
+				&:hover {
+					color: $accent-color;
+					text-decoration: underline;
+				}
+
+				&:active {
+					color: $primary-color;
+				}
+			}
+		}
+
 		.toggle-button {
 			width: 24px;
 			height: 24px;
@@ -63,6 +92,22 @@
 			margin: 0;
 			padding: 0;
 			list-style: none;
+
+			.audio-sequence-item {
+				display: flex;
+				background-color: $background-color;
+				height: 30px;
+				padding: 0 5px;
+				font-size: 12px;
+				font-weight: bold;
+				display: flex;
+				justify-content: left;
+				align-items: center;
+				vertical-align: top;
+				white-space: pre;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
 
 			.sequence-label {
 				display: inline-block;

@@ -2,9 +2,9 @@ import UUID from '../../util/uuid'
 import fetchAPI from '../../util/api'
 
 const
-	MIN_PREV_HISTORY_LENGTH = 100,
-	MIN_NEXT_HISTORY_LENGTH = 100,
-	BATCH_HISTORY_LENGTH = 200
+	MIN_PREV_HISTORY_LENGTH = 10,
+	MIN_NEXT_HISTORY_LENGTH = 10,
+	BATCH_HISTORY_LENGTH = 20
 
 
 export default class StageHistory {

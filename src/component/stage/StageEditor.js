@@ -1,10 +1,12 @@
 import React from 'react'
-import SplitPane from 'react-split-pane'
 import Alert from 'react-s-alert'
 import {
 	Loader
 } from 'react-loaders'
-import fetchAPI from '../../util/api'
+import {
+	host,
+	fetchAPI
+} from '../../util/api'
 import {
 	entries
 } from '../../util/utils'
@@ -22,6 +24,7 @@ export default class StageEditor extends React.Component {
 			stage: null,
 			currentTime: 0,
 			playing: false,
+			audioBuffer: null,
 		}
 
 		this.handleStageChange = this.handleStageChange.bind(this)
@@ -46,11 +49,23 @@ export default class StageEditor extends React.Component {
 				s: this.handleSave,
 			},
 		}
+		this.audioContext = new AudioContext()
 	}
 
 	componentWillMount() {
 		this.initHistory()
+		this.initAudio()
 		this.initGlobalEvents()
+	}
+
+	componentDidMount() {
+		this.initAudio()
+	}
+
+	componentDidUpdate(prevProps, prevState) {
+		if (this.state.stage && (!prevState.stage || !prevState.stage.audio.file || prevState.stage.audio.file !== this.state.stage.audio.file)) {
+			this.initAudio()
+		}
 	}
 
 	componentWillUnmount() {
@@ -71,20 +86,19 @@ export default class StageEditor extends React.Component {
 		if (this.state.puppet && this.state.stage) {
 			return (
 				<div className="stage-editor">
-					{/* <SplitPane split="horizontal" primary="second" defaultSize="80vh" minSize={100}>
-					<div className="top-panel"/> */}
 					<SequenceEditor
 						stage={this.state.stage}
 						puppet={this.state.puppet}
 						currentTime={this.state.currentTime}
 						playing={this.state.playing}
 						saveState={this.state.saveState}
+						audioBuffer={this.state.audioBuffer}
+
 						onStageChange={this.handleStageChange}
 						onCurrentTimeChange={this.handleCurrentTimeChange}
 						onStartPlaying={this.handleStartStopPlayer}
 						onStopPlaying={this.handleStartStopPlayer}
 					/>
-					{/* </SplitPane> */}
 
 					<Alert stack={true} timeout={3000} />
 				</div>
@@ -104,6 +118,29 @@ export default class StageEditor extends React.Component {
 			.then(() => {
 				this.handleStageRetrieved(this.history.getActiveRevision())
 			})
+	}
+
+	initAudio() {
+		if (this.state.stage && this.state.stage.audio.file) {
+			let path = `http://${host}/audio/${this.state.stage.audio.file}`
+
+			fetch(path, {
+					method: 'GET',
+					mode: 'cors',
+				})
+				.then(function(response) {
+					return response.arrayBuffer();
+				})
+				.then((bodyBuffer) => {
+					return this.audioContext.decodeAudioData(bodyBuffer)
+				})
+				.then((audioBuffer) => {
+					this.setState({
+						audioBuffer: audioBuffer,
+					})
+				})
+				.catch((err) => console.error(err))
+		}
 	}
 
 	handleStageChange(stage, save = true) {

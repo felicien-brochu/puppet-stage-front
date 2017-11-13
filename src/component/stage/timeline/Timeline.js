@@ -26,6 +26,7 @@ export default class Timeline extends React.Component {
 		startTime: PropTypes.number.isRequired,
 		endTime: PropTypes.number.isRequired,
 		showGraph: PropTypes.bool.isRequired,
+		audioBuffer: PropTypes.object,
 
 		onScrollY: PropTypes.func.isRequired,
 		onCurrentTimeChange: PropTypes.func.isRequired,
@@ -223,6 +224,7 @@ export default class Timeline extends React.Component {
 					sequences={this.props.stage.sequences}
 					selectedKeyframes={this.props.selectedKeyframes}
 					scrollY={this.props.scrollY}
+					audioBuffer={this.props.audioBuffer}
 
 					onSelectKeyframes={this.props.onSelectKeyframes}
 					onUnselectKeyframes={this.props.onUnselectKeyframes}
