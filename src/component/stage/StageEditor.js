@@ -122,7 +122,7 @@ export default class StageEditor extends React.Component {
 
 	initAudio() {
 		if (this.state.stage && this.state.stage.audio.file) {
-			let path = `http://${host}/audio/${this.state.stage.audio.file}`
+			let path = `http://${host}/audio/${this.state.stage.id}/${this.state.stage.audio.file}`
 
 			fetch(path, {
 					method: 'GET',

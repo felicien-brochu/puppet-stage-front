@@ -25,7 +25,7 @@ export default class AudioSequenceItem extends React.Component {
 					onChange={this.handleMuteChange}/>
 
 				<span className="audio-sequence-label">
-					{this.props.fileName.substring(37)}
+					{this.props.fileName}
 				</span>
 			</li>
 		)

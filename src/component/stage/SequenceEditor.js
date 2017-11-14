@@ -1042,11 +1042,11 @@ export default class SequenceEditor extends React.Component {
 	handleUpdateStageSettings(stage, audioFile) {
 		new Promise((resolve, reject) => {
 				if (audioFile) {
-					const fileName = `${stage.id}-${audioFile.name}`
+					const fileName = audioFile.name
 					const reader = new FileReader();
 					reader.addEventListener("loadend", () => {
 						fetchAPI(
-							`/audio/${fileName}`, {
+							`/audio/${stage.id}/${fileName}`, {
 								method: 'PUT',
 								body: reader.result,
 							},
