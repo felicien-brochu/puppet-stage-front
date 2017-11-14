@@ -12,6 +12,7 @@ import {
 } from '../../util/utils'
 import StageHistory from './StageHistory'
 import Player from './Player'
+import AudioPlayer from './AudioPlayer'
 import SequenceEditor from './SequenceEditor'
 
 export default class StageEditor extends React.Component {
@@ -135,6 +136,7 @@ export default class StageEditor extends React.Component {
 					return this.audioContext.decodeAudioData(bodyBuffer)
 				})
 				.then((audioBuffer) => {
+					this.audioPlayer = new AudioPlayer(audioBuffer, this.audioContext)
 					this.setState({
 						audioBuffer: audioBuffer,
 					})
@@ -164,6 +166,10 @@ export default class StageEditor extends React.Component {
 				this.player.stop()
 			}
 			this.player.preview(this.state.stage, currentTime)
+		}
+
+		if (this.audioPlayer && !this.state.stage.audio.mute) {
+			this.audioPlayer.playPreview(currentTime)
 		}
 
 		this.setState({
