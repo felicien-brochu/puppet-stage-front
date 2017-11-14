@@ -19,4 +19,22 @@ export default class AudioPlayer {
 		source.connect(this.context.destination)
 		source.start(0, from, PREVIEW_DURATION)
 	}
+
+	play(from, stageDuration) {
+		from /= 1e9
+		if (from > this.buffer.duration) {
+			return
+		}
+
+		this.source = this.context.createBufferSource()
+		this.source.buffer = this.buffer
+		this.source.connect(this.context.destination)
+		this.source.start(0, from, (stageDuration / 1e9) - from)
+	}
+
+	stop() {
+		if (this.source) {
+			this.source.stop()
+		}
+	}
 }

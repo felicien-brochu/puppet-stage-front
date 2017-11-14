@@ -273,6 +273,10 @@ export default class StageEditor extends React.Component {
 	}
 
 	handlePlayStop() {
+		if (this.audioPlayer) {
+			this.audioPlayer.stop()
+		}
+
 		if (this.state.playing) {
 			this.setState({
 				playing: false,
@@ -281,6 +285,10 @@ export default class StageEditor extends React.Component {
 	}
 
 	handlePlayStart() {
+		if (this.audioPlayer && !this.state.stage.audio.mute) {
+			this.audioPlayer.play(this.state.currentTime, this.state.stage.duration)
+		}
+
 		if (!this.state.playing) {
 			this.setState({
 				playing: true,
