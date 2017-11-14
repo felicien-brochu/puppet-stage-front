@@ -1,0 +1,9 @@
+{
+  "name": "Puppet Stage",
+  "main": "http://localhost:3000",
+  "window": {
+	"icon": "./favicon.png",
+	"min_width": 1024,
+	"min_height": 768
+  }
+}
