@@ -4,6 +4,7 @@ import classNames from 'classnames'
 import {
 	ContextMenuTrigger
 } from 'react-contextmenu'
+import dragDrop from '../../../util/dragdrop'
 import KeyframeHelper from '../KeyframeHelper'
 import NumberInput from '../../base/NumberInput'
 import ToggleButton from './ToggleButton'
@@ -22,6 +23,7 @@ export default class BasicSequenceItem extends React.Component {
 		onBasicSequenceMove: PropTypes.func.isRequired,
 		onSelect: PropTypes.func.isRequired,
 	}
+
 	constructor(props) {
 		super(props)
 
@@ -205,10 +207,11 @@ export default class BasicSequenceItem extends React.Component {
 
 
 	handleDragStart(e) {
-		e.dataTransfer.setData("application/json", JSON.stringify({
+		dragDrop.data = {
 			type: 'basicSequence',
 			sequenceID: this.props.sequence.id,
-		}))
+		}
+		e.dataTransfer.setData("application/json", JSON.stringify(dragDrop.data))
 		e.dataTransfer.dropEffect = 'move'
 	}
 
@@ -219,7 +222,8 @@ export default class BasicSequenceItem extends React.Component {
 	}
 
 	handleDragOver(e) {
-		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		let data = dragDrop.data
+
 		if (data.type === 'basicSequence' && data.sequenceID !== this.props.sequence.id) {
 			e.preventDefault()
 			e.dataTransfer.dropEffect = 'move'
@@ -242,7 +246,7 @@ export default class BasicSequenceItem extends React.Component {
 	}
 
 	handleDrop(e) {
-		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		let data = dragDrop.data
 
 		if (data.type === 'basicSequence' && data.sequenceID !== this.props.sequence.id) {
 			let relativeIndex

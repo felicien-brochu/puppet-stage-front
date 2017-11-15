@@ -4,6 +4,7 @@ import classNames from 'classnames'
 import {
 	ContextMenuTrigger
 } from 'react-contextmenu'
+import dragDrop from '../../../util/dragdrop'
 import colorClasses from '../colorclasses'
 import BasicSequenceItem from './BasicSequenceItem'
 import ExpandButton from './ExpandButton'
@@ -170,10 +171,11 @@ export default class DriverSequenceItem extends React.Component {
 	}
 
 	handleDragStart(e) {
-		e.dataTransfer.setData("application/json", JSON.stringify({
+		dragDrop.data = {
 			type: 'driverSequence',
 			sequenceID: this.props.sequence.id,
-		}))
+		}
+		e.dataTransfer.setData("application/json", JSON.stringify(dragDrop.data))
 		e.dataTransfer.dropEffect = 'move'
 	}
 
@@ -192,7 +194,8 @@ export default class DriverSequenceItem extends React.Component {
 	}
 
 	handleDragOver(e) {
-		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		let data = dragDrop.data
+		console.log("#######OVER", data);
 		if (data.type === 'driverSequence' && data.sequenceID !== this.props.sequence.id) {
 			e.preventDefault()
 			e.dataTransfer.dropEffect = 'move'
@@ -215,7 +218,8 @@ export default class DriverSequenceItem extends React.Component {
 	}
 
 	handleTitleDragOver(e) {
-		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		let data = dragDrop.data
+
 		if (data.type === 'basicSequence') {
 			e.preventDefault()
 			e.dataTransfer.dropEffect = 'move'
@@ -229,7 +233,7 @@ export default class DriverSequenceItem extends React.Component {
 	}
 
 	handleDrop(e) {
-		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		let data = dragDrop.data
 
 		if (data.type === 'driverSequence' && data.sequenceID !== this.props.sequence.id) {
 			let relativeIndex
@@ -250,7 +254,7 @@ export default class DriverSequenceItem extends React.Component {
 	}
 
 	handleTitleDrop(e) {
-		let data = JSON.parse(e.dataTransfer.getData("application/json"))
+		let data = dragDrop.data
 
 		if (data.type === 'basicSequence') {
 			this.props.onBasicSequenceMove(this.props.sequence.id, data.sequenceID, null, 0)
