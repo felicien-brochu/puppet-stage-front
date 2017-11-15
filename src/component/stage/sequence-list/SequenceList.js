@@ -142,7 +142,6 @@ export default class SequenceList extends React.Component {
 					>
 						New Driver Sequence
 					</MenuItem>
-					<MenuItem divider />
 				</ContextMenu>
 
 				<ContextMenu id="driver-sequence-context-menu">
