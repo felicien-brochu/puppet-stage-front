@@ -33,46 +33,44 @@ export default class KeyframeHelper {
 		// the first or the last of selection. Store the fix point of
 		// time for the scale in var refTime.
 		if (scaleEnabled) {
-			if (minT !== maxT) {
-				let keyframe = KeyframeHelper.getKeyframeFromRef(stage.sequences, targetKeyframe)
-				let
-					isMinT = keyframe.p.t === minT,
-					isMaxT = keyframe.p.t === maxT,
-					isMinV = keyframe.p.v === minV,
-					isMaxV = keyframe.p.v === maxV
+			let keyframe = KeyframeHelper.getKeyframeFromRef(stage.sequences, targetKeyframe)
+			let
+				isMinT = keyframe.p.t === minT,
+				isMaxT = keyframe.p.t === maxT,
+				isMinV = keyframe.p.v === minV,
+				isMaxV = keyframe.p.v === maxV
 
-				scaleTime = isMinT || isMaxT
-				scaleValue = modifyValue && (isMinV || isMaxV)
-				if (scaleTime || scaleValue) {
-					mode = 'scale'
+			scaleTime = isMinT || isMaxT
+			scaleValue = modifyValue && (isMinV || isMaxV)
+			if (scaleTime || scaleValue) {
+				mode = 'scale'
+			}
+
+			if (scaleTime) {
+				if (isMinT) {
+					refTime = maxT
+					timeInterval = minT - maxT
+					deltaTMin = -minT
+					deltaTMax = stage.duration - minT
+				} else if (isMaxT) {
+					refTime = minT
+					timeInterval = maxT - minT
+					deltaTMin = -maxT
+					deltaTMax = stage.duration - maxT
 				}
+			}
 
-				if (scaleTime) {
-					if (isMinT) {
-						refTime = maxT
-						timeInterval = minT - maxT
-						deltaTMin = -minT
-						deltaTMax = stage.duration - minT
-					} else if (isMaxT) {
-						refTime = minT
-						timeInterval = maxT - minT
-						deltaTMin = -maxT
-						deltaTMax = stage.duration - maxT
-					}
-				}
-
-				if (scaleValue) {
-					if (isMinV) {
-						refValue = maxV
-						valueInterval = minV - maxV
-						deltaVMin = -minV
-						deltaVMax = units.MAX_VALUE - minV
-					} else if (isMaxV) {
-						refValue = minV
-						valueInterval = maxV - minV
-						deltaVMin = -maxV
-						deltaVMax = units.MAX_VALUE - maxV
-					}
+			if (scaleValue) {
+				if (isMinV) {
+					refValue = maxV
+					valueInterval = minV - maxV
+					deltaVMin = -minV
+					deltaVMax = units.MAX_VALUE - minV
+				} else if (isMaxV) {
+					refValue = minV
+					valueInterval = maxV - minV
+					deltaVMin = -maxV
+					deltaVMax = units.MAX_VALUE - maxV
 				}
 			}
 		}
@@ -184,7 +182,10 @@ export default class KeyframeHelper {
 					}
 				} else if (mode === 'scale') {
 					if (scaleTime) {
-						let scaleTimeFactor = (timeInterval + deltaT) / timeInterval
+						let scaleTimeFactor = 0
+						if (timeInterval !== 0) {
+							scaleTimeFactor = (timeInterval + deltaT) / timeInterval
+						}
 						KeyframeHelper.scaleKeyframesTime(keyframes, scaleTimeFactor, refTime)
 					}
 					if (scaleValue) {

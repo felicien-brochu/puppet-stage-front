@@ -327,7 +327,6 @@ class Look {
 		lastBlinkT = this.getLastBlinkTime()
 		// Feel the gaps between the blinks
 		while (t - lastBlinkT > BLINK_AVG_INTERVAL) {
-
 			let
 				min = Math.max(lastBlinkT, 0) + BLINK_AVG_INTERVAL - BLINK_RANDOM_INTERVAL,
 				max = Math.min(lastBlinkT + BLINK_AVG_INTERVAL + BLINK_RANDOM_INTERVAL, t),
