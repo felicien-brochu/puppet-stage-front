@@ -1,5 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import {
+	Link
+} from 'react-router-dom'
 import SaveIndicator from './SaveIndicator'
 import PlayerControl from './PlayerControl'
 import ToggleButton from './ToggleButton'
@@ -24,6 +27,9 @@ export default class SequenceListActionBar extends React.Component {
 		return (
 			<div className="sequence-list-action-bar">
 				<div className="left-block">
+					<Link className="puppet-stage-logo" to='/'>
+						<img src="/favicon.png" alt="Puppet Stage Logo"/>
+					</Link>
 					<SaveIndicator saveState={this.props.saveState}/>
 
 					<button className="settings-link" href="#" onClick={this.props.onOpenStageSettings}>

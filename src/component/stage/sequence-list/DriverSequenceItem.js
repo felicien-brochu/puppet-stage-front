@@ -195,7 +195,6 @@ export default class DriverSequenceItem extends React.Component {
 
 	handleDragOver(e) {
 		let data = dragDrop.data
-		console.log("#######OVER", data);
 		if (data.type === 'driverSequence' && data.sequenceID !== this.props.sequence.id) {
 			e.preventDefault()
 			e.dataTransfer.dropEffect = 'move'

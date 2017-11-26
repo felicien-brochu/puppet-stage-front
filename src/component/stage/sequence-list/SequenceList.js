@@ -2,6 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import UUID from '../../../util/uuid'
 import model from '../../../util/model'
+import {
+	entries
+} from '../../../util/utils'
 import colorClasses from '../colorclasses'
 import LipSync from '../LipSync'
 import {
@@ -13,6 +16,7 @@ import DriverSequenceModal from './modal/DriverSequenceModal'
 import BasicSequenceModal from './modal/BasicSequenceModal'
 import LipSyncModal from './modal/LipSyncModal'
 import ConfirmModal from './modal/ConfirmModal'
+import LookGenerator from '../LookGenerator'
 import AudioSequenceItem from './AudioSequenceItem'
 import DriverSequenceItem from './DriverSequenceItem'
 import SequenceListActionBar from './SequenceListActionBar'
@@ -24,6 +28,7 @@ const
 	REMOVE_DRIVER_SEQUENCE = "REMOVE_DRIVER_SEQUENCE",
 	ADD_BASIC_SEQUENCE = "ADD_BASIC_SEQUENCE",
 	LIP_SYNC_SEQUENCE = "LIP_SYNC_SEQUENCE",
+	GENERATE_LOOK_SEQUENCES = "GENERATE_LOOK_SEQUENCES",
 	EDIT_BASIC_SEQUENCE = "EDIT_BASIC_SEQUENCE",
 	REMOVE_BASIC_SEQUENCE = "REMOVE_BASIC_SEQUENCE"
 
@@ -98,6 +103,7 @@ export default class SequenceList extends React.Component {
 		this.handleNewLipSyncSequence = this.handleNewLipSyncSequence.bind(this)
 		this.handleCancelLipSyncModal = this.handleCancelLipSyncModal.bind(this)
 		this.handleCreateLipSyncSequence = this.handleCreateLipSyncSequence.bind(this)
+		this.handleGenerateLookSequences = this.handleGenerateLookSequences.bind(this)
 		this.handleCreateUpdateBasicSequence = this.handleCreateUpdateBasicSequence.bind(this)
 		this.handleCancelBasicSequenceModal = this.handleCancelBasicSequenceModal.bind(this)
 		this.handleRemoveBasicSequenceConfirm = this.handleRemoveBasicSequenceConfirm.bind(this)
@@ -168,6 +174,13 @@ export default class SequenceList extends React.Component {
 						onClick={this.handleContextMenuClick}
 					>
 						New Lip Sync Sequence
+					</MenuItem>
+					<MenuItem
+						data={{action: GENERATE_LOOK_SEQUENCES}}
+						onClick={this.handleContextMenuClick}
+						disabled={this.props.selectedBasicSequences.length !== 2}
+					>
+						Generate Look Sequences
 					</MenuItem>
 				</ContextMenu>
 
@@ -313,6 +326,9 @@ export default class SequenceList extends React.Component {
 				break
 			case LIP_SYNC_SEQUENCE:
 				this.handleNewLipSyncSequence(data.sequence)
+				break
+			case GENERATE_LOOK_SEQUENCES:
+				this.handleGenerateLookSequences(data.sequence)
 				break
 			case EDIT_BASIC_SEQUENCE:
 				this.handleEditBasicSequence(data.sequence)
@@ -479,6 +495,22 @@ export default class SequenceList extends React.Component {
 				driverSequence: null,
 			},
 		})
+	}
+
+	handleGenerateLookSequences(driverSequence) {
+		if (this.props.selectedBasicSequences.length === 2) {
+			let selectedSequences = this.props.selectedBasicSequences.map(sequenceID => model.getBasicSequence(this.props.stage.sequences, sequenceID))
+
+			LookGenerator.generateLookSequences(selectedSequences, this.props.stage.duration)
+				.then((sequences) => {
+					let newSequence = JSON.parse(JSON.stringify(driverSequence))
+
+					for (let [, sequence] of entries()(sequences)) {
+						newSequence.sequences.push(sequence)
+					}
+					this.props.onDriverSequenceChange(newSequence)
+				})
+		}
 	}
 
 	handleEditBasicSequence(sequence) {

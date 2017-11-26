@@ -4,16 +4,16 @@ const colorClasses = [
 	'seafoam',
 	'peach',
 	'red',
-	'aqua',
 	'blue',
-	'darkgreen',
 	'pink',
 	'green',
-	'purple',
 	'orange',
+	'purple',
 	'brown',
-	'fuchsia',
 	'cyan',
+	'fuchsia',
+	'aqua',
+	'darkgreen',
 ]
 
 export default colorClasses
