@@ -188,7 +188,10 @@ export default class KeyframeHelper {
 						KeyframeHelper.scaleKeyframesTime(keyframes, scaleTimeFactor, refTime)
 					}
 					if (scaleValue) {
-						let scaleValueFactor = (valueInterval + deltaV) / valueInterval
+						let scaleValueFactor = 0
+						if (valueInterval !== 0) {
+							scaleValueFactor = (valueInterval + deltaV) / valueInterval
+						}
 						KeyframeHelper.scaleKeyframesValue(keyframes, scaleValueFactor, refValue)
 					}
 				}
