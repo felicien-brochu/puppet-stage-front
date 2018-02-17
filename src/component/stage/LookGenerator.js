@@ -13,8 +13,8 @@ const BLINK_AVG_INTERVAL = 4e9 // Human is between 2s and 10s. 6s on avg
 const BLINK_RANDOM_INTERVAL = 1e9 // Human is between 2s and 10s. 6s on avg
 const BLINK_THRESHOLD = 40 * Math.PI / 180 // Blink when look moves more than this angle by second
 const LOW_BLINK_THRESHOLD = 20 * Math.PI / 180 // Blink when look moves more than this angle by second and last blink was a while ago
-const EYELID_OPEN_VALUE = 88
-const EYELID_CLOSE_VALUE = 0
+const EYELID_OPEN_VALUE = 30
+const EYELID_CLOSE_VALUE = 100
 
 const EYE_THRESHOLD = 25 * Math.PI / 180 // Move the neck if eyes moves more than this angle. Else only move eyes
 const MAX_TIME_NONFOCUS_EYES = 0.4e9 // Maximum time with eyes away from focus (= neck and eyes not at rest)
