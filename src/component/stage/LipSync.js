@@ -20,15 +20,15 @@ const visemesValueAE = [
 
 // See https://github.com/DanielSWolf/rhubarb-lip-sync#mouth-shapes
 const visemesValueRhubarb = {
-	"X": 30, // Idle
-	"A": 30, // Closed Mouth "P", "B", "M"
-	"B": 59, // "K", "S", "T"...
-	"C": 77, // "HE", "AE"
-	"D": 90, // "AA",
-	"E": 68, // "AO", "ER"
-	"F": 30, // "OW", "W"
-	"G": 44, // "F", "V"
-	"H": 68, // Long "L"
+	"X": 10, // Idle
+	"A": 10, // Closed Mouth "P", "B", "M"
+	"B": 39, // "K", "S", "T"...
+	"C": 57, // "HE", "AE"
+	"D": 70, // "AA",
+	"E": 48, // "AO", "ER"
+	"F": 10, // "OW", "W"
+	"G": 24, // "F", "V"
+	"H": 48, // Long "L"
 }
 
 
