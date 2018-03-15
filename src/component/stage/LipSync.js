@@ -22,21 +22,134 @@ const visemesValueAE = [
 const visemesValueRhubarb = {
 	"X": 10, // Idle
 	"A": 10, // Closed Mouth "P", "B", "M"
-	"B": 39, // "K", "S", "T"...
-	"C": 57, // "HE", "AE"
+	"B": 35, // "K", "S", "T"...
+	"C": 65, // "HE", "AE"
 	"D": 70, // "AA",
 	"E": 48, // "AO", "ER"
-	"F": 10, // "OW", "W"
+	"F": 40, // "OW", "W"
 	"G": 24, // "F", "V"
-	"H": 48, // Long "L"
+	"H": 40, // Long "L"
+}
+
+const papagayoRhubarbMap = {
+	"MBP": "A",
+	"etc": "B",
+	"E": "C",
+	"AI": "D",
+	"O": "E",
+	"U": "F",
+	"WQ": "F",
+	"FV": "G",
+	"L": "H",
+	"rest": "X",
 }
 
 
 
 export default class LipSync {
 
-	static generateKeyframes(text) {
-		let visemes = extractVisemesRhubarb(text)
+	static generateKeyframes(papagayoText) {
+		let lines = papagayoText.split("\n")
+		let word = null
+		let words = []
+
+		for (let line of lines) {
+			if (!line.startsWith("\t\t\t")) {
+				continue
+			}
+
+			// Word line
+			if (!line.startsWith("\t\t\t\t")) {
+				word = LipSync.readPapagayoWord(line)
+				words.push(word)
+			}
+			// Phoneme line
+			else {
+				let phone = LipSync.readPapagayoPhone(line)
+				word.phones.push(phone)
+			}
+		}
+
+		// Fix void space between words
+		for (let i = 1; i < words.length; i++) {
+			if (words[i].start - words[i - 1].end <= 0.011) {
+				words[i - 1].end = words[i].start
+			}
+		}
+
+		let mouthCues = []
+		let lastT = 0
+		let lastPhone
+
+		for (let word of words) {
+			lastPhone = null
+			for (let phoneIndex = 0; phoneIndex < word.size; phoneIndex++) {
+				let phone = word.phones[phoneIndex]
+				// Insert silence
+				if (phoneIndex === 0 && phone.start - lastT > 0) {
+					mouthCues.push({
+						value: papagayoRhubarbMap["rest"],
+						start: lastT,
+						end: phone.start,
+					})
+					lastT = phone.start
+				}
+				// Insert previous phone
+				else if (phoneIndex > 0) {
+					mouthCues.push({
+						value: papagayoRhubarbMap[lastPhone.phone],
+						start: lastT,
+						end: phone.start,
+					})
+					lastT = phone.start
+				}
+
+				// Insert last phone
+				if (phoneIndex === word.size - 1) {
+					mouthCues.push({
+						value: papagayoRhubarbMap[phone.phone],
+						start: phone.start,
+						end: word.end,
+					})
+					lastT = word.end
+				}
+				lastPhone = phone
+			}
+		}
+
+		// Insert final rest mouth cue
+		mouthCues.push({
+			value: papagayoRhubarbMap["rest"],
+			start: lastT,
+			end: lastT + 0.1,
+		})
+		console.log(mouthCues)
+		return LipSync.generateRhubarbKeyframes({
+			mouthCues: mouthCues
+		})
+	}
+
+	static readPapagayoWord(wordLine) {
+		let results = /^\t\t\t(.+)\s(\d+)\s(\d+)\s(\d+)$/.exec(wordLine)
+		return {
+			word: results[1],
+			start: results[2] / 100,
+			end: results[3] / 100,
+			size: results[4],
+			phones: [],
+		}
+	}
+
+	static readPapagayoPhone(phoneLine) {
+		let results = /^\t\t\t\t(\d+)\s(.+)$/.exec(phoneLine)
+		return {
+			phone: results[2],
+			start: results[1] / 100,
+		}
+	}
+
+	static generateRhubarbKeyframes(rhubarbOutput) {
+		let visemes = extractVisemesRhubarb(rhubarbOutput)
 		let keyframes = []
 		let lastP = null
 		for (let viseme of visemes) {
@@ -130,8 +243,7 @@ export default class LipSync {
 	}
 }
 
-function extractVisemesRhubarb(json) {
-	let rhubarbOutput = JSON.parse(json)
+function extractVisemesRhubarb(rhubarbOutput) {
 	let visemes = []
 
 	for (let viseme of rhubarbOutput.mouthCues) {
