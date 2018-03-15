@@ -44,6 +44,9 @@ const papagayoRhubarbMap = {
 	"rest": "X",
 }
 
+const MAX_SPEED = 60 / (12 * units.FRAME_TIME)
+const MAX_ACCELERATION = MAX_SPEED / (6 * units.FRAME_TIME)
+
 
 
 export default class LipSync {
@@ -158,9 +161,9 @@ export default class LipSync {
 				v: visemesValueRhubarb[viseme.type],
 			}
 
-			if (lastP && p.t > lastP.t + 12 * units.FRAME_TIME) {
+			if (lastP && Math.abs(p.v - lastP.v) / (p.t - lastP.t) < MAX_SPEED) {
 				let newP = {
-					t: Math.round(p.t - (10 * units.FRAME_TIME)),
+					t: p.t - Math.round(Math.abs(p.v - lastP.v) / MAX_SPEED),
 					v: lastP.v,
 				}
 				console.log("#########SUP", lastP);
