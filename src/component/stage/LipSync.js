@@ -45,7 +45,7 @@ const papagayoRhubarbMap = {
 }
 
 // const MAX_SPEED = 60 / (12 * units.FRAME_TIME)
-const MAX_ACCELERATION = 60 / (36 * units.FRAME_TIME * units.FRAME_TIME)
+const MAX_ACCELERATION = 60 / (30 * units.FRAME_TIME * units.FRAME_TIME)
 
 
 
@@ -184,24 +184,69 @@ export default class LipSync {
 			lastP = JSON.parse(JSON.stringify(p))
 		}
 
-		const easyEaseFactor = 4
+		// const easyEaseFactor = 4
+		// // Easy ease
+		// for (let i = 0; i < keyframes.length; i++) {
+		// 	let min, max
+		// 	if (i === 0) {
+		// 		min = 0
+		// 	} else {
+		// 		min = keyframes[i - 1].p.t
+		// 	}
+		//
+		// 	if (i === keyframes.length - 1) {
+		// 		max = Number.POSITIVE_INFINITY
+		// 	} else {
+		// 		max = keyframes[i + 1].p.t
+		// 	}
+		//
+		// 	let c1t = Math.max(Math.round(keyframes[i].p.t - (easyEaseFactor * units.FRAME_TIME)), min)
+		// 	let c2t = Math.min(Math.round(keyframes[i].p.t + (easyEaseFactor * units.FRAME_TIME)), max)
+		// 	keyframes[i].c1.t = c1t
+		// 	keyframes[i].c2.t = c2t
+		// }
+
 		// Easy ease
 		for (let i = 0; i < keyframes.length; i++) {
+			let p0, p1, p2
+			p1 = keyframes[i].p
+
+			if (i === 0) {
+				p0 = p1
+			} else {
+				p0 = keyframes[i - 1].p
+			}
+
+			if (i === keyframes.length - 1) {
+				p2 = p1
+			} else {
+				p2 = keyframes[i + 1].p
+			}
+
+			const easyEaseFactor = 10
+			let project1 = computeProjection(p0, p1, p2)
+			keyframes[i].c1.t = Math.round(p1.t - (project1.ti / easyEaseFactor))
+			keyframes[i].c1.v = p1.v - (project1.vi / easyEaseFactor)
+
+			let project2 = computeProjection(p2, p1, p0)
+			keyframes[i].c2.t = Math.round(p1.t - (project2.ti / easyEaseFactor))
+			keyframes[i].c2.v = p1.v - (project2.vi / easyEaseFactor)
+
 			let min, max
 			if (i === 0) {
 				min = 0
 			} else {
-				min = keyframes[i - 1].p.t
+				min = keyframes[i - 1].p.t + (keyframes[i].p.t - keyframes[i - 1].p.t) / 2
 			}
 
 			if (i === keyframes.length - 1) {
 				max = Number.POSITIVE_INFINITY
 			} else {
-				max = keyframes[i + 1].p.t
+				max = keyframes[i + 1].p.t - (keyframes[i + 1].p.t - keyframes[i].p.t) / 2
 			}
 
-			let c1t = Math.max(Math.round(keyframes[i].p.t - (easyEaseFactor * units.FRAME_TIME)), min)
-			let c2t = Math.min(Math.round(keyframes[i].p.t + (easyEaseFactor * units.FRAME_TIME)), max)
+			let c1t = Math.round(Math.max(keyframes[i].c1.t - (4 * units.FRAME_TIME), min))
+			let c2t = Math.round(Math.min(keyframes[i].c2.t + (4 * units.FRAME_TIME), max))
 			keyframes[i].c1.t = c1t
 			keyframes[i].c2.t = c2t
 		}
@@ -291,4 +336,24 @@ function extractVisemesAE(text) {
 	}
 
 	return visemes
+}
+
+
+function computeProjection(p0, p1, p2) {
+	let t1, v1, t2, v2
+	t1 = p1.t - p0.t
+	t2 = p2.t - p0.t
+	v1 = p1.v - p0.v
+	v2 = p2.v - p0.v
+
+	let ti, vi, factor
+	factor = (t2 * t1 + v2 * v1) / (t2 ** 2 + v2 ** 2)
+
+	ti = factor * t2
+	vi = factor * v2
+
+	return {
+		ti: ti,
+		vi: vi,
+	}
 }
