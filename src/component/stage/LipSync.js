@@ -22,11 +22,11 @@ const visemesValueAE = [
 const visemesValueRhubarb = {
 	"X": 10, // Idle
 	"A": 10, // Closed Mouth "P", "B", "M"
-	"B": 35, // "K", "S", "T"...
-	"C": 65, // "HE", "AE"
-	"D": 70, // "AA",
-	"E": 48, // "AO", "ER"
-	"F": 40, // "OW", "W"
+	"B": 10, // "K", "S", "T"...
+	"C": 48, // "HE", "AE"
+	"D": 65, // "AA",
+	"E": 42, // "AO", "ER"
+	"F": 25, // "OW", "W"
 	"G": 24, // "F", "V"
 	"H": 40, // Long "L"
 }
