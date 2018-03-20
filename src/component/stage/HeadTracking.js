@@ -9,7 +9,6 @@ const NECK_H_AMP = 45;
 const NECK_V_AMP = 100;
 const EYES_H_AMP = 200;
 const EYES_V_AMP = 100;
-const EYELIDS_AMP = 1.;
 const EYEBROWS_AMP = 140;
 
 const NECK_H_DEF_VAL = 50.
@@ -17,7 +16,11 @@ const NECK_V_DEF_VAL = 31.
 const EYES_H_DEF_VAL = 50.7
 const EYES_V_DEF_VAL = 43.2
 const EYEBROWS_DEF_VAL = 50.
-const EYELIDS_DEF_VAL = 10.
+
+const BLINK_START_DURATION = 4 * units.FRAME_TIME
+const BLINK_END_DURATION = 12 * units.FRAME_TIME
+const EYELID_OPEN_VALUE = 0
+const EYELID_CLOSE_VALUE = 45
 
 const controlMap = {
 	"Angle Control #2": "neckV",
@@ -36,12 +39,20 @@ export default class HeadTracking {
 		return tracking.init(stageDuration)
 			.then(() => {
 				tracking.generateSequences()
-				return tracking.sequences
+				return tracking.getSequencesList()
 			})
 	}
 
 	constructor(afterEffectsKeyframesText) {
 		this.afterEffectsKeyframesText = afterEffectsKeyframesText
+	}
+
+	getSequencesList() {
+		let sequenceList = []
+		for (let [, sequence] of entries()(this.sequences)) {
+			sequenceList.push(sequence)
+		}
+		return sequenceList
 	}
 
 	generateSequences() {
@@ -67,6 +78,7 @@ export default class HeadTracking {
 				case "eyebrows":
 					this.generateEyebrows(control)
 					break
+				default:
 			}
 		}
 	}
@@ -116,32 +128,53 @@ export default class HeadTracking {
 	generateEyelids(control) {
 		let lidLeft = this.sequences.lidLeft
 		let lidRight = this.sequences.lidRight
+		const BLINK_TOP_THRESHOLD = 0.5
+
+		// Detect blinks and reproduce them
+		let blinks = []
+		let topValue = 0
+		let topTime = 0
+		let firstHigh = 0
+		let isLastHigh = false
+
 
 		for (let keyframe of control.keyframes) {
-			let t = Math.round(keyframe.t * units.FRAME_TIME)
-			let v = keyframe.v * (100 - EYELIDS_DEF_VAL) * EYELIDS_AMP + EYELIDS_DEF_VAL;
-			if (v < 0 || v > 100) {
-				console.warn(control, "Tracking value out of range in [", controlMap[control.name], "] at ", keyframe.t, v);
-				v = Math.min(Math.max(v, 0), 100)
-			}
+			let isHigh = (keyframe.v > BLINK_TOP_THRESHOLD)
 
-			let newKeyframe = {
-				p: {
-					t: t,
-					v: v,
-				},
-				c1: {
-					t: t,
-					v: v,
-				},
-				c2: {
-					t: t,
-					v: v,
-				},
+			if (isHigh) {
+				if (isLastHigh) {
+					if (keyframe.v > topValue) {
+						topValue = keyframe.v
+						topTime = keyframe.t
+					}
+				} else {
+					isLastHigh = true
+					firstHigh = keyframe.t
+					topValue = keyframe.v
+					topTime = keyframe.t
+				}
+			} else {
+				if (isLastHigh) {
+					isLastHigh = false
+					blinks.push({
+						top: {
+							t: topTime,
+							v: topValue,
+						},
+						start: firstHigh,
+						end: keyframe.t,
+					})
+				}
 			}
-			lidLeft.keyframes.push(newKeyframe)
-			newKeyframe = JSON.parse(JSON.stringify(newKeyframe))
-			lidRight.keyframes.push(newKeyframe)
+		}
+
+		for (let blink of blinks) {
+			let t = Math.round(blink.top.t * units.FRAME_TIME)
+			let blinkKeyframes = getBlink(t)
+			if (lidLeft.keyframes.length === 0 || lidLeft.keyframes[lidLeft.keyframes.length - 1].p.t <= t) {
+				lidLeft.keyframes = lidLeft.keyframes.concat(blinkKeyframes)
+				lidRight.keyframes = lidRight.keyframes.concat(blinkKeyframes)
+			}
 		}
 	}
 
@@ -213,7 +246,7 @@ export default class HeadTracking {
 				} else {
 					let result = keyframeRegex.exec(line)
 					control.keyframes.push({
-						t: parseInt(result[1]),
+						t: parseInt(result[1], 10),
 						v: parseFloat(result[2]),
 					})
 				}
@@ -280,4 +313,50 @@ export default class HeadTracking {
 
 		return Promise.all(uuidPromises)
 	}
+}
+
+
+
+
+function getBlink(t) {
+	return [{
+		p: {
+			t: t,
+			v: EYELID_OPEN_VALUE,
+		},
+		c1: {
+			t: t,
+			v: EYELID_OPEN_VALUE,
+		},
+		c2: {
+			t: Math.round(t + BLINK_START_DURATION),
+			v: EYELID_OPEN_VALUE,
+		}
+	}, {
+		p: {
+			t: Math.round(t + BLINK_START_DURATION),
+			v: EYELID_CLOSE_VALUE,
+		},
+		c1: {
+			t: t,
+			v: EYELID_CLOSE_VALUE,
+		},
+		c2: {
+			t: Math.round(t + BLINK_START_DURATION + BLINK_END_DURATION),
+			v: EYELID_CLOSE_VALUE,
+		}
+	}, {
+		p: {
+			t: Math.round(t + BLINK_START_DURATION + BLINK_END_DURATION),
+			v: EYELID_OPEN_VALUE,
+		},
+		c1: {
+			t: Math.round(t + BLINK_START_DURATION + (BLINK_END_DURATION / 2)),
+			v: EYELID_OPEN_VALUE,
+		},
+		c2: {
+			t: Math.round(t + BLINK_START_DURATION + BLINK_END_DURATION),
+			v: EYELID_OPEN_VALUE,
+		}
+	}, ]
 }

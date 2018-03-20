@@ -541,41 +541,14 @@ export default class SequenceList extends React.Component {
 	handleCreateHeadTrackingSequence(driverSequence, text) {
 		HeadTracking.importTrackingData(text, this.props.stage.duration)
 			.then((sequences) => {
-				let newSequence = JSON.parse(JSON.stringify(driverSequence))
-
-				for (let [, sequence] of entries()(sequences)) {
-					console.log(sequence);
-					newSequence.sequences.push(sequence)
+				let driverSequenceIndex = model.indexOfID(this.props.stage.sequences, driverSequence.id)
+				for (let i = 0; i < sequences.length && i + driverSequenceIndex < this.props.stage.sequences.length; i++) {
+					let sequence = sequences[i]
+					let newSequence = JSON.parse(JSON.stringify(this.props.stage.sequences[driverSequenceIndex + i]))
+					newSequence.sequences.splice(0, 0, sequence)
+					this.props.onDriverSequenceChange(newSequence)
 				}
-				this.props.onDriverSequenceChange(newSequence)
 			})
-		// let keyframes = LipSync.generateKeyframes(text)
-		//
-		// if (keyframes.length > 0) {
-		// 	UUID.getUUID().then((uuid) => {
-		// 		let servo = model.getServo(this.props.puppet.boards, driverSequence.servoID)
-		//
-		// 		let defaultValue = (servo.defaultPosition - servo.min) / (servo.max - servo.min) * 100,
-		// 			sequence = {
-		// 				id: uuid,
-		// 				name: 'Lip Sync',
-		// 				defaultValue: defaultValue,
-		// 				start: 0,
-		// 				duration: this.props.stage.duration, // 10 s = 1e10 ns
-		// 				slave: false,
-		// 				playEnabled: true,
-		// 				previewEnabled: false,
-		// 				showGraph: false,
-		// 				keyframes: keyframes,
-		// 			}
-		//
-		// 		if (typeof this.props.onNewBasicSequence === 'function') {
-		// 			this.props.onNewBasicSequence(sequence, driverSequence)
-		// 		}
-		// 	}).catch((error) => {
-		// 		console.error(error)
-		// 	})
-		// }
 
 		this.setState({
 			headTrackingModal: {
