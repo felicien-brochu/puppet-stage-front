@@ -15,8 +15,10 @@ import {
 import DriverSequenceModal from './modal/DriverSequenceModal'
 import BasicSequenceModal from './modal/BasicSequenceModal'
 import LipSyncModal from './modal/LipSyncModal'
+import HeadTrackingModal from './modal/HeadTrackingModal'
 import ConfirmModal from './modal/ConfirmModal'
 import LookGenerator from '../LookGenerator'
+import HeadTracking from '../HeadTracking'
 import AudioSequenceItem from './AudioSequenceItem'
 import DriverSequenceItem from './DriverSequenceItem'
 import SequenceListActionBar from './SequenceListActionBar'
@@ -28,6 +30,7 @@ const
 	REMOVE_DRIVER_SEQUENCE = "REMOVE_DRIVER_SEQUENCE",
 	ADD_BASIC_SEQUENCE = "ADD_BASIC_SEQUENCE",
 	LIP_SYNC_SEQUENCE = "LIP_SYNC_SEQUENCE",
+	HEAD_TRACKING = "HEAD_TRACKING",
 	GENERATE_LOOK_SEQUENCES = "GENERATE_LOOK_SEQUENCES",
 	EDIT_BASIC_SEQUENCE = "EDIT_BASIC_SEQUENCE",
 	REMOVE_BASIC_SEQUENCE = "REMOVE_BASIC_SEQUENCE"
@@ -83,6 +86,11 @@ export default class SequenceList extends React.Component {
 				driverSequence: null,
 			},
 
+			headTrackingModal: {
+				show: false,
+				driverSequence: null,
+			},
+
 			confirmModal: {
 				show: false,
 				target: null,
@@ -103,6 +111,9 @@ export default class SequenceList extends React.Component {
 		this.handleNewLipSyncSequence = this.handleNewLipSyncSequence.bind(this)
 		this.handleCancelLipSyncModal = this.handleCancelLipSyncModal.bind(this)
 		this.handleCreateLipSyncSequence = this.handleCreateLipSyncSequence.bind(this)
+		this.handleNewHeadTrackingSequence = this.handleNewHeadTrackingSequence.bind(this)
+		this.handleCancelHeadTrackingModal = this.handleCancelHeadTrackingModal.bind(this)
+		this.handleCreateHeadTrackingSequence = this.handleCreateHeadTrackingSequence.bind(this)
 		this.handleGenerateLookSequences = this.handleGenerateLookSequences.bind(this)
 		this.handleCreateUpdateBasicSequence = this.handleCreateUpdateBasicSequence.bind(this)
 		this.handleCancelBasicSequenceModal = this.handleCancelBasicSequenceModal.bind(this)
@@ -174,6 +185,12 @@ export default class SequenceList extends React.Component {
 						onClick={this.handleContextMenuClick}
 					>
 						New Lip Sync Sequence
+					</MenuItem>
+					<MenuItem
+						data={{action: HEAD_TRACKING}}
+						onClick={this.handleContextMenuClick}
+					>
+						Head Tracking
 					</MenuItem>
 					<MenuItem
 						data={{action: GENERATE_LOOK_SEQUENCES}}
@@ -288,6 +305,18 @@ export default class SequenceList extends React.Component {
 			)
 		}
 
+		if (this.state.headTrackingModal.driverSequence) {
+			modals.push(
+				<HeadTrackingModal
+					key="HeadTrackingModal"
+					isOpen={this.state.headTrackingModal.show}
+					driverSequence={this.state.headTrackingModal.driverSequence}
+					onConfirm={this.handleCreateHeadTrackingSequence}
+					onCancel={this.handleCancelHeadTrackingModal}
+				/>
+			)
+		}
+
 		if (this.state.confirmModal.show) {
 			modals.push(
 				<ConfirmModal
@@ -326,6 +355,9 @@ export default class SequenceList extends React.Component {
 				break
 			case LIP_SYNC_SEQUENCE:
 				this.handleNewLipSyncSequence(data.sequence)
+				break
+			case HEAD_TRACKING:
+				this.handleNewHeadTrackingSequence(data.sequence)
 				break
 			case GENERATE_LOOK_SEQUENCES:
 				this.handleGenerateLookSequences(data.sequence)
@@ -491,6 +523,71 @@ export default class SequenceList extends React.Component {
 	handleCancelLipSyncModal() {
 		this.setState({
 			lipSyncModal: {
+				show: false,
+				driverSequence: null,
+			},
+		})
+	}
+
+	handleNewHeadTrackingSequence(driverSequence) {
+		this.setState({
+			headTrackingModal: {
+				show: true,
+				driverSequence: driverSequence,
+			},
+		})
+	}
+
+	handleCreateHeadTrackingSequence(driverSequence, text) {
+		HeadTracking.importTrackingData(text, this.props.stage.duration)
+			.then((sequences) => {
+				let newSequence = JSON.parse(JSON.stringify(driverSequence))
+
+				for (let [, sequence] of entries()(sequences)) {
+					console.log(sequence);
+					newSequence.sequences.push(sequence)
+				}
+				this.props.onDriverSequenceChange(newSequence)
+			})
+		// let keyframes = LipSync.generateKeyframes(text)
+		//
+		// if (keyframes.length > 0) {
+		// 	UUID.getUUID().then((uuid) => {
+		// 		let servo = model.getServo(this.props.puppet.boards, driverSequence.servoID)
+		//
+		// 		let defaultValue = (servo.defaultPosition - servo.min) / (servo.max - servo.min) * 100,
+		// 			sequence = {
+		// 				id: uuid,
+		// 				name: 'Lip Sync',
+		// 				defaultValue: defaultValue,
+		// 				start: 0,
+		// 				duration: this.props.stage.duration, // 10 s = 1e10 ns
+		// 				slave: false,
+		// 				playEnabled: true,
+		// 				previewEnabled: false,
+		// 				showGraph: false,
+		// 				keyframes: keyframes,
+		// 			}
+		//
+		// 		if (typeof this.props.onNewBasicSequence === 'function') {
+		// 			this.props.onNewBasicSequence(sequence, driverSequence)
+		// 		}
+		// 	}).catch((error) => {
+		// 		console.error(error)
+		// 	})
+		// }
+
+		this.setState({
+			headTrackingModal: {
+				show: false,
+				driverSequence: null,
+			},
+		})
+	}
+
+	handleCancelHeadTrackingModal() {
+		this.setState({
+			headTrackingModal: {
 				show: false,
 				driverSequence: null,
 			},
