@@ -107,7 +107,9 @@ export default class Player {
 		scheduler.lastExecution = new Date().getTime()
 	}
 
-	handleOpen(e) {}
+	handleOpen(e) {
+		console.info("Player Websocket open")
+	}
 
 	handleClose(e) {
 		if (this.started) {
