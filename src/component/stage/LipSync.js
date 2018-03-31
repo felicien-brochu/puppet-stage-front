@@ -37,7 +37,7 @@ const papagayoRhubarbMap = {
 	"E": "C",
 	"AI": "D",
 	"O": "E",
-	"U": "F",
+	"U": "E",
 	"WQ": "F",
 	"FV": "G",
 	"L": "H",
