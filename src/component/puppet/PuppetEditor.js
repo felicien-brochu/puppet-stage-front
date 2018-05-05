@@ -1,5 +1,8 @@
 import React from 'react'
 import Alert from 'react-s-alert'
+import {
+	Helmet
+} from 'react-helmet'
 
 import List from '../base/List'
 import TextCreator from '../base/TextCreator'
@@ -44,6 +47,12 @@ export default class PuppetEditor extends React.Component {
 	render() {
 		return (
 			<div className="puppet-editor">
+
+				<Helmet>
+					<meta charSet="utf-8" />
+					<title>{this.state.puppet.name + " - Puppet Stage"}</title>
+				</Helmet>
+
 				<h3>
 					{this.state.puppet.name} puppet
 					<button

@@ -184,7 +184,7 @@ export default class HeadTracking {
 
 		for (let keyframe of control.keyframes) {
 			let t = Math.round(keyframe.t * units.FRAME_TIME)
-			let v = keyframe.v * EYEBROWS_AMP + EYEBROWS_DEF_VAL;
+			let v = keyframe.v * -EYEBROWS_AMP + EYEBROWS_DEF_VAL;
 			if (v < 0 || v > 100) {
 				console.warn(control, "Tracking value out of range in [", controlMap[control.name], "] at ", keyframe.t, v);
 				v = Math.min(Math.max(v, 0), 100)

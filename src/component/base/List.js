@@ -59,9 +59,21 @@ export default class List extends React.Component {
 	}
 
 	renderItems() {
-		return Object.entries(this.props.list).map((entry) => {
-			return this.renderItem(entry[1])
+		let items = Object.entries(this.props.list).map((entry) => {
+			return entry[1]
 		})
+		items.sort((a, b) => {
+			let aVal = this.getValue(a),
+				bVal = this.getValue(b)
+			if (aVal > bVal) {
+				return 1
+			}
+			if (aVal < bVal) {
+				return -1
+			}
+			return 0
+		})
+		return items.map((item) => this.renderItem(item))
 	}
 
 	handleClick(e, key) {

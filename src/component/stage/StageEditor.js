@@ -1,6 +1,9 @@
 import React from 'react'
 import Alert from 'react-s-alert'
 import {
+	Helmet
+} from 'react-helmet'
+import {
 	Loader
 } from 'react-loaders'
 import {
@@ -87,6 +90,12 @@ export default class StageEditor extends React.Component {
 		if (this.state.puppet && this.state.stage) {
 			return (
 				<div className="stage-editor">
+
+					<Helmet>
+						<meta charSet="utf-8" />
+						<title>{this.state.stage.name + " - Puppet Stage"}</title>
+					</Helmet>
+
 					<SequenceEditor
 						stage={this.state.stage}
 						puppet={this.state.puppet}

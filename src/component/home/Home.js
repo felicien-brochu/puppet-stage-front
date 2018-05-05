@@ -1,5 +1,8 @@
 import React from 'react'
 import Alert from 'react-s-alert'
+import {
+	Helmet
+} from 'react-helmet'
 import alert from '../../util/alert'
 import PuppetBrowser from './PuppetBrowser'
 import StageBrowser from './StageBrowser'
@@ -29,6 +32,11 @@ export default class Home extends React.Component {
 	render() {
 		return (
 			<div className="home-container">
+				<Helmet>
+					<meta charSet="utf-8" />
+					<title>Puppet Stage</title>
+				</Helmet>
+
 				<StageBrowser
 					stages={this.state.stages}
 					onCreate={this.handleCreateStage}
