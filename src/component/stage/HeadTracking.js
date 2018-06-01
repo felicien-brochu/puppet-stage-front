@@ -58,29 +58,37 @@ export default class HeadTracking {
 	generateSequences() {
 		this.parseAfterEffectsKeyframesText()
 
+		let neckH, neckV, eyesH, eyesV, eyelids, eyebrows
+
 		for (let control of this.controls) {
 			switch (controlMap[control.name]) {
 				case "neckH":
-					this.generateNeckH(control)
+					neckH = control
 					break
 				case "neckV":
-					this.generateNeckV(control)
+					neckV = control
 					break
 				case "eyesH":
-					this.generateEyesH(control)
+					eyesH = control
 					break
 				case "eyesV":
-					this.generateEyesV(control)
+					eyesV = control
 					break
 				case "eyelids":
-					this.generateEyelids(control)
+					eyelids = control
 					break
 				case "eyebrows":
-					this.generateEyebrows(control)
+					eyebrows = control
 					break
 				default:
 			}
 		}
+		this.generateNeckH(neckH)
+		this.generateNeckV(neckV)
+		this.generateEyesH(eyesH)
+		this.generateEyesV(eyesV)
+		this.generateEyebrows(eyebrows)
+		this.generateEyelids(eyelids)
 	}
 
 	generateLinearSequence(control, sequenceIndex, amplitude, defValue = 50.) {
@@ -125,7 +133,8 @@ export default class HeadTracking {
 		this.generateLinearSequence(control, "eyesV", EYES_V_AMP, EYES_V_DEF_VAL)
 	}
 
-	generateEyelids(control) {
+	// You MUST call generateEyebrows() before calling this function.
+	generateEyelids(eyelids, eyebrows) {
 		let lidLeft = this.sequences.lidLeft
 		let lidRight = this.sequences.lidRight
 		const BLINK_TOP_THRESHOLD = 0.5
@@ -138,7 +147,7 @@ export default class HeadTracking {
 		let isLastHigh = false
 
 
-		for (let keyframe of control.keyframes) {
+		for (let keyframe of eyelids.keyframes) {
 			let isHigh = (keyframe.v > BLINK_TOP_THRESHOLD)
 
 			if (isHigh) {
@@ -168,13 +177,44 @@ export default class HeadTracking {
 			}
 		}
 
-		for (let blink of blinks) {
-			let t = Math.round(blink.top.t * units.FRAME_TIME)
-			let blinkKeyframes = getBlink(t)
-			if (lidLeft.keyframes.length === 0 || lidLeft.keyframes[lidLeft.keyframes.length - 1].p.t <= t) {
-				lidLeft.keyframes = lidLeft.keyframes.concat(blinkKeyframes)
-				lidRight.keyframes = lidRight.keyframes.concat(blinkKeyframes)
+		// let browKeyframes = JSON.parse(JSON.stringify(this.sequences.browLeft.keyframes))
+		this.sequences.eyelids = {
+			name: "eyelids",
+			keyframes: []
+		}
+		this.generateLinearSequence(eyelids, "eyelids", 50, 40)
+		let eyelidsKeyframes = JSON.parse(JSON.stringify(this.sequences.eyelids.keyframes))
+
+
+		let blinkIndex = 0
+		let skipTime = -1
+		for (let keyframe of eyelidsKeyframes) {
+			if (blinkIndex < blinks.length) {
+				let blink = blinks[blinkIndex]
+				let blinkT = Math.round(blink.top.t * units.FRAME_TIME)
+
+				if (blinkT <= keyframe.p.t) {
+					let blinkKeyframes = getBlink(blinkT)
+					if (lidLeft.keyframes.length === 0 || lidLeft.keyframes[lidLeft.keyframes.length - 1].p.t <= blinkT) {
+						lidLeft.keyframes = lidLeft.keyframes.concat(blinkKeyframes)
+						lidRight.keyframes = lidRight.keyframes.concat(JSON.parse(JSON.stringify(blinkKeyframes)))
+					}
+					skipTime = lidLeft.keyframes[lidLeft.keyframes.length - 1].p.t
+					blinkIndex++
+				}
 			}
+
+			if (keyframe.p.t <= skipTime) {
+				continue
+			}
+
+			let newKeyframe = JSON.parse(JSON.stringify(keyframe))
+			let v = (newKeyframe.p.v - 45) / 1.1 + 10
+			v = Math.min(16, Math.max(v, 0))
+			newKeyframe.p.v = newKeyframe.c1.v = newKeyframe.c2.v = v
+			lidLeft.keyframes.push(newKeyframe)
+			newKeyframe = JSON.parse(JSON.stringify(newKeyframe))
+			lidRight.keyframes.push(newKeyframe)
 		}
 	}
 
