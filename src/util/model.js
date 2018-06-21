@@ -18,6 +18,20 @@ export default class Model {
 		return servos[servoID]
 	}
 
+	static getServosByTag(boards, selectTag) {
+		let servos = []
+		let allServos = Model.getServos(boards)
+		for (let [, servo] of util.entries()(allServos)) {
+			servo.tags.forEach(tag => {
+				if (tag === selectTag) {
+					servos.push(servo)
+				}
+			})
+		}
+
+		return servos
+	}
+
 	static indexOfID(list, id) {
 		let index = -1
 		list.forEach((item, i) => {

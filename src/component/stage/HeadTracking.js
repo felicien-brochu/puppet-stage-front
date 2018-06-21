@@ -39,8 +39,13 @@ export default class HeadTracking {
 		return tracking.init(stageDuration)
 			.then(() => {
 				tracking.generateSequences()
-				return tracking.getSequencesList()
+				return tracking
 			})
+	}
+
+	static getHeadTrackingEnd(afterEffectsKeyframesText) {
+		let tracking = new HeadTracking(afterEffectsKeyframesText)
+		return tracking.detectEndFrameTime()
 	}
 
 	constructor(afterEffectsKeyframesText) {
@@ -135,8 +140,8 @@ export default class HeadTracking {
 
 	// You MUST call generateEyebrows() before calling this function.
 	generateEyelids(eyelids, eyebrows) {
-		let lidLeft = this.sequences.lidLeft
-		let lidRight = this.sequences.lidRight
+		let lidLeft = this.sequences.lidL
+		let lidRight = this.sequences.lidR
 		const BLINK_TOP_THRESHOLD = 0.5
 
 		// Detect blinks and reproduce them
@@ -177,7 +182,7 @@ export default class HeadTracking {
 			}
 		}
 
-		// let browKeyframes = JSON.parse(JSON.stringify(this.sequences.browLeft.keyframes))
+		// let browKeyframes = JSON.parse(JSON.stringify(this.sequences.browL.keyframes))
 		this.sequences.eyelids = {
 			name: "eyelids",
 			keyframes: []
@@ -216,11 +221,13 @@ export default class HeadTracking {
 			newKeyframe = JSON.parse(JSON.stringify(newKeyframe))
 			lidRight.keyframes.push(newKeyframe)
 		}
+
+		delete this.sequences.eyelids
 	}
 
 	generateEyebrows(control) {
-		let browLeft = this.sequences.browLeft
-		let browRight = this.sequences.browRight
+		let browLeft = this.sequences.browL
+		let browRight = this.sequences.browR
 
 		for (let keyframe of control.keyframes) {
 			let t = Math.round(keyframe.t * units.FRAME_TIME)
@@ -250,8 +257,22 @@ export default class HeadTracking {
 		}
 	}
 
+	detectEndFrameTime() {
+		this.parseAfterEffectsKeyframesText()
+		let end = 0
+		for (const control of this.controls) {
+			let t = 0
+			if (control.keyframes.length > 0) {
+				let lastKeyframe = control.keyframes[control.keyframes.length - 1]
+				t = lastKeyframe.t * units.FRAME_TIME
+				end = Math.max(end, t)
+			}
+		}
+		return end
+	}
+
 	parseAfterEffectsKeyframesText() {
-		let lines = this.afterEffectsKeyframesText.split('\n')
+		let lines = this.afterEffectsKeyframesText.split(/\r?\n/)
 		let dataStart = 0
 		let emptyLineCount = 0
 
@@ -317,17 +338,17 @@ export default class HeadTracking {
 			eyesV: {
 				name: 'eyesV[Tracking]',
 			},
-			browLeft: {
-				name: 'browLeft[Tracking]',
+			browL: {
+				name: 'browL[Tracking]',
 			},
-			browRight: {
-				name: 'browRight[Tracking]',
+			browR: {
+				name: 'browR[Tracking]',
 			},
-			lidLeft: {
-				name: 'lidLeft[Tracking]',
+			lidL: {
+				name: 'lidL[Tracking]',
 			},
-			lidRight: {
-				name: 'lidRight[Tracking]',
+			lidR: {
+				name: 'lidR[Tracking]',
 			}
 		}
 

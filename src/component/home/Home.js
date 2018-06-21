@@ -4,9 +4,12 @@ import {
 	Helmet
 } from 'react-helmet'
 import alert from '../../util/alert'
+import fetchAPI from '../../util/api'
+import TemplateStageFactory from './TemplateStageFactory'
 import PuppetBrowser from './PuppetBrowser'
 import StageBrowser from './StageBrowser'
-import fetchAPI from '../../util/api'
+import StageBatchCreateModal from './modal/StageBatchCreateModal'
+
 
 export default class Home extends React.Component {
 
@@ -16,9 +19,18 @@ export default class Home extends React.Component {
 		this.state = {
 			selectedPuppet: null,
 			stages: [],
+			modals: {
+				stageBatchCreateModal: {
+					show: false,
+				},
+			},
 		}
 
 		this.handleCreateStage = this.handleCreateStage.bind(this)
+		this.handleBatchCreateStage = this.handleBatchCreateStage.bind(this)
+		this.handleStageBatchCreateConfirm = this.handleStageBatchCreateConfirm.bind(this)
+		this.handleStageBatchCreateSuccess = this.handleStageBatchCreateSuccess.bind(this)
+		this.handleStageBatchCreateCancel = this.handleStageBatchCreateCancel.bind(this)
 		this.handleDeleteStage = this.handleDeleteStage.bind(this)
 		this.handlePuppetSelect = this.handlePuppetSelect.bind(this)
 		this.handleStagesRetrieved = this.handleStagesRetrieved.bind(this)
@@ -40,6 +52,7 @@ export default class Home extends React.Component {
 				<StageBrowser
 					stages={this.state.stages}
 					onCreate={this.handleCreateStage}
+					onBatchCreate={this.handleBatchCreateStage}
 					onDelete={this.handleDeleteStage}
 				/>
 				<PuppetBrowser
@@ -47,6 +60,29 @@ export default class Home extends React.Component {
 				/>
 
 				<Alert stack={true} timeout={3000} />
+
+				{this.renderModals()}
+			</div>
+		)
+	}
+
+	renderModals() {
+		let modals = []
+		if (this.state.modals.stageBatchCreateModal.show) {
+			modals.push(
+				<StageBatchCreateModal
+					key="stageBatchCreateModal"
+					isOpen={this.state.modals.stageBatchCreateModal.show}
+					onConfirm={this.handleStageBatchCreateConfirm}
+					onCancel={this.handleStageBatchCreateCancel}
+			/>
+			)
+		}
+		return (
+			<div>
+
+				{modals}
+
 			</div>
 		)
 	}
@@ -74,6 +110,49 @@ export default class Home extends React.Component {
 				puppetID: this.state.selectedPuppet.id,
 			}),
 		}, this.handleCreateStageSuccess, null, "Error creating stage:")
+	}
+
+	handleBatchCreateStage(name) {
+		if (!this.state.selectedPuppet) {
+			alert.warningAlert("Select a puppet before creating a stage")
+			return
+		}
+
+		this.setState({
+			modals: {
+				stageBatchCreateModal: {
+					show: true,
+				},
+			}
+		})
+	}
+
+	handleStageBatchCreateConfirm(prefix, wavFiles, lipSyncFiles, headTrackingFiles) {
+		const stageFactory = new TemplateStageFactory()
+		stageFactory.createTemplateStages(prefix, wavFiles, lipSyncFiles, headTrackingFiles, this.state.selectedPuppet, this.handleStageBatchCreateSuccess)
+		this.setState({
+			modals: {
+				stageBatchCreateModal: {
+					show: false,
+				},
+			}
+		})
+	}
+
+	handleStageBatchCreateSuccess(stages) {
+		this.setState({
+			stages: [...this.state.stages, ...stages],
+		})
+	}
+
+	handleStageBatchCreateCancel() {
+		this.setState({
+			modals: {
+				stageBatchCreateModal: {
+					show: false,
+				},
+			}
+		})
 	}
 
 	handleCreateStageSuccess(stage) {

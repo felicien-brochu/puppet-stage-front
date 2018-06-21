@@ -14,6 +14,7 @@ export default class StageBrowser extends React.Component {
 	static propTypes = {
 		onCreate: PropTypes.func,
 		onDelete: PropTypes.func,
+		onBatchCreate: PropTypes.func,
 	}
 
 	constructor(props) {
@@ -66,6 +67,11 @@ export default class StageBrowser extends React.Component {
 					onClick={this.handleDuplicateClick}
 					disabled={this.state.selectedStage ? false : true}>
 					Duplicate
+				</button>
+				<button
+					type="button"
+					onClick={this.props.onBatchCreate}>
+					Batch Create
 				</button>
 			</div>
 		)

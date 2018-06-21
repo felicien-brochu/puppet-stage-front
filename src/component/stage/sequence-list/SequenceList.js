@@ -540,7 +540,8 @@ export default class SequenceList extends React.Component {
 
 	handleCreateHeadTrackingSequence(driverSequence, text) {
 		HeadTracking.importTrackingData(text, this.props.stage.duration)
-			.then((sequences) => {
+			.then((tracking) => {
+				let sequences = tracking.getSequencesList()
 				let driverSequenceIndex = model.indexOfID(this.props.stage.sequences, driverSequence.id)
 				for (let i = 0; i < sequences.length && i + driverSequenceIndex < this.props.stage.sequences.length; i++) {
 					let sequence = sequences[i]

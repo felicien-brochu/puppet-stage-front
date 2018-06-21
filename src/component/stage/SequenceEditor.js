@@ -1054,7 +1054,7 @@ export default class SequenceEditor extends React.Component {
 							reject,
 							`Error uploading audio file "${audioFile.name}"`)
 					})
-					reader.readAsDataURL(audioFile);
+					reader.readAsDataURL(audioFile)
 					stage.audio.file = fileName
 
 				} else {

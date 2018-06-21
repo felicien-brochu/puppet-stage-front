@@ -52,7 +52,7 @@ const MAX_ACCELERATION = 60 / (30 * units.FRAME_TIME * units.FRAME_TIME)
 export default class LipSync {
 
 	static generateKeyframes(papagayoText) {
-		let lines = papagayoText.split("\n")
+		let lines = papagayoText.split(/\r?\n/)
 		let word = null
 		let words = []
 
@@ -126,7 +126,7 @@ export default class LipSync {
 			start: lastT,
 			end: lastT + 0.1,
 		})
-		console.log(mouthCues)
+
 		return LipSync.generateRhubarbKeyframes({
 			mouthCues: mouthCues
 		})
@@ -166,7 +166,6 @@ export default class LipSync {
 					t: p.t - Math.round(2 * Math.sqrt(Math.abs(p.v - lastP.v) / MAX_ACCELERATION)),
 					v: lastP.v,
 				}
-				console.log("#########SUP", lastP);
 
 				keyframes.push({
 					p: newP,
@@ -269,7 +268,6 @@ export default class LipSync {
 					t: Math.round(p.t - (5 * units.FRAME_TIME)),
 					v: lastP.v,
 				}
-				console.log("#########SUP", lastP);
 
 				keyframes.push({
 					p: newP,

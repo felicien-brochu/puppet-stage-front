@@ -4,9 +4,9 @@
 
 .modal {
 	display: inline-block;
-	// border: 1px solid $;
 	background: $background-color;
 	overflow: auto;
+	max-height: 90vh;
 	@include border-radius(0.2em);
 	outline: none;
 	padding: 0;
