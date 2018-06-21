@@ -62,16 +62,15 @@ export default class List extends React.Component {
 		let items = Object.entries(this.props.list).map((entry) => {
 			return entry[1]
 		})
+		const collator = new Intl.Collator(undefined, {
+			numeric: true,
+			sensitivity: 'base'
+		});
+
 		items.sort((a, b) => {
 			let aVal = this.getValue(a),
 				bVal = this.getValue(b)
-			if (aVal > bVal) {
-				return 1
-			}
-			if (aVal < bVal) {
-				return -1
-			}
-			return 0
+			return collator.compare(aVal, bVal)
 		})
 		return items.map((item) => this.renderItem(item))
 	}
